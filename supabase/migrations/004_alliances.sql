@@ -206,6 +206,7 @@ end;
 $$;
 
 alter table public.units add column if not exists repair_until timestamptz;
+alter table public.missions add column if not exists reward_mult numeric not null default 1;
 
 -- Placeholder for the hook fc_sync calls first. Phase 7 replaces it with the
 -- real thing; we only create it here if nothing better exists yet, so that
@@ -219,6 +220,10 @@ begin
   if not exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
                   where n.nspname = 'public' and p.proname = 'fc_on_mission_complete') then
     execute 'create function public.fc_on_mission_complete(p_mission uuid, p_at timestamptz) returns void language sql as ''select''';
+  end if;
+  if not exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+                  where n.nspname = 'public' and p.proname = 'fc_on_mission_expired') then
+    execute 'create function public.fc_on_mission_expired(p_mission uuid) returns void language sql as ''select''';
   end if;
   -- Moderation hooks (suspensions and chat mutes), filled in by Phase 9.
   if not exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
@@ -312,7 +317,9 @@ begin
   -- units on it. Any member's browser can settle a shared mission.
   for m in
     select ms.id, ms.owner_id, ms.alliance_id, ms.lat, ms.lng, ms.completes_at,
-           t.name, t.reward_money, t.reward_supplies, t.reward_xp, t.followups
+           t.name, t.reward_supplies, t.reward_xp, t.followups,
+           -- reward_mult is 1 unless a later phase raised it (pushing the front out pays more)
+           round(t.reward_money * ms.reward_mult)::bigint as reward_money
       from public.missions ms
       join public.mission_types t on t.id = ms.mission_type
      where ms.status = 'in_progress' and ms.completes_at <= v_now
@@ -418,6 +425,7 @@ begin
   loop
     update public.missions set status = 'expired' where id = m.id and status = 'open';
     if not found then continue; end if;
+    perform public.fc_on_mission_expired(m.id);   -- hook for later phases (the front falls back)
     update public.dispatches
        set returns_at = m.expires_at + make_interval(
              secs => least(travel_seconds, extract(epoch from m.expires_at - departed_at)))

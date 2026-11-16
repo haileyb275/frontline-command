@@ -147,6 +147,9 @@ export function renderBase(state, ui) {
       · <button class="link-btn" data-action="focus-base">Show on map</button>
       · <button class="link-btn" data-action="rename-base">Rename</button></p>
 
+    ${base.disabled_until && msUntil(base.disabled_until) > 0
+      ? `<p class="note note--danger">Overrun by an enemy offensive. Out of action for ${countdown(base.disabled_until)}:
+           its idle units are regrouping and cannot be sent out.</p>` : ''}
     ${renderZone(base, ui)}
     ${renderUpgrade(profile, base, type, ui)}
     ${renderStock(state, base, ui)}
@@ -218,7 +221,8 @@ function renderZone(base, ui) {
         <strong>${home ? 'Home front' : 'Front line'}</strong>
         <span class="muted">${home
           ? ` · no enemy contact within ${settings.home_safe_km} km; only fires, security and supply calls`
-          : ' · enemy contact can occur around this base'}</span>
+          : ` · holds ground out to ${Math.round(base.front_km * 10) / 10} km. Winning contact missions pushes this out
+             (and they pay more); letting them expire lets it fall back.`}</span>
       </span>
       <button class="btn btn--small" data-action="set-zone" data-zone="${home ? 'front' : 'home'}"
               ${ui.busy ? 'disabled' : ''}>${home ? 'Move to front line' : 'Move to home front'}</button>

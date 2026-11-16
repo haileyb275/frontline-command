@@ -17,9 +17,10 @@ import {
   unitFitsSlot,
   supplyUse,
   unitTitle,
+  settings,
 } from '../game/content.js';
 import {
-  dispatchUnits, recallUnits, shareMission, claimDailyOrder, claimObjective, loadObjectives, saveTaskForce,
+  dispatchUnits, recallUnits, shareMission, scoutMission, claimDailyOrder, claimObjective, loadObjectives, saveTaskForce,
 } from '../game/actions.js';
 import { renderOrders, tickOrders, claimableCount } from './ordersView.js';
 import { msUntil, formatDuration, liveUnitStatus, now } from '../game/clock.js';
@@ -43,6 +44,11 @@ function committedCounts(mission, dispatches) {
 
 /** The one-line status under a mission's name. Re-computed every second by tick(). */
 function statusText(mission, dispatches) {
+  if (mission.hidden) {
+    return mission.confirm_at
+      ? `Scout arrives in ${formatDuration(msUntil(mission.confirm_at))}`
+      : `Unconfirmed · expires in ${formatDuration(msUntil(mission.expires_at))}`;
+  }
   if (mission.status === 'in_progress') {
     return msUntil(mission.started_at) > 0
       ? `Units en route · starts in ${formatDuration(msUntil(mission.started_at))}`
@@ -129,7 +135,8 @@ function renderList({ missions, dispatches, profile }) {
                 data-action="open-mission" data-mission="${esc(mission.id)}">
           <span class="row-main">
             <span class="row-title">${esc(type.name)}${mission.site_name ? ` <span class="site">${esc(mission.site_name)}</span>` : ''}
-              ${mission.alliance_id ? '<span class="tag tag--shared">Alliance</span>' : ''}</span>
+              ${mission.alliance_id ? '<span class="tag tag--shared">Alliance</span>' : ''}
+              ${mission.target_base_id ? '<span class="tag tag--bad">Offensive</span>' : ''}</span>
             ${mission.owner_id !== profile.id ? `<span class="row-sub">shared by ${esc(mission.owner_name)}</span>` : ''}
             <span class="row-sub js-mission-status" data-mission="${esc(mission.id)}">
               ${esc(statusText(mission, dispatches))}</span>
@@ -147,11 +154,64 @@ function renderList({ missions, dispatches, profile }) {
     <div class="rows">${rows}</div>`;
 }
 
+/** An unconfirmed report: nothing is known until a scout has looked. */
+function renderUnconfirmed(state, ui, mission) {
+  const { profile, bases, units, dispatches } = state;
+  const type = getMissionType(mission.mission_type);
+  const baseById = new Map(bases.map((b) => [b.id, b]));
+
+  let body;
+  if (mission.confirm_at) {
+    body = `<div class="card card--notice"><p>A scout is on the way. The report will be confirmed in
+              <strong class="js-countdown" data-until="${esc(mission.confirm_at)}"></strong>.</p></div>`;
+  } else {
+    // Only reconnaissance units and aircraft can go and look.
+    const scouts = units
+      .filter((u) => ['recon', 'air'].includes(getUnitType(u.unit_type)?.category_id) && liveUnitStatus(u, dispatches) === 'idle')
+      .map((unit) => ({ unit, eta: etaFor(unit, mission, state, baseById) }))
+      .sort((a, b) => a.eta - b.eta);
+    body = scouts.length
+      ? `<h3>Send a scout</h3><div class="rows">${scouts.map(({ unit, eta }) => {
+          const stormed = grounded(unit, mission);
+          return `
+            <div class="row row--static">
+              <span class="row-icon row-icon--unit">${esc(getCategory(getUnitType(unit.unit_type).category_id).icon)}</span>
+              <span class="row-main">
+                <span class="row-title">${esc(unitTitle(unit))}</span>
+                <span class="row-sub">${esc(baseById.get(unit.base_id)?.name ?? '')} · ${stormed ? 'grounded by the storm' : `there in ${formatDuration(eta * 1000)}`}</span>
+              </span>
+              <button class="btn btn--small" data-action="scout" data-unit="${esc(unit.id)}" ${stormed || ui.busy ? 'disabled' : ''}>Send</button>
+            </div>`;
+        }).join('')}</div>`
+      : '<p class="muted">No reconnaissance unit or aircraft is free. Recruit a recon unit at your Headquarters, or wait for one to return.</p>';
+  }
+
+  return `
+    <div class="section-head">
+      <h2>${esc(type.name)}</h2>
+      <button class="btn btn--small" data-action="back">Back</button>
+    </div>
+    <p>${esc(type.description)}</p>
+    <p class="muted">
+      <span class="js-mission-status" data-mission="${esc(mission.id)}">${esc(statusText(mission, dispatches))}</span>
+      · <button class="link-btn" data-action="focus-mission">Show on map</button>
+    </p>
+    <div class="facts">
+      <div><span>Conditions</span>${conditionsText(mission.lat, mission.lng, now())}</div>
+      <div><span>Location</span>${Math.round(nearestBaseKm(mission, bases))} km from base</div>
+      <div><span>Needs</span>Unknown until confirmed</div>
+    </div>
+    ${body}`;
+}
+
 function renderMission(state, ui, mission) {
+  if (mission.hidden) return renderUnconfirmed(state, ui, mission);
   const { profile, bases, units, dispatches } = state;
   const type = getMissionType(mission.mission_type);
   const counts = committedCounts(mission, dispatches);
   const reward = missionReward(type, profile.nation_id);
+  // Contact out beyond a well-advanced front pays more.
+  reward.money = Math.round(reward.money * (mission.reward_mult ?? 1));
   // Every unit committed to this mission — ours and, on shared missions, our allies'.
   const committed = dispatches.filter((d) => d.mission_id === mission.id && !d.returns_at);
   const iHaveUnitsHere = committed.some((d) => d.player_id === profile.id);
@@ -205,6 +265,12 @@ function renderMission(state, ui, mission) {
       <div><span>Reward</span>${fmt(reward.money)} funds · ${fmt(reward.supplies)} supplies · ${reward.xp} XP</div>
     </div>
 
+    ${mission.target_base_id
+      ? `<p class="note note--danger">The enemy is advancing on <strong>${esc(mission.site_name ?? 'one of your bases')}</strong>.
+           If this runs out of time the base is out of action for ${Math.round(settings.offensive_disable_seconds / 60)} minutes
+           and its front falls back. Stop it and the front moves out.</p>` : ''}
+    ${(mission.reward_mult ?? 1) > 1
+      ? `<p class="muted">Forward-area bonus: +${Math.round((mission.reward_mult - 1) * 100)}% funds for fighting beyond a well-advanced front.</p>` : ''}
     ${renderSharing(state, ui, mission, type)}
 
     <h3>Required</h3>
@@ -498,6 +564,17 @@ export async function handleAction(action, data, ctx) {
       return update({ busy: false });
     }
 
+    case 'scout': {
+      update({ busy: true });
+      try {
+        await scoutMission(ui.missionId, data.unit);
+        toast('Scout dispatched. The report will be confirmed when it arrives.', 'ok');
+      } catch (error) {
+        toast(friendlyError(error), 'error');
+      }
+      return update({ busy: false });
+    }
+
     case 'recall': {
       update({ busy: true });
       try {
@@ -513,6 +590,8 @@ export async function handleAction(action, data, ctx) {
 
 /** Used by the map: a short label for the mission marker. */
 export function missionMarkerLabel(mission) {
+  if (mission.hidden) return '?';
+  if (mission.target_base_id && mission.status === 'open') return '⚠';
   return mission.status === 'in_progress' && msUntil(mission.started_at) <= 0 ? '⚔' : '!';
 }
 

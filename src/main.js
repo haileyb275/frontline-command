@@ -2,7 +2,9 @@
 // other modules and connect them to each other.
 
 import './style.css';
-import { createMap, createBaseLayer, createMissionLayer, createTravelLayer, formatLatLng } from './map.js';
+import {
+  createMap, createBaseLayer, createFrontLayer, createMissionLayer, createTravelLayer, formatLatLng,
+} from './map.js';
 import { supabase, friendlyError } from './supabase.js';
 import { state, setState, subscribe, loadProfile } from './state.js';
 import { loadGame, startSyncLoop, stopSyncLoop, stopRealtime } from './game/actions.js';
@@ -49,9 +51,16 @@ const baseLayer = createBaseLayer(map, {
   onSelect: (base) => panel.selectBase(base),
 });
 
+// The shaded ground each front-line base holds.
+const frontLayer = createFrontLayer(map);
+subscribe((s) => frontLayer.sync(s.bases));
+
 const missionLayer = createMissionLayer(map, {
   getLabel: missionMarkerLabel,
-  getKind: (mission) => getMissionType(mission.mission_type)?.terrain ?? 'land',
+  getKind: (mission) =>
+    mission.hidden ? 'unconfirmed'
+      : mission.target_base_id ? 'offensive'
+      : getMissionType(mission.mission_type)?.terrain ?? 'land',
   getTitle: (mission) =>
     (getMissionType(mission.mission_type)?.name ?? 'Mission') + (mission.site_name ? ` · ${mission.site_name}` : ''),
   onSelect: (mission) => panel.selectMission(mission),
@@ -98,6 +107,27 @@ createTravelLayer(map, {
       travel_seconds: (new Date(s.arrives_at) - new Date(s.departed_at)) / 1000,
       label: s.by_sea ? '⚓' : s.kind === 'resupply' ? 'SUP' : 'CGO',
     })),
+    // Scouts: out to the report, then home again.
+    ...state.units
+      .filter((u) => u.status === 'scouting' && u.busy_until && u.scout_arrives_at)
+      .map((u) => {
+        const base = state.bases.find((b) => b.id === u.base_id);
+        const spot = state.missions.find((m) => m.id === u.scout_mission_id) ?? missionTargets.get(u.scout_mission_id);
+        if (!base || !spot) return null;
+        const legSeconds = (new Date(u.busy_until) - new Date(u.scout_arrives_at)) / 1000;
+        const outbound = new Date(u.scout_arrives_at).getTime() > now();
+        const [from, to] = outbound ? [base, spot] : [spot, base];
+        return {
+          id: `scout-${u.id}-${outbound ? 'out' : 'back'}`,
+          from_lat: from.lat,
+          from_lng: from.lng,
+          to: { lat: to.lat, lng: to.lng },
+          arrives_at: outbound ? u.scout_arrives_at : u.busy_until,
+          travel_seconds: legSeconds,
+          label: getCategory(getUnitType(u.unit_type)?.category_id)?.icon ?? '',
+        };
+      })
+      .filter(Boolean),
     ...state.units
       .filter((u) => u.status === 'transferring' && u.busy_until)
       .map((u) => {

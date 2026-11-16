@@ -27,8 +27,12 @@ function applySnapshot(snapshot) {
   // New mission reports since the last check-in (not on the very first load).
   const known = new Set(state.missions.map((m) => m.id));
   const fresh = state.profile ? snapshot.missions.filter((m) => !known.has(m.id)) : [];
+  const attack = fresh.find((m) => m.target_base_id);
+  if (attack && state.units.length > 0) {
+    toast(`Enemy offensive against ${attack.site_name ?? 'one of your bases'}! Answer it before the timer runs out.`, 'error');
+  }
   if (fresh.length > 0 && state.missions.length + state.units.length > 0) {
-    playSound(fresh.some((m) => m.mission_type === 'convoy_threat') ? 'warning' : 'mission');
+    playSound(attack || fresh.some((m) => m.mission_type === 'convoy_threat') ? 'warning' : 'mission');
     notify('New mission report', `${fresh.length} new mission${fresh.length === 1 ? '' : 's'} waiting.`);
   }
 
@@ -129,6 +133,8 @@ function scheduleNextSync() {
   clearTimeout(nextSyncTimer);
   const times = [
     ...state.missions.map((m) => m.completes_at),
+    ...state.missions.map((m) => m.confirm_at).filter((t) => t && msUntil(t) > 0), // a scout arriving reveals the report
+    ...state.missions.filter((m) => m.status === 'open').map((m) => m.expires_at), // an offensive running out matters at once
     ...state.dispatches.map((d) => d.returns_at),
     // Training courses, transfers, factory runs and convoys all end at a known time too.
     ...state.units.map((u) => u.busy_until),
@@ -546,4 +552,11 @@ export async function claimOperationReward(operationUuid) {
 
 export async function loadSeasonBoard() {
   setState({ season: await call('get_season_board') });
+}
+
+// ------------------------------------------------------------ phase 14
+
+/** Send a recon unit or aircraft to look at an unconfirmed report. */
+export async function scoutMission(missionId, unitId) {
+  applySnapshot(await call('scout_mission', { p_mission_id: missionId, p_unit_id: unitId }));
 }

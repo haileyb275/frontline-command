@@ -242,7 +242,10 @@ insert into public.mission_types (id, name, description, requirements, duration_
   ('amphibious_raid', 'Amphibious Raid', 'Put a raiding party ashore from the sea, strike, and bring it off again.', '{"marines":2,"naval":1}'::jsonb, 300, 6200, 150, 175, 4, 3, 4, false, '[]'::jsonb, 10800, 'water', 8, 35, 'contact', null),
   ('airborne_drop', 'Airborne Drop', 'Seize a crossroads behind the line and hold it until the ground forces arrive.', '{"airborne":3,"air":1}'::jsonb, 420, 9000, 220, 255, 4, 5, 3, true, '[]'::jsonb, 10800, 'land', 40, 100, 'contact', null),
   ('commando_raid', 'Commando Raid', 'A small party is to destroy a coastal installation and withdraw before dawn.', '{"commando":2,"recon":1}'::jsonb, 360, 7500, 190, 215, 5, 5, 3, false, '[]'::jsonb, 10800, 'land', 30, 70, 'contact', null),
-  ('convoy_threat', 'Convoy Under Threat', 'Raiders are shadowing one of your supply convoys. Escort it in before it reaches port.', '{"naval":2}'::jsonb, 180, 2500, 60, 70, 3, 1, 0, false, '[]'::jsonb, 10800, 'water', 10, 60, 'front', null)
+  ('convoy_threat', 'Convoy Under Threat', 'Raiders are shadowing one of your supply convoys. Escort it in before it reaches port.', '{"naval":2}'::jsonb, 180, 2500, 60, 70, 3, 1, 0, false, '[]'::jsonb, 10800, 'water', 10, 60, 'front', null),
+  ('unconfirmed_report', 'Unconfirmed Report', 'Something has been seen out there, but nobody knows what. Send a reconnaissance unit or an aircraft to take a look.', '{}'::jsonb, 1, 0, 0, 0, 1, 1, 0, false, '[]'::jsonb, 10800, 'any', 0, 1, 'front', null),
+  ('offensive_probe', 'Enemy Offensive', 'Enemy infantry are advancing on one of your bases. Meet them before they reach it.', '{"infantry":3,"anti_tank":1}'::jsonb, 240, 3500, 90, 110, 3, 3, 0, false, '[]'::jsonb, 1200, 'land', 3, 6, 'front', null),
+  ('offensive_armored', 'Armored Offensive', 'An armored column is driving at one of your bases. Stop it short of the perimeter.', '{"infantry":3,"anti_tank":2,"artillery":1}'::jsonb, 300, 6500, 160, 200, 4, 4, 0, false, '[]'::jsonb, 1200, 'land', 3, 6, 'front', null)
 on conflict (id) do update set name = excluded.name, description = excluded.description, requirements = excluded.requirements, duration_seconds = excluded.duration_seconds, reward_money = excluded.reward_money, reward_supplies = excluded.reward_supplies, reward_xp = excluded.reward_xp, difficulty = excluded.difficulty, min_level = excluded.min_level, spawn_weight = excluded.spawn_weight, shareable = excluded.shareable, followups = excluded.followups, expires_seconds = excluded.expires_seconds, terrain = excluded.terrain, min_km = excluded.min_km, max_km = excluded.max_km, zone_rule = excluded.zone_rule, site = excluded.site;
 
 insert into public.specialties (id, name, icon, category_ids, description, cost_money, cost_supplies, training_seconds, power_mult, speed_mult, base_power, min_level, names, sort) values
@@ -354,7 +357,19 @@ insert into public.game_config (key, value) values
   ('weather_storm_slow', 1.3),
   ('night_power_bonus', 0.2),
   ('night_start_hour', 21),
-  ('night_end_hour', 5)
+  ('night_end_hour', 5),
+  ('front_start_km', 15),
+  ('front_min_km', 8),
+  ('front_max_km', 60),
+  ('front_gain_km', 1.5),
+  ('front_loss_km', 2),
+  ('front_reward_per_km', 0.01),
+  ('front_reward_cap', 0.4),
+  ('offensive_chance', 0.08),
+  ('offensive_disable_seconds', 1800),
+  ('offensive_front_gain', 3),
+  ('offensive_front_loss', 5),
+  ('unconfirmed_chance', 0.5)
 on conflict (key) do update set value = excluded.value;
 
 insert into public.alliance_building_types (id, name, description, cost, max_level, bonus, sort) values

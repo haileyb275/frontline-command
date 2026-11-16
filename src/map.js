@@ -138,6 +138,8 @@ export function createBaseLayer(map, { getIcon, getKind, onSelect }) {
 
       for (const base of bases) {
         let kind = getKind?.(base) ?? (base.zone === 'home' ? 'base home' : 'base');
+        // A base overrun by an offensive is out of action for a while.
+        if (base.disabled_until && new Date(base.disabled_until).getTime() > Date.now()) kind += ' disabled';
         if (base.id === selectedId) kind += ' is-selected';
         let marker = markers.get(base.id);
         if (!marker) {
@@ -163,6 +165,40 @@ export function createBaseLayer(map, { getIcon, getKind, onSelect }) {
 
     focus(base) {
       map.flyTo([base.lat, base.lng], Math.max(map.getZoom(), 10), { duration: 0.6 });
+    },
+  };
+}
+
+/**
+ * Draws the ground each front-line base holds: a shaded circle out to its
+ * front. Where circles overlap they read as one continuous front.
+ * @param {L.Map} map
+ */
+export function createFrontLayer(map) {
+  // Its own "pane" keeps the shading underneath every marker and route line.
+  map.createPane('front').style.zIndex = 350;
+  const group = L.layerGroup().addTo(map);
+  const circles = new Map(); // base id → Leaflet circle
+
+  return {
+    sync(bases) {
+      const front = bases.filter((b) => b.zone === 'front' && b.front_km > 0);
+      const wanted = new Set(front.map((b) => b.id));
+      for (const [id, circle] of circles) {
+        if (!wanted.has(id)) {
+          circle.remove();
+          circles.delete(id);
+        }
+      }
+      for (const base of front) {
+        let circle = circles.get(base.id);
+        if (!circle) {
+          circle = L.circle([base.lat, base.lng], { pane: 'front', className: 'front-area', interactive: false }).addTo(group);
+          circles.set(base.id, circle);
+        }
+        circle.setLatLng([base.lat, base.lng]);
+        circle.setRadius(base.front_km * 1000); // Leaflet wants metres
+      }
     },
   };
 }

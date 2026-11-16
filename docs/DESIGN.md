@@ -292,3 +292,7 @@ was revised in a later phase, the highest-numbered file holds the current versio
   night (`fc_weather`, `fc_is_night`, mirrored in `src/game/weather.js`).
 - **Phase 13** added `fc_rate_limit`, a throttle on `sync_player`, `fc_maintenance`, and the
   test suites in `tests/`. See `docs/OPERATIONS.md` for running the game.
+- **Phase 14** added a front radius per base (`bases.front_km`, moved by `fc_on_mission_complete`
+  and `fc_on_mission_expired`), offensives (`missions.target_base_id`, `bases.disabled_until`), and
+  unconfirmed reports (`missions.confirmed`, `scout_mission`, masked in `fc_snapshot` and by the
+  missions read policy).

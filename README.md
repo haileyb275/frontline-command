@@ -130,3 +130,4 @@ npm run balance
 - [x] Phase 11 — Research by year (1939–1945), alliance operations, seasons
 - [x] Phase 12 — Missions at real places, weather and night, sounds, notifications, tutorial
 - [x] Phase 13 — Automated tests, rate limits, housekeeping, usage report, operations guide
+- [x] Phase 14 — A moving front line, enemy offensives, unconfirmed reports and scouting

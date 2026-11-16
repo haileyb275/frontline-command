@@ -1775,3 +1775,43 @@ button.player-name:hover {
     background: var(--olive-500);
   }
 }
+
+/* ==========================================================================
+   Phase 14: the front, offensives, unconfirmed reports
+   ========================================================================== */
+
+/* The ground a front-line base holds (an SVG circle drawn by Leaflet) */
+.front-area {
+  fill: #6b7a45;
+  fill-opacity: 0.13;
+  stroke: #3a4129;
+  stroke-opacity: 0.75;
+  stroke-width: 2;
+  stroke-dasharray: 8 6;
+}
+
+.marker--unconfirmed {
+  background: #8a8a80;
+  color: #fff;
+  font-size: 17px;
+  animation: none;
+}
+
+.marker--offensive:not(.marker--active) {
+  background: #d9482b;
+  color: #fff;
+  border-color: #fff;
+  font-size: 16px;
+  animation-duration: 0.8s;
+}
+
+.marker--disabled {
+  background: #6f6f66;
+  color: #d8d8cf;
+  border-style: dashed;
+}
+
+.note--danger {
+  background: rgba(181, 82, 59, 0.16);
+  border-left-color: var(--danger);
+}

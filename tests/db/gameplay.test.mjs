@@ -94,3 +94,43 @@ test('check-ins closer than a second apart are answered without re-settling', { 
   assert.deepEqual(second.events, []);
   assert.ok(second.profile, 'the current picture is still returned');
 });
+
+test('an unconfirmed report hides what it is until a scout has looked', { skip }, async () => {
+  const p = await createPlayer({ nation: 'uk' });
+  const hq = (await p.must('place_base', { p_building_type: 'hq', p_lat: LAND.lat, p_lng: LAND.lng })).base;
+  const buy = async (unit) => (await p.must('buy_unit', { p_base_id: hq.id, p_unit_type: unit })).unit.id;
+  const infantry = await buy('uk_infantry');
+  const recon = await buy('uk_recon');
+  await sql(`delete from public.missions where owner_id = '${p.id}';
+    insert into public.missions (mission_type, owner_id, lat, lng, expires_at, confirmed)
+    values ('patrol_contact', '${p.id}', ${LAND.lat - 0.15}, ${LAND.lng}, now() + interval '3 hours', false);`);
+
+  const mission = (await p.sync()).missions[0];
+  assert.equal(mission.mission_type, 'unconfirmed_report', 'the snapshot must not reveal the real type');
+  assert.deepEqual((await p.rest('GET', 'missions?select=mission_type')).data, [], 'nor may the table');
+  assert.match((await p.rpc('dispatch_units', { p_mission_id: mission.id, p_unit_ids: [infantry] })).error, /unconfirmed/);
+  assert.match((await p.rpc('scout_mission', { p_mission_id: mission.id, p_unit_id: infantry })).error, /Only reconnaissance/);
+
+  await p.must('scout_mission', { p_mission_id: mission.id, p_unit_id: recon });
+  assert.equal((await p.sync()).missions[0].mission_type, 'unconfirmed_report', 'still hidden while the scout is on the way');
+  await sql(`update public.missions set confirm_at = now() - interval '1 second' where id = '${mission.id}'`);
+  assert.equal((await p.sync()).missions[0].mission_type, 'patrol_contact');
+});
+
+test('the front moves out when contact is won and back when it is ignored', { skip }, async () => {
+  const p = await createPlayer({ nation: 'usa' });
+  const hq = (await p.must('place_base', { p_building_type: 'hq', p_lat: LAND.lat, p_lng: LAND.lng })).base;
+  assert.equal(Number(hq.front_km), 15);
+  // Contact that nobody answered and that has just run out of time.
+  await sql(`delete from public.missions where owner_id = '${p.id}';
+    insert into public.missions (mission_type, owner_id, lat, lng, expires_at)
+    values ('patrol_contact', '${p.id}', ${LAND.lat - 0.15}, ${LAND.lng}, now() - interval '1 second');`);
+  assert.equal(Number((await p.sync()).bases[0].front_km), 13, 'ignored contact costs 2 km');
+
+  // An offensive nobody stopped puts the base out of action.
+  await sql(`insert into public.missions (mission_type, owner_id, lat, lng, expires_at, target_base_id)
+    values ('offensive_probe', '${p.id}', ${LAND.lat - 0.04}, ${LAND.lng}, now() - interval '1 second', '${hq.id}');`);
+  const after = (await p.sync()).bases[0];
+  assert.equal(Number(after.front_km), 8, 'the front cannot fall below its minimum');
+  assert.ok(new Date(after.disabled_until) > new Date(), 'the base is out of action for a while');
+});

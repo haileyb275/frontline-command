@@ -26,6 +26,7 @@ const speed = Object.fromEntries(Object.entries(byCategory).map(([c, list]) => [
 const cost = Object.fromEntries(Object.entries(byCategory).map(([c, list]) => [c, average(list, 'cost_money')]));
 
 const rows = missions
+  .filter((m) => m.spawn_weight > 0) // skip ones only the game itself creates (escorts, offensives…)
   .map((m) => {
     const count = Object.values(m.requirements).reduce((a, b) => a + b, 0);
     const slowest = Math.min(...Object.keys(m.requirements).map((c) => speed[c]));

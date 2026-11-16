@@ -29,9 +29,13 @@ alter table public.units
   add column if not exists missions_done int not null default 0,
   add column if not exists repair_until  timestamptz;
 
+alter table public.units
+  add column if not exists scout_mission_id uuid,
+  add column if not exists scout_arrives_at timestamptz;
+
 alter table public.units drop constraint if exists units_status_check;
 alter table public.units add constraint units_status_check
-  check (status in ('idle', 'en_route', 'on_mission', 'returning', 'training', 'transferring', 'repairing'));
+  check (status in ('idle', 'en_route', 'on_mission', 'returning', 'training', 'transferring', 'repairing', 'scouting'));
 
 alter table public.shipments
   add column if not exists kind       text not null default 'cargo',   -- 'cargo' or 'resupply'
@@ -240,6 +244,11 @@ begin
    where owner_id = p_me and status = 'repairing' and busy_until <= v_now;
   get diagnostics n = row_count;
   if n > 0 then events := events || jsonb_build_object('type', 'repairs_done', 'count', n); end if;
+
+  -- Scouts back from looking at an unconfirmed report (Phase 14).
+  update public.units
+     set status = 'idle', busy_until = null, scout_mission_id = null, scout_arrives_at = null
+   where owner_id = p_me and status = 'scouting' and busy_until <= v_now;
 
   -- (b) Training courses finished
   for r in

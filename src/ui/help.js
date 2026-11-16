@@ -35,6 +35,11 @@ export function showHelp() {
             pays extra funds, supplies and XP.</li>
         <li><strong>Join an alliance.</strong> Any nation can join any alliance. Share large
             missions, chat, and fund alliance buildings that help every member.</li>
+        <li><strong>The front, offensives and scouting.</strong> The shaded area around a
+            front-line base is the ground it holds. Win contact missions to push it out; ignore
+            them and it falls back. Some reports arrive unconfirmed (marked ?) and need a recon unit
+            or aircraft to look first. An enemy offensive (marked ⚠) against a base must be stopped
+            in time, or the base is out of action for a while.</li>
         <li><strong>Weather and night.</strong> Rain and storms slow ground and sea units, storms
             ground aircraft, and scouts and commandos fight harder after dark. Conditions are shown
             on the map and on each mission.</li>
