@@ -7,7 +7,8 @@ alliances.
 - **Frontend:** Vite + vanilla JavaScript, Leaflet + OpenStreetMap → GitHub Pages
 - **Backend:** Supabase (auth, Postgres, row-level security, realtime) — from Phase 2
 
-See [docs/DESIGN.md](docs/DESIGN.md) for the schema, folder structure and build phases.
+See [docs/DESIGN.md](docs/DESIGN.md) for the schema, folder structure and build phases,
+and [docs/HANDOFF.md](docs/HANDOFF.md) if you are picking the project up to continue it.
 
 ## Run it locally
 
