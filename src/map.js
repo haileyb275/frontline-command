@@ -32,10 +32,10 @@ function saveView(map) {
 /**
  * Create the Leaflet map inside the given element.
  * @param {HTMLElement} element  the <div id="map">
- * @param {{ onClick?: (latlng: {lat:number,lng:number}) => void }} options
+ * @param {{ onClick?: (latlng: {lat:number,lng:number}) => void, onHome?: () => void }} options
  * @returns {L.Map}
  */
-export function createMap(element, { onClick } = {}) {
+export function createMap(element, { onClick, onHome } = {}) {
   const saved = loadSavedView();
 
   const map = L.map(element, {
@@ -56,6 +56,29 @@ export function createMap(element, { onClick } = {}) {
 
   L.control.zoom({ position: 'bottomright' }).addTo(map);
   L.control.scale({ imperial: true, metric: true }).addTo(map);
+
+  // A custom button above the zoom buttons: "show all my bases and missions".
+  if (onHome) {
+    const HomeControl = L.Control.extend({
+      options: { position: 'bottomright' },
+      onAdd() {
+        const wrap = L.DomUtil.create('div', 'leaflet-bar');
+        const link = L.DomUtil.create('a', 'home-control', wrap);
+        link.href = '#';
+        link.title = 'Show my bases and missions';
+        link.setAttribute('role', 'button');
+        link.setAttribute('aria-label', link.title);
+        link.textContent = '⌂';
+        L.DomEvent.disableClickPropagation(wrap); // don't let the click reach the map
+        L.DomEvent.on(link, 'click', (event) => {
+          L.DomEvent.preventDefault(event);
+          onHome();
+        });
+        return wrap;
+      },
+    });
+    new HomeControl().addTo(map);
+  }
 
   // Remember where the player was looking for next time.
   map.on('moveend', () => saveView(map));

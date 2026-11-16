@@ -4,6 +4,7 @@ import { supabase } from '../supabase.js';
 import { subscribe } from '../state.js';
 import { getNation, xpForLevel } from '../game/content.js';
 import { fmt } from './dom.js';
+import { showHelp } from './help.js';
 
 export function initTopbar() {
   const money = document.getElementById('res-money');
@@ -15,9 +16,24 @@ export function initTopbar() {
   const logout = document.getElementById('logout');
 
   logout.addEventListener('click', () => supabase.auth.signOut());
+  document.getElementById('help').addEventListener('click', showHelp);
+  const xpFill = document.getElementById('xp-fill');
 
   // Re-draw whenever the state changes.
-  subscribe(({ profile }) => {
+  subscribe(({ profile, missions }) => {
+    // Browser tab title: "(3) Frontline Command" when missions are waiting.
+    const waiting = profile ? missions.filter((m) => m.status === 'open').length : 0;
+    document.title = waiting > 0 ? `(${waiting}) Frontline Command` : 'Frontline Command';
+
+    // XP bar: how far through the current level we are.
+    if (profile) {
+      const from = xpForLevel(profile.level);
+      const to = xpForLevel(profile.level + 1);
+      xpFill.style.width = `${Math.min(100, Math.max(0, ((profile.xp - from) / (to - from)) * 100))}%`;
+    } else {
+      xpFill.style.width = '0%';
+    }
+
     money.textContent = profile ? fmt(profile.money) : '—';
     supplies.textContent = profile ? fmt(profile.supplies) : '—';
     level.textContent = profile ? `Lv ${profile.level}` : '—';

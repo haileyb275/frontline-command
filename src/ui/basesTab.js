@@ -18,8 +18,9 @@ import {
   unitPrice,
   canAfford,
   recruitableUnits,
+  settings,
 } from '../game/content.js';
-import { placeBase, buyUnit } from '../game/actions.js';
+import { placeBase, buyUnit, upgradeBase, dismissUnit } from '../game/actions.js';
 import { friendlyError } from '../supabase.js';
 import { formatLatLng } from '../map.js';
 import { liveUnitStatus } from '../game/clock.js';
@@ -178,6 +179,12 @@ function renderBase(profile, bases, units, ui, dispatches) {
               <span class="row-icon row-icon--unit">${esc(getCategory(ut.category_id).icon)}</span>
               <span class="row-main"><span class="row-title">${esc(ut.name)}</span></span>
               ${statusPill(unit, dispatches)}
+              ${liveUnitStatus(unit, dispatches) === 'idle'
+                ? `<button class="btn btn--small btn--quiet" data-action="dismiss" data-unit="${esc(unit.id)}"
+                           title="Dismiss for a ${Math.round(settings.dismiss_refund * 100)}% refund"
+                           data-confirm="Dismiss this ${esc(ut.name)}? You get ${Math.round(settings.dismiss_refund * 100)}% of its cost back."
+                           aria-label="Dismiss ${esc(ut.name)}">✕</button>`
+                : ''}
             </div>`;
         })
         .join('')
@@ -213,11 +220,32 @@ function renderBase(profile, bases, units, ui, dispatches) {
     <p class="muted">${esc(type.name)} · ${esc(formatLatLng(base))}
       · <button class="link-btn" data-action="focus-base">Show on map</button></p>
 
+    ${renderUpgrade(profile, base, type, ui)}
+
     <h3>Stationed <span class="count">${stationed.length} / ${capacity}</span></h3>
     <div class="rows">${stationedRows}</div>
 
     <h3>Recruit</h3>
     <div class="rows">${recruitRows}</div>`;
+}
+
+/** The "upgrade this base" line. */
+function renderUpgrade(profile, base, type, ui) {
+  if (base.level >= settings.max_base_level) {
+    return `<p class="muted">Level ${base.level} (maximum).</p>`;
+  }
+  // Going from level N to N+1 costs N times the building's price.
+  const price = buildingPrice(type, profile.nation_id);
+  price.money *= base.level;
+  price.supplies *= base.level;
+  const affordable = canAfford(profile, price);
+  return `
+    <div class="upgrade">
+      <span class="muted">Level ${base.level} of ${settings.max_base_level}.
+        Upgrading adds room for ${type.unit_capacity} more units.</span>
+      <button class="btn btn--small" data-action="upgrade-base" ${!affordable || ui.busy ? 'disabled' : ''}>
+        ${affordable ? 'Upgrade' : 'Needs'} · ${priceText(price)}</button>
+    </div>`;
 }
 
 // ---------------------------------------------------------------- actions
@@ -248,6 +276,27 @@ export async function handleAction(action, data, ctx) {
 
     case 'back':
       return update({ view: 'list', buildingType: null, latlng: null, baseId: null });
+
+    case 'upgrade-base': {
+      update({ busy: true });
+      try {
+        await upgradeBase(ui.baseId);
+        toast('Base upgraded.', 'ok');
+      } catch (error) {
+        toast(friendlyError(error), 'error');
+      }
+      return update({ busy: false });
+    }
+
+    case 'dismiss': {
+      try {
+        const result = await dismissUnit(data.unit);
+        toast(`Unit dismissed: +${fmt(result.refund_money)} funds returned.`, 'info');
+      } catch (error) {
+        toast(friendlyError(error), 'error');
+      }
+      return;
+    }
 
     case 'buy': {
       update({ busy: true });

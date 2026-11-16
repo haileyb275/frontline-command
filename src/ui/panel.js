@@ -8,12 +8,14 @@ import * as basesTab from './basesTab.js';
 import * as unitsTab from './unitsTab.js';
 import * as missionsTab from './missionsTab.js';
 import * as allianceTab from './allianceTab.js';
+import * as ranksTab from './ranksTab.js';
 
 const TABS = {
   missions: missionsTab,
   units: unitsTab,
   bases: basesTab,
   alliance: allianceTab,
+  ranks: ranksTab,
 };
 
 /**
@@ -37,6 +39,7 @@ export function initPanel({ baseLayer, missionLayer, mapElement }) {
     missionId: null, // mission being viewed
     picked: [], // unit ids ticked in the mission's unit picker
     allianceView: 'overview', // which part of the Alliance tab is showing
+    ranksView: 'players', // 'players' or 'alliances' in the Ranks tab
     busy: false, // true while waiting for the server
   };
 
@@ -105,6 +108,7 @@ export function initPanel({ baseLayer, missionLayer, mapElement }) {
     if (!TABS[name]) return;
     // Switching tabs cancels any half-finished placement or unit selection.
     update({ tab: name, ...CLEAR });
+    TABS[name].onShow?.(ctx); // e.g. the Ranks tab fetches fresh rankings
   }
 
   for (const btn of tabButtons) {
@@ -117,6 +121,9 @@ export function initPanel({ baseLayer, missionLayer, mapElement }) {
     const el = event.target.closest('[data-action]');
     if (!el || el.disabled) return;
     const action = el.dataset.action;
+
+    // Any button can ask "are you sure?" first by carrying a data-confirm text.
+    if (el.dataset.confirm && !window.confirm(el.dataset.confirm)) return;
 
     // A few actions switch tabs, so they are handled here…
     if (action === 'open-base') {
@@ -140,6 +147,13 @@ export function initPanel({ baseLayer, missionLayer, mapElement }) {
   // changes a few text labels — a full re-draw every second would make
   // buttons flicker and miss clicks.
   setInterval(() => TABS[ui.tab].tick?.(body, state), 1000);
+
+  // On phones the panel is a bottom sheet; this button makes it taller or shorter.
+  document.getElementById('panel-size').addEventListener('click', (event) => {
+    const tall = panel.classList.toggle('is-tall');
+    event.currentTarget.textContent = tall ? '▼' : '▲';
+    event.currentTarget.setAttribute('aria-label', tall ? 'Make panel smaller' : 'Make panel larger');
+  });
 
   // The ☰ button collapses the panel so the map can use the whole screen.
   toggle.addEventListener('click', () => {

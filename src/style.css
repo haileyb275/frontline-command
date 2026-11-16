@@ -1282,3 +1282,175 @@ button.row:hover {
 .facts > div {
   align-items: baseline;
 }
+
+/* ==========================================================================
+   Phase 6: rankings, upgrades, help, mobile polish
+   ========================================================================== */
+
+/* Keyboard users get a clear focus ring on everything clickable */
+:focus-visible {
+  outline: 2px solid var(--khaki-100);
+  outline-offset: 2px;
+}
+
+/* XP progress under the rank */
+.xp-bar {
+  display: block;
+  width: 100%;
+  height: 3px;
+  margin-top: 2px;
+  overflow: hidden;
+  background: var(--olive-600);
+  border-radius: 2px;
+}
+
+#xp-fill {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: var(--khaki-300);
+  transition: width 0.4s ease;
+}
+
+.rank-no {
+  flex: 0 0 26px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  text-align: right;
+}
+
+.row.is-me {
+  border-color: var(--khaki-300);
+  background: #556042;
+}
+
+.upgrade {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 6px;
+  padding: 8px 10px;
+  background: var(--olive-600);
+  border: 1px solid var(--olive-500);
+  border-radius: var(--radius);
+}
+
+.btn--quiet {
+  padding: 4px 8px;
+  background: none;
+  color: var(--muted);
+}
+
+.btn--quiet:hover:not(:disabled) {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+}
+
+/* Help dialog */
+.dialog--help {
+  max-width: 520px;
+}
+
+.help-steps {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-left: 22px;
+}
+
+.help-steps strong {
+  color: var(--khaki-100);
+}
+
+#forgot {
+  align-self: center;
+}
+
+.home-control {
+  font-size: 18px;
+  line-height: 30px !important;
+}
+
+/* The panel-size button only exists on phones */
+.tab--size {
+  display: none;
+  flex: 0 0 40px;
+  color: var(--khaki-300);
+  font-size: 13px;
+}
+
+@media (max-width: 760px) {
+  .tab {
+    padding: 12px 2px;
+    font-size: 10.5px;
+    letter-spacing: 0.04em;
+  }
+
+  .tab--size {
+    display: block;
+  }
+
+  .panel {
+    transition: flex-basis 0.2s ease;
+  }
+
+  .panel.is-tall {
+    flex-basis: 72%;
+  }
+
+  /* Fingers need bigger targets than mouse pointers */
+  .btn--small {
+    min-height: 38px;
+    padding: 8px 12px;
+  }
+
+  .btn--quiet {
+    min-width: 38px;
+  }
+
+  .row {
+    padding: 10px;
+  }
+
+  .seg--tabs .seg-btn {
+    padding: 10px 2px;
+  }
+
+  .player .link-btn {
+    font-size: 11px;
+  }
+
+  .chat-log {
+    height: 200px;
+  }
+
+  .panel.is-tall .chat-log {
+    height: 46vh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
+
+/* Leaflet's own stylesheet loads after ours, so the map buttons need a more
+   specific selector to pick up the theme. */
+#map .leaflet-bar a,
+#map .leaflet-bar a:hover {
+  background: var(--olive-800);
+  color: var(--khaki-200);
+  border-bottom-color: var(--olive-500);
+}
+
+#map .leaflet-bar a:hover {
+  background: var(--olive-600);
+}
+
+#map .leaflet-bar {
+  border-color: var(--olive-500);
+}

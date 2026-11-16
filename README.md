@@ -57,6 +57,32 @@ After editing any JSON file in `src/data/`, regenerate the seed and run it again
 npm run seed
 ```
 
+## Adding or changing content
+
+All content is data in `src/data/`. No game logic needs to change.
+
+| To add… | Edit | Notes |
+|---|---|---|
+| a unit | `units.json` | `category_id` must exist in `categories.json`; a building must unlock that category |
+| a building | `buildings.json` | `unlocks_categories` lists what it can station; `requires_coast` for harbors |
+| a mission | `missions.json` | `requirements` are category → count; `terrain` is `land`, `water` or `any`; `min_km`/`max_km` set how far from your bases it appears |
+| a nation | `nations.json` + its rows in `units.json` | bonuses are data: `cost_mult`, `speed_mult`, `power_mult`, `reward_mult`, `building_cost_mult` |
+| an alliance building | `alliance_buildings.json` | bonus types: `member_cap`, `reward_money`, `reward_xp`, `speed` |
+| a tuning number | `settings.json` | spawn interval, travel speed-up, caps, costs |
+
+Then:
+
+```bash
+npm run seed
+```
+
+and run `supabase/seed.sql` in the Supabase SQL Editor, and push the code so the
+browser's copy matches. To check your numbers are sensible:
+
+```bash
+npm run balance
+```
+
 ## Status
 
 - [x] Phase 1 — Project setup, deploy workflow, Leaflet map
@@ -65,4 +91,4 @@ npm run seed
 - [x] Phase 4 — Missions and dispatching
 - [x] Phase 5 — Alliances
 - [x] Phase 5b — Terrain-aware missions, naval units, road-following movement
-- [ ] Phase 6 — Leaderboards and polish
+- [x] Phase 6 — Leaderboards and polish

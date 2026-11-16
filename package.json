@@ -1,14 +1,15 @@
 {
   "name": "frontline-command",
   "private": true,
-  "version": "0.6.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "seed": "node scripts/build-seed.mjs",
-    "land": "node scripts/build-land.mjs"
+    "land": "node scripts/build-land.mjs",
+    "balance": "node scripts/balance-report.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.119.0",

@@ -300,3 +300,25 @@ function onChatMessage(payload) {
 export function stopRealtime() {
   watchAlliance(null);
 }
+
+// ------------------------------------------------------------ phase 6
+
+export async function loadLeaderboard() {
+  setState({ leaderboard: await call('get_leaderboard') });
+}
+
+/** Raise a base's level (more room for units). */
+export async function upgradeBase(baseId) {
+  const data = await call('upgrade_base', { p_base_id: baseId });
+  setState({
+    profile: data.profile,
+    bases: state.bases.map((b) => (b.id === data.base.id ? data.base : b)),
+  });
+}
+
+/** Stand a unit down for a partial refund. Returns what was refunded. */
+export async function dismissUnit(unitId) {
+  const data = await call('dismiss_unit', { p_unit_id: unitId });
+  setState({ profile: data.profile, units: state.units.filter((u) => u.id !== data.unit_id) });
+  return data;
+}

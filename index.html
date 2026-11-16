@@ -8,6 +8,11 @@
     <meta name="description" content="A persistent multiplayer WW2 command game played on a real-world map." />
     <title>Frontline Command</title>
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <!-- Lets phones "Add to Home Screen" and open the game full-screen -->
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   </head>
   <body>
     <div id="app">
@@ -22,13 +27,15 @@
         <ul class="resources" aria-label="Resources">
           <li class="resource" title="Money"><span class="resource-label">Funds</span><span id="res-money">—</span></li>
           <li class="resource" title="Supplies"><span class="resource-label">Supplies</span><span id="res-supplies">—</span></li>
-          <li class="resource" title="Experience level"><span class="resource-label">Rank</span><span id="res-level">—</span></li>
+          <li class="resource" title="Experience level"><span class="resource-label">Rank</span><span id="res-level">—</span>
+            <span class="xp-bar" aria-hidden="true"><span id="xp-fill"></span></span></li>
         </ul>
 
         <!-- Who is logged in. Hidden until a profile is loaded. -->
         <div id="player" class="player" hidden>
           <span id="player-nation" class="nation-chip nation-chip--sm"></span>
           <span id="player-name" class="player-name"></span>
+          <button id="help" class="link-btn" title="How to play" aria-label="How to play">Help</button>
           <button id="logout" class="link-btn" title="Log out">Log out</button>
         </div>
 
@@ -49,6 +56,9 @@
             <button class="tab" role="tab" data-tab="units">Units</button>
             <button class="tab" role="tab" data-tab="bases">Bases</button>
             <button class="tab" role="tab" data-tab="alliance">Alliance</button>
+            <button class="tab" role="tab" data-tab="ranks">Ranks</button>
+            <!-- Phones only: make the bottom sheet taller / shorter -->
+            <button id="panel-size" class="tab tab--size" aria-label="Make panel larger">▲</button>
           </nav>
           <div id="panel-body" class="panel-body"></div>
         </aside>

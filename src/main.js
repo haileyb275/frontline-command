@@ -14,6 +14,8 @@ import { initPanel } from './ui/panel.js';
 import { initTopbar } from './ui/topbar.js';
 import { showAuthScreen } from './ui/auth.js';
 import { showNationPicker } from './ui/nationPicker.js';
+import { showHelpFirstTime } from './ui/help.js';
+import { showNewPasswordScreen } from './ui/auth.js';
 import { esc, showOverlay, hideOverlay } from './ui/dom.js';
 
 // ---------- The map and panel are always there, behind any overlay ----------
@@ -28,7 +30,14 @@ const map = createMap(mapEl, {
     panel.handleMapClick(latlng);
     coordsEl.textContent = formatLatLng(latlng);
   },
+  onHome: frameEverything,
 });
+
+/** Move the map so all our bases and missions are in view. */
+function frameEverything() {
+  const points = [...state.bases, ...state.missions].map((x) => [x.lat, x.lng]);
+  if (points.length > 0) map.fitBounds(points, { padding: [60, 60], maxZoom: 11 });
+}
 
 const baseLayer = createBaseLayer(map, {
   getIcon: (base) => getBuilding(base.building_type)?.icon ?? '?',
@@ -102,9 +111,8 @@ async function route() {
       startSyncLoop();
       hideOverlay();
       panel.showTab(state.bases.length > 0 ? 'missions' : 'bases');
-      // Returning players: frame the map around their bases and missions.
-      const points = [...state.bases, ...state.missions].map((x) => [x.lat, x.lng]);
-      if (points.length > 0) map.fitBounds(points, { padding: [60, 60], maxZoom: 11 });
+      frameEverything(); // returning players: start with everything in view
+      showHelpFirstTime();
     }
   } catch (error) {
     showOverlay(`
@@ -125,9 +133,17 @@ async function route() {
 // Supabase calls this once at startup (with the saved session, if any) and
 // again on every login / logout — so this one listener drives the whole flow.
 let lastUserId; // undefined = "we haven't heard from Supabase yet"
-supabase.auth.onAuthStateChange((_event, session) => {
+supabase.auth.onAuthStateChange((event, session) => {
   const userId = session?.user?.id ?? null;
   state.session = session;
+
+  // The player arrived through a "reset your password" email link: they are
+  // logged in, but must choose a new password before anything else.
+  if (event === 'PASSWORD_RECOVERY') {
+    lastUserId = userId;
+    setTimeout(() => showNewPasswordScreen(route), 0);
+    return;
+  }
 
   // Token refreshes fire this too; only re-route when the USER changes.
   if (userId === lastUserId) return;

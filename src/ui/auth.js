@@ -45,6 +45,7 @@ export function showAuthScreen(mode = 'login') {
       <p class="form-msg" id="auth-msg" role="alert"></p>
 
       <button class="btn btn--primary" type="submit">${isSignup ? 'Create account' : 'Log in'}</button>
+      ${isSignup ? '' : '<button class="link-btn" type="button" id="forgot">Forgot your password?</button>'}
     </form>
   `);
 
@@ -113,5 +114,60 @@ export function showAuthScreen(mode = 'login') {
     }
   });
 
+  // "Forgot your password?" emails a link that brings the player back here
+  // logged in, where main.js shows the "choose a new password" screen.
+  overlay.querySelector('#forgot')?.addEventListener('click', async () => {
+    const email = form.elements.email.value.trim();
+    if (!email.includes('@')) return setMsg('Enter your email address above first.');
+    setMsg('Sending reset link…', 'info');
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + window.location.pathname,
+    });
+    if (error) return setMsg(friendlyError(error));
+    // Same message whether or not the address has an account, so this
+    // screen can't be used to find out who plays.
+    setMsg('If that address has an account, a reset link is on its way.', 'ok');
+  });
+
   form.querySelector('input')?.focus();
+}
+
+/** Shown after following a password-reset email link. */
+export function showNewPasswordScreen(onDone) {
+  const overlay = showOverlay(`
+    <form class="dialog" id="newpw-form" novalidate>
+      <div class="dialog-head">
+        <span class="brand-star" aria-hidden="true">★</span>
+        <h1>New password</h1>
+        <p>Choose a new password for your account.</p>
+      </div>
+      <label class="field">
+        <span>New password</span>
+        <input name="password" type="password" minlength="6" autocomplete="new-password"
+               placeholder="At least 6 characters" required />
+      </label>
+      <p class="form-msg" id="newpw-msg" role="alert"></p>
+      <button class="btn btn--primary" type="submit">Save password</button>
+    </form>
+  `);
+  const form = overlay.querySelector('#newpw-form');
+  const msg = overlay.querySelector('#newpw-msg');
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const password = form.elements.password.value;
+    if (password.length < 6) {
+      msg.dataset.kind = 'error';
+      msg.textContent = 'Password must be at least 6 characters.';
+      return;
+    }
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) {
+      msg.dataset.kind = 'error';
+      msg.textContent = friendlyError(error);
+      return;
+    }
+    onDone(); // carry on into the game
+  });
+  form.elements.password.focus();
 }

@@ -288,9 +288,6 @@ async function run(ctx, fn, successMessage) {
 }
 
 export async function handleAction(action, data, ctx) {
-  // Buttons with data-confirm ask "are you sure?" first.
-  if (data.confirm && !window.confirm(data.confirm)) return;
-
   switch (action) {
     case 'alliance-view':
       return ctx.update({ allianceView: data.view });

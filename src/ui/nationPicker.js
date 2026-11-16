@@ -6,6 +6,7 @@ import { nations, getNation } from '../game/content.js';
 import { supabase, friendlyError } from '../supabase.js';
 import { setState } from '../state.js';
 import { esc, showOverlay, hideOverlay } from './dom.js';
+import { showHelpFirstTime } from './help.js';
 
 export function showNationPicker() {
   let selectedId = null;
@@ -67,6 +68,7 @@ export function showNationPicker() {
     }
 
     hideOverlay();
-    setState({ profile: data }); // the function returns the updated profile row
+    setState({ profile: data });
+    showHelpFirstTime(); // the function returns the updated profile row
   });
 }

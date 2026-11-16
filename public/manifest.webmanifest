@@ -1,0 +1,19 @@
+{
+  "name": "Frontline Command",
+  "short_name": "Frontline",
+  "description": "A persistent multiplayer WW2 command game played on a real-world map.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#1e2216",
+  "theme_color": "#2b301f",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

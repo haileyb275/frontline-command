@@ -247,3 +247,25 @@ frontline-command/
 
 Each phase ends with: a test checklist, the SQL to run in Supabase, and the
 exact files to commit.
+
+---
+
+## 6. As built
+
+The game followed this design, with a few changes made along the way:
+
+- **Units' buildings** are derived from `buildings.json` (`unlocks_categories`) rather than a
+  `required_building` field on each unit.
+- **Dispatches** store the unit's power and travel time at the moment of sending, and are deleted
+  when the unit gets home. Reward shares are worked out from them when a mission completes.
+- **Shared rewards** are written to a `mission_payouts` table and collected by each player's own
+  next sync, so two players settling at once can never block each other or be paid twice.
+- **Profiles of other players** are never readable directly. Member lists, rankings and names on
+  shared missions come from server functions that return only public columns.
+- **Phase 5b (terrain)** was added: PostGIS coastline data (`fc_land`), a `terrain` and distance
+  band on every mission type, a Naval category with a coastal Naval Base, and road-following
+  movement drawn in the browser from a public OSRM routing server.
+- **Phase 6** added `upgrade_base`, `dismiss_unit` and `get_leaderboard`.
+
+Migrations `001`–`006` in `supabase/migrations/` are the authoritative schema. Where a function
+was revised in a later phase, the highest-numbered file holds the current version.
