@@ -205,6 +205,8 @@ begin
 end;
 $$;
 
+alter table public.units add column if not exists repair_until timestamptz;
+
 -- Placeholder for the hook fc_sync calls first. Phase 7 replaces it with the
 -- real thing; we only create it here if nothing better exists yet, so that
 -- re-running this file never undoes a later phase.
@@ -213,6 +215,10 @@ begin
   if not exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
                   where n.nspname = 'public' and p.proname = 'fc_sync_extras') then
     execute 'create function public.fc_sync_extras(p_me uuid) returns jsonb language sql as ''select ''''[]''''::jsonb''';
+  end if;
+  if not exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+                  where n.nspname = 'public' and p.proname = 'fc_on_mission_complete') then
+    execute 'create function public.fc_on_mission_complete(p_mission uuid, p_at timestamptz) returns void language sql as ''select''';
   end if;
 end $$;
 
@@ -344,6 +350,10 @@ begin
        group by d.player_id;
     end if;
 
+    -- Hook for later phases (unit experience, damage). Runs while the
+    -- mission's units are still listed as committed.
+    perform public.fc_on_mission_complete(m.id, m.completes_at);
+
     update public.dispatches
        set returns_at = m.completes_at + make_interval(secs => travel_seconds)
      where mission_id = m.id and returns_at is null;
@@ -420,7 +430,11 @@ begin
      where player_id = p_me and returns_at <= v_now
     returning unit_id)
   update public.units
-     set status = 'idle', mission_id = null, busy_until = null
+     -- A unit that came back damaged goes into repair until its repair_until
+     -- time (set by a later phase; always empty before then).
+     set status = case when repair_until > v_now then 'repairing' else 'idle' end,
+         busy_until = case when repair_until > v_now then repair_until end,
+         mission_id = null
    where id in (select unit_id from back);
 
   -- ---- (e) Tidy up old finished missions

@@ -162,3 +162,29 @@ export function convoySeconds(from, to) {
   const seconds = (distanceKm(from, to) / settings.convoy_speed_kmh) * 3600 / settings.convoy_time_scale;
   return Math.max(settings.min_convoy_seconds, Math.round(seconds));
 }
+
+// ------------------------------------------------------------ phase 8
+
+const VETERANCY = ['Green', 'Regular', 'Veteran', 'Elite'];
+
+/**
+ * A unit's experience level from the missions it has completed.
+ * Mirrors fc_veterancy() in the SQL. Returns { tier 0–3, name, powerMult, next }
+ * where `next` is how many missions the next level needs (null at the top).
+ */
+export function veterancy(missionsDone = 0) {
+  const steps = [settings.veteran_missions_1, settings.veteran_missions_2, settings.veteran_missions_3];
+  const tier = steps.filter((n) => missionsDone >= n).length;
+  return {
+    tier,
+    name: VETERANCY[tier],
+    powerMult: 1 + settings.veteran_power_step * tier,
+    next: steps[tier] ?? null,
+  };
+}
+
+/** How much a base of this type and level can hold in stock. */
+export const stockCapacity = (base) => (getBuilding(base.building_type)?.stock_capacity ?? 0) * base.level;
+
+/** What sending this unit out costs its base in stock. */
+export const supplyUse = (unit) => getCategory(getUnitType(unit.unit_type)?.category_id)?.supply_use ?? 0;

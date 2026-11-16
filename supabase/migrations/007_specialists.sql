@@ -621,6 +621,7 @@ begin
       select t.*
         from public.mission_types t
        where t.min_level <= p_level
+         and t.spawn_weight > 0          -- weight 0 = only ever created by the game itself
          and not exists (
                -- every requirement must be something the player can field:
                -- a category one of their buildings houses, or a specialty

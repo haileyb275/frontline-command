@@ -13,5 +13,16 @@
   "home_safe_km": 15,
   "convoy_speed_kmh": 25,
   "convoy_time_scale": 200,
-  "min_convoy_seconds": 30
+  "min_convoy_seconds": 30,
+  "veteran_missions_1": 3,
+  "veteran_missions_2": 10,
+  "veteran_missions_3": 25,
+  "veteran_power_step": 0.05,
+  "damage_chance_per_difficulty": 0.04,
+  "repair_seconds_per_difficulty": 240,
+  "recovery_bonus_per_level": 0.25,
+  "resupply_threshold": 0.25,
+  "convoy_threat_chance": 0.35,
+  "convoy_loss": 0.3,
+  "convoy_escort_bonus": 0.1
 }

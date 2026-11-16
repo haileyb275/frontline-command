@@ -11,37 +11,37 @@ insert into public.nations (id, name, short, color, bonuses) values
   ('japan', 'Japan', 'JPN', '#9f8f4f', '[{"type":"speed_mult","category":"infantry","value":1.15}]'::jsonb)
 on conflict (id) do update set name = excluded.name, short = excluded.short, color = excluded.color, bonuses = excluded.bonuses;
 
-insert into public.unit_categories (id, name, icon, sort, base_power) values
-  ('infantry', 'Infantry', 'INF', 0, 10),
-  ('armor', 'Armor', 'ARM', 1, 30),
-  ('anti_tank', 'Anti-Tank', 'AT', 2, 14),
-  ('artillery', 'Artillery', 'ART', 3, 20),
-  ('air', 'Air', 'AIR', 4, 35),
-  ('recon', 'Recon', 'RCN', 5, 8),
-  ('medical', 'Medical', 'MED', 6, 6),
-  ('engineers', 'Engineers', 'ENG', 7, 10),
-  ('logistics', 'Logistics', 'LOG', 8, 6),
-  ('naval', 'Naval', 'NAV', 9, 25),
-  ('military_police', 'Military Police', 'MP', 10, 8),
-  ('fire', 'Fire Service', 'FIRE', 11, 8),
-  ('command', 'Command', 'CMD', 12, 6)
-on conflict (id) do update set name = excluded.name, icon = excluded.icon, sort = excluded.sort, base_power = excluded.base_power;
+insert into public.unit_categories (id, name, icon, sort, base_power, supply_use, recovers_at) values
+  ('infantry', 'Infantry', 'INF', 0, 10, 2, 'field_hospital'),
+  ('armor', 'Armor', 'ARM', 1, 30, 10, 'supply_depot'),
+  ('anti_tank', 'Anti-Tank', 'AT', 2, 14, 4, 'supply_depot'),
+  ('artillery', 'Artillery', 'ART', 3, 20, 8, 'supply_depot'),
+  ('air', 'Air', 'AIR', 4, 35, 15, 'supply_depot'),
+  ('recon', 'Recon', 'RCN', 5, 8, 2, 'supply_depot'),
+  ('medical', 'Medical', 'MED', 6, 6, 3, 'field_hospital'),
+  ('engineers', 'Engineers', 'ENG', 7, 10, 3, 'field_hospital'),
+  ('logistics', 'Logistics', 'LOG', 8, 6, 2, 'supply_depot'),
+  ('naval', 'Naval', 'NAV', 9, 25, 15, 'supply_depot'),
+  ('military_police', 'Military Police', 'MP', 10, 8, 2, 'field_hospital'),
+  ('fire', 'Fire Service', 'FIRE', 11, 8, 3, 'supply_depot'),
+  ('command', 'Command', 'CMD', 12, 6, 2, 'supply_depot')
+on conflict (id) do update set name = excluded.name, icon = excluded.icon, sort = excluded.sort, base_power = excluded.base_power, supply_use = excluded.supply_use, recovers_at = excluded.recovers_at;
 
-insert into public.building_types (id, name, icon, description, cost_money, cost_supplies, unit_capacity, unlocks_categories, min_level, is_hq, sort, requires_coast, training_slots, default_zone) values
-  ('hq', 'Headquarters', 'HQ', 'Your command post. Every commander needs exactly one, and it must be built first.', 5000, 0, 6, '["infantry","recon","command"]'::jsonb, 1, true, 0, false, 0, 'front'),
-  ('barracks', 'Barracks', 'BK', 'Houses and trains foot soldiers, scouts and anti-tank crews.', 6000, 100, 8, '["infantry","recon","anti_tank"]'::jsonb, 1, false, 1, false, 0, 'front'),
-  ('supply_depot', 'Supply Depot', 'SD', 'Truck parks and workshops for logistics and engineer units.', 7000, 150, 6, '["logistics","engineers"]'::jsonb, 1, false, 2, false, 0, 'front'),
-  ('field_hospital', 'Field Hospital', 'FH', 'Medical teams that recover and treat the wounded.', 8000, 200, 4, '["medical"]'::jsonb, 2, false, 3, false, 0, 'front'),
-  ('artillery_park', 'Artillery Park', 'AP', 'Gun lines for artillery batteries and anti-tank guns.', 12000, 300, 6, '["artillery","anti_tank"]'::jsonb, 2, false, 4, false, 0, 'front'),
-  ('tank_depot', 'Tank Depot', 'TD', 'Maintenance sheds and fuel for armored vehicles.', 18000, 500, 6, '["armor"]'::jsonb, 3, false, 5, false, 0, 'front'),
-  ('airfield', 'Airfield', 'AF', 'A runway and hangars for aircraft flights.', 30000, 800, 4, '["air"]'::jsonb, 5, false, 6, false, 0, 'front'),
-  ('naval_base', 'Naval Base', 'NB', 'A harbor with moorings and fuel for warships. Must be built on the coast.', 20000, 500, 4, '["naval"]'::jsonb, 3, false, 7, true, 0, 'front'),
-  ('mp_post', 'Military Police Post', 'MPP', 'Provost troops who keep roads moving and rear areas in order.', 9000, 200, 4, '["military_police"]'::jsonb, 2, false, 8, false, 0, 'front'),
-  ('fire_station', 'Fire Station', 'FS', 'A military fire service for depots, airfields and installations.', 9000, 200, 4, '["fire"]'::jsonb, 2, false, 9, false, 0, 'front'),
-  ('training_center', 'Training Center', 'TC', 'Instructors and ranges where units qualify in a specialty. Stations no units itself.', 15000, 400, 0, '[]'::jsonb, 3, false, 10, false, 2, 'home'),
-  ('munitions_factory', 'Munitions Factory', 'MF', 'Produces ammunition, shipped to your Headquarters as supplies.', 12000, 200, 0, '[]'::jsonb, 2, false, 11, false, 0, 'home'),
-  ('vehicle_works', 'Vehicle Works', 'VW', 'Overhauls and assembles vehicles, shipped to your Headquarters as funds.', 20000, 500, 0, '[]'::jsonb, 3, false, 12, false, 0, 'home')
-on conflict (id) do update set name = excluded.name, icon = excluded.icon, description = excluded.description, cost_money = excluded.cost_money, cost_supplies = excluded.cost_supplies, unit_capacity = excluded.unit_capacity, unlocks_categories = excluded.unlocks_categories, min_level = excluded.min_level, is_hq = excluded.is_hq, sort = excluded.sort, requires_coast = excluded.requires_coast, training_slots = excluded.training_slots, default_zone = excluded.default_zone;
+insert into public.building_types (id, name, icon, description, cost_money, cost_supplies, unit_capacity, unlocks_categories, min_level, is_hq, sort, requires_coast, training_slots, default_zone, stock_capacity) values
+  ('hq', 'Headquarters', 'HQ', 'Your command post. Every commander needs exactly one, and it must be built first.', 5000, 0, 6, '["infantry","recon","command"]'::jsonb, 1, true, 0, false, 0, 'front', 250),
+  ('barracks', 'Barracks', 'BK', 'Houses and trains foot soldiers, scouts and anti-tank crews.', 6000, 100, 8, '["infantry","recon","anti_tank"]'::jsonb, 1, false, 1, false, 0, 'front', 150),
+  ('supply_depot', 'Supply Depot', 'SD', 'Truck parks and workshops for logistics and engineer units.', 7000, 150, 6, '["logistics","engineers"]'::jsonb, 1, false, 2, false, 0, 'front', 150),
+  ('field_hospital', 'Field Hospital', 'FH', 'Medical teams that recover and treat the wounded.', 8000, 200, 4, '["medical"]'::jsonb, 2, false, 3, false, 0, 'front', 150),
+  ('artillery_park', 'Artillery Park', 'AP', 'Gun lines for artillery batteries and anti-tank guns.', 12000, 300, 6, '["artillery","anti_tank"]'::jsonb, 2, false, 4, false, 0, 'front', 150),
+  ('tank_depot', 'Tank Depot', 'TD', 'Maintenance sheds and fuel for armored vehicles.', 18000, 500, 6, '["armor"]'::jsonb, 3, false, 5, false, 0, 'front', 150),
+  ('airfield', 'Airfield', 'AF', 'A runway and hangars for aircraft flights.', 30000, 800, 4, '["air"]'::jsonb, 5, false, 6, false, 0, 'front', 150),
+  ('naval_base', 'Naval Base', 'NB', 'A harbor with moorings and fuel for warships. Must be built on the coast.', 20000, 500, 4, '["naval"]'::jsonb, 3, false, 7, true, 0, 'front', 150),
+  ('mp_post', 'Military Police Post', 'MPP', 'Provost troops who keep roads moving and rear areas in order.', 9000, 200, 4, '["military_police"]'::jsonb, 2, false, 8, false, 0, 'front', 150),
+  ('fire_station', 'Fire Station', 'FS', 'A military fire service for depots, airfields and installations.', 9000, 200, 4, '["fire"]'::jsonb, 2, false, 9, false, 0, 'front', 150),
+  ('training_center', 'Training Center', 'TC', 'Instructors and ranges where units qualify in a specialty. Stations no units itself.', 15000, 400, 0, '[]'::jsonb, 3, false, 10, false, 2, 'home', 0),
+  ('munitions_factory', 'Munitions Factory', 'MF', 'Produces ammunition, shipped to your Headquarters as supplies.', 12000, 200, 0, '[]'::jsonb, 2, false, 11, false, 0, 'home', 0),
+  ('vehicle_works', 'Vehicle Works', 'VW', 'Overhauls and assembles vehicles, shipped to your Headquarters as funds.', 20000, 500, 0, '[]'::jsonb, 3, false, 12, false, 0, 'home', 0)
+on conflict (id) do update set name = excluded.name, icon = excluded.icon, description = excluded.description, cost_money = excluded.cost_money, cost_supplies = excluded.cost_supplies, unit_capacity = excluded.unit_capacity, unlocks_categories = excluded.unlocks_categories, min_level = excluded.min_level, is_hq = excluded.is_hq, sort = excluded.sort, requires_coast = excluded.requires_coast, training_slots = excluded.training_slots, default_zone = excluded.default_zone, stock_capacity = excluded.stock_capacity;
 
 insert into public.unit_types (id, nation_id, category_id, name, cost_money, cost_supplies, speed_kmh, power, min_level) values
   ('usa_infantry', 'usa', 'infantry', 'M1 Garand Rifle Squad', 800, 20, 30, 10, 1),
@@ -148,7 +148,49 @@ insert into public.unit_types (id, nation_id, category_id, name, cost_money, cos
   ('japan_fire', 'japan', 'fire', 'Fire Defense Detachment', 1500, 50, 50, 8, 2),
   ('japan_command', 'japan', 'command', 'Type 95 Kurogane Staff Car', 2000, 50, 60, 6, 2),
   ('japan_armor_2', 'japan', 'armor', 'Type 3 Chi-Nu', 5200, 170, 36, 40, 4),
-  ('japan_anti_tank_2', 'japan', 'anti_tank', 'Type 1 Ho-Ni I', 3200, 90, 42, 26, 4)
+  ('japan_anti_tank_2', 'japan', 'anti_tank', 'Type 1 Ho-Ni I', 3200, 90, 42, 26, 4),
+  ('usa_armor_3', 'usa', 'armor', 'M5 Stuart', 2400, 70, 58, 18, 3),
+  ('usa_armor_4', 'usa', 'armor', 'M4A3E8 Sherman', 4800, 150, 42, 36, 4),
+  ('usa_infantry_2', 'usa', 'infantry', 'M1919 Machine-Gun Team', 1100, 30, 26, 14, 2),
+  ('usa_artillery_2', 'usa', 'artillery', 'M7 Priest Battery', 3400, 110, 38, 24, 4),
+  ('usa_air_2', 'usa', 'air', 'B-25 Mitchell Flight', 8000, 260, 380, 46, 6),
+  ('usa_recon_2', 'usa', 'recon', 'Willys Jeep Recon Team', 900, 20, 85, 6, 1),
+  ('uk_armor_3', 'uk', 'armor', 'Crusader Mk III', 2800, 80, 43, 22, 3),
+  ('uk_armor_4', 'uk', 'armor', 'Sherman Firefly', 4900, 150, 40, 38, 4),
+  ('uk_infantry_2', 'uk', 'infantry', 'Vickers Machine-Gun Section', 1100, 30, 26, 14, 2),
+  ('uk_artillery_2', 'uk', 'artillery', '5.5-inch Medium Battery', 3400, 110, 30, 27, 4),
+  ('uk_air_2', 'uk', 'air', 'Mosquito Flight', 8200, 260, 450, 42, 6),
+  ('uk_recon_2', 'uk', 'recon', 'Daimler Dingo Scout Car', 900, 20, 85, 6, 1),
+  ('ussr_armor_3', 'ussr', 'armor', 'T-70', 2200, 65, 45, 17, 3),
+  ('ussr_armor_4', 'ussr', 'armor', 'KV-1', 5600, 180, 28, 44, 4),
+  ('ussr_infantry_2', 'ussr', 'infantry', 'Maxim Machine-Gun Team', 1100, 30, 26, 14, 2),
+  ('ussr_artillery_2', 'ussr', 'artillery', 'ML-20 152mm Battery', 3400, 110, 28, 28, 4),
+  ('ussr_air_2', 'ussr', 'air', 'Pe-2 Flight', 7800, 250, 400, 43, 6),
+  ('ussr_recon_2', 'ussr', 'recon', 'M-72 Motorcycle Scouts', 900, 20, 85, 6, 1),
+  ('germany_armor_3', 'germany', 'armor', 'Panzer II', 2200, 65, 40, 16, 3),
+  ('germany_armor_4', 'germany', 'armor', 'Panther', 6600, 210, 46, 48, 5),
+  ('germany_infantry_2', 'germany', 'infantry', 'MG 42 Team', 1100, 30, 26, 14, 2),
+  ('germany_artillery_2', 'germany', 'artillery', 'Nebelwerfer 41 Battery', 3200, 120, 34, 26, 4),
+  ('germany_air_2', 'germany', 'air', 'Ju 88 Flight', 8000, 260, 380, 46, 6),
+  ('germany_recon_2', 'germany', 'recon', 'BMW R75 Motorcycle Scouts', 900, 20, 85, 6, 1),
+  ('france_armor_3', 'france', 'armor', 'Renault R35', 2000, 60, 20, 18, 3),
+  ('france_armor_4', 'france', 'armor', 'Hotchkiss H39', 2600, 80, 36, 21, 3),
+  ('france_infantry_2', 'france', 'infantry', 'Hotchkiss Machine-Gun Section', 1100, 30, 26, 14, 2),
+  ('france_artillery_2', 'france', 'artillery', 'Canon de 155 GPF Battery', 3400, 110, 28, 27, 4),
+  ('france_air_2', 'france', 'air', 'LeO 451 Flight', 7800, 250, 390, 43, 6),
+  ('france_recon_2', 'france', 'recon', 'Motorcycle Dragoons', 900, 20, 85, 6, 1),
+  ('italy_armor_3', 'italy', 'armor', 'L6/40', 2100, 60, 42, 15, 3),
+  ('italy_armor_4', 'italy', 'armor', 'M15/42', 4000, 120, 38, 30, 3),
+  ('italy_infantry_2', 'italy', 'infantry', 'Breda M37 Machine-Gun Team', 1100, 30, 26, 14, 2),
+  ('italy_artillery_2', 'italy', 'artillery', 'Cannone da 149/40 Battery', 3400, 110, 28, 27, 4),
+  ('italy_air_2', 'italy', 'air', 'SM.79 Sparviero Flight', 7600, 250, 370, 43, 6),
+  ('italy_recon_2', 'italy', 'recon', 'Moto Guzzi Alce Scouts', 900, 20, 85, 6, 1),
+  ('japan_armor_3', 'japan', 'armor', 'Type 95 Ha-Go', 2100, 60, 45, 15, 3),
+  ('japan_armor_4', 'japan', 'armor', 'Type 1 Chi-He', 4200, 125, 42, 31, 4),
+  ('japan_infantry_2', 'japan', 'infantry', 'Type 92 Machine-Gun Team', 1100, 30, 26, 14, 2),
+  ('japan_artillery_2', 'japan', 'artillery', 'Type 96 150mm Howitzer Battery', 3400, 110, 28, 27, 4),
+  ('japan_air_2', 'japan', 'air', 'Ki-21 Flight', 7600, 250, 370, 43, 6),
+  ('japan_recon_2', 'japan', 'recon', 'Type 97 Motorcycle Scouts', 900, 20, 85, 6, 1)
 on conflict (id) do update set nation_id = excluded.nation_id, category_id = excluded.category_id, name = excluded.name, cost_money = excluded.cost_money, cost_supplies = excluded.cost_supplies, speed_kmh = excluded.speed_kmh, power = excluded.power, min_level = excluded.min_level;
 
 insert into public.mission_types (id, name, description, requirements, duration_seconds, reward_money, reward_supplies, reward_xp, difficulty, min_level, spawn_weight, shareable, followups, expires_seconds, terrain, min_km, max_km, zone_rule) values
@@ -198,7 +240,8 @@ insert into public.mission_types (id, name, description, requirements, duration_
   ('bunker_assault', 'Bunker Assault', 'Concrete emplacements block the advance. Breach them at close quarters.', '{"assault_engineer":2,"infantry":2,"artillery":1}'::jsonb, 300, 5200, 130, 150, 4, 3, 4, false, '[]'::jsonb, 10800, 'land', 18, 40, 'contact'),
   ('amphibious_raid', 'Amphibious Raid', 'Put a raiding party ashore from the sea, strike, and bring it off again.', '{"marines":2,"naval":1}'::jsonb, 300, 6200, 150, 175, 4, 3, 4, false, '[]'::jsonb, 10800, 'water', 8, 35, 'contact'),
   ('airborne_drop', 'Airborne Drop', 'Seize a crossroads behind the line and hold it until the ground forces arrive.', '{"airborne":3,"air":1}'::jsonb, 420, 9000, 220, 255, 4, 5, 3, true, '[]'::jsonb, 10800, 'land', 40, 100, 'contact'),
-  ('commando_raid', 'Commando Raid', 'A small party is to destroy a coastal installation and withdraw before dawn.', '{"commando":2,"recon":1}'::jsonb, 360, 7500, 190, 215, 5, 5, 3, false, '[]'::jsonb, 10800, 'land', 30, 70, 'contact')
+  ('commando_raid', 'Commando Raid', 'A small party is to destroy a coastal installation and withdraw before dawn.', '{"commando":2,"recon":1}'::jsonb, 360, 7500, 190, 215, 5, 5, 3, false, '[]'::jsonb, 10800, 'land', 30, 70, 'contact'),
+  ('convoy_threat', 'Convoy Under Threat', 'Raiders are shadowing one of your supply convoys. Escort it in before it reaches port.', '{"naval":2}'::jsonb, 180, 2500, 60, 70, 3, 1, 0, false, '[]'::jsonb, 10800, 'water', 10, 60, 'front')
 on conflict (id) do update set name = excluded.name, description = excluded.description, requirements = excluded.requirements, duration_seconds = excluded.duration_seconds, reward_money = excluded.reward_money, reward_supplies = excluded.reward_supplies, reward_xp = excluded.reward_xp, difficulty = excluded.difficulty, min_level = excluded.min_level, spawn_weight = excluded.spawn_weight, shareable = excluded.shareable, followups = excluded.followups, expires_seconds = excluded.expires_seconds, terrain = excluded.terrain, min_km = excluded.min_km, max_km = excluded.max_km, zone_rule = excluded.zone_rule;
 
 insert into public.specialties (id, name, icon, category_ids, description, cost_money, cost_supplies, training_seconds, power_mult, speed_mult, base_power, min_level, names, sort) values
@@ -235,7 +278,18 @@ insert into public.game_config (key, value) values
   ('home_safe_km', 15),
   ('convoy_speed_kmh', 25),
   ('convoy_time_scale', 200),
-  ('min_convoy_seconds', 30)
+  ('min_convoy_seconds', 30),
+  ('veteran_missions_1', 3),
+  ('veteran_missions_2', 10),
+  ('veteran_missions_3', 25),
+  ('veteran_power_step', 0.05),
+  ('damage_chance_per_difficulty', 0.04),
+  ('repair_seconds_per_difficulty', 240),
+  ('recovery_bonus_per_level', 0.25),
+  ('resupply_threshold', 0.25),
+  ('convoy_threat_chance', 0.35),
+  ('convoy_loss', 0.3),
+  ('convoy_escort_bonus', 0.1)
 on conflict (key) do update set value = excluded.value;
 
 insert into public.alliance_building_types (id, name, description, cost, max_level, bonus, sort) values

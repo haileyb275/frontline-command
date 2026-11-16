@@ -97,3 +97,4 @@ npm run balance
 - [x] Phase 5b — Terrain-aware missions, naval units, road-following movement
 - [x] Phase 6 — Leaderboards and polish
 - [x] Phase 7 — Specialists, military police, fire service, factories, home front, convoys
+- [x] Phase 8 — Unit experience and repairs, base supply stocks, convoy escorts, 42 more units

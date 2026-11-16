@@ -5,7 +5,9 @@
     "icon": "INF",
     "sort": 0,
     "base_power": 10,
-    "domain": "ground"
+    "domain": "ground",
+    "supply_use": 2,
+    "recovers_at": "field_hospital"
   },
   {
     "id": "armor",
@@ -13,7 +15,9 @@
     "icon": "ARM",
     "sort": 1,
     "base_power": 30,
-    "domain": "ground"
+    "domain": "ground",
+    "supply_use": 10,
+    "recovers_at": "supply_depot"
   },
   {
     "id": "anti_tank",
@@ -21,7 +25,9 @@
     "icon": "AT",
     "sort": 2,
     "base_power": 14,
-    "domain": "ground"
+    "domain": "ground",
+    "supply_use": 4,
+    "recovers_at": "supply_depot"
   },
   {
     "id": "artillery",
@@ -29,7 +35,9 @@
     "icon": "ART",
     "sort": 3,
     "base_power": 20,
-    "domain": "ground"
+    "domain": "ground",
+    "supply_use": 8,
+    "recovers_at": "supply_depot"
   },
   {
     "id": "air",
@@ -37,7 +45,9 @@
     "icon": "AIR",
     "sort": 4,
     "base_power": 35,
-    "domain": "air"
+    "domain": "air",
+    "supply_use": 15,
+    "recovers_at": "supply_depot"
   },
   {
     "id": "recon",
@@ -45,7 +55,9 @@
     "icon": "RCN",
     "sort": 5,
     "base_power": 8,
-    "domain": "ground"
+    "domain": "ground",
+    "supply_use": 2,
+    "recovers_at": "supply_depot"
   },
   {
     "id": "medical",
@@ -53,7 +65,9 @@
     "icon": "MED",
     "sort": 6,
     "base_power": 6,
-    "domain": "ground"
+    "domain": "ground",
+    "supply_use": 3,
+    "recovers_at": "field_hospital"
   },
   {
     "id": "engineers",
@@ -61,7 +75,9 @@
     "icon": "ENG",
     "sort": 7,
     "base_power": 10,
-    "domain": "ground"
+    "domain": "ground",
+    "supply_use": 3,
+    "recovers_at": "field_hospital"
   },
   {
     "id": "logistics",
@@ -69,7 +85,9 @@
     "icon": "LOG",
     "sort": 8,
     "base_power": 6,
-    "domain": "ground"
+    "domain": "ground",
+    "supply_use": 2,
+    "recovers_at": "supply_depot"
   },
   {
     "id": "naval",
@@ -77,7 +95,9 @@
     "icon": "NAV",
     "sort": 9,
     "base_power": 25,
-    "domain": "sea"
+    "domain": "sea",
+    "supply_use": 15,
+    "recovers_at": "supply_depot"
   },
   {
     "id": "military_police",
@@ -85,7 +105,9 @@
     "icon": "MP",
     "sort": 10,
     "base_power": 8,
-    "domain": "ground"
+    "domain": "ground",
+    "supply_use": 2,
+    "recovers_at": "field_hospital"
   },
   {
     "id": "fire",
@@ -93,7 +115,9 @@
     "icon": "FIRE",
     "sort": 11,
     "base_power": 8,
-    "domain": "ground"
+    "domain": "ground",
+    "supply_use": 3,
+    "recovers_at": "supply_depot"
   },
   {
     "id": "command",
@@ -101,6 +125,8 @@
     "icon": "CMD",
     "sort": 12,
     "base_power": 6,
-    "domain": "ground"
+    "domain": "ground",
+    "supply_use": 2,
+    "recovers_at": "supply_depot"
   }
 ]

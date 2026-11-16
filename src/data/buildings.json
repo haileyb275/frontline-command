@@ -17,7 +17,8 @@
     "sort": 0,
     "requires_coast": false,
     "training_slots": 0,
-    "default_zone": "front"
+    "default_zone": "front",
+    "stock_capacity": 250
   },
   {
     "id": "barracks",
@@ -37,7 +38,8 @@
     "sort": 1,
     "requires_coast": false,
     "training_slots": 0,
-    "default_zone": "front"
+    "default_zone": "front",
+    "stock_capacity": 150
   },
   {
     "id": "supply_depot",
@@ -56,7 +58,8 @@
     "sort": 2,
     "requires_coast": false,
     "training_slots": 0,
-    "default_zone": "front"
+    "default_zone": "front",
+    "stock_capacity": 150
   },
   {
     "id": "field_hospital",
@@ -74,7 +77,8 @@
     "sort": 3,
     "requires_coast": false,
     "training_slots": 0,
-    "default_zone": "front"
+    "default_zone": "front",
+    "stock_capacity": 150
   },
   {
     "id": "artillery_park",
@@ -93,7 +97,8 @@
     "sort": 4,
     "requires_coast": false,
     "training_slots": 0,
-    "default_zone": "front"
+    "default_zone": "front",
+    "stock_capacity": 150
   },
   {
     "id": "tank_depot",
@@ -111,7 +116,8 @@
     "sort": 5,
     "requires_coast": false,
     "training_slots": 0,
-    "default_zone": "front"
+    "default_zone": "front",
+    "stock_capacity": 150
   },
   {
     "id": "airfield",
@@ -129,7 +135,8 @@
     "sort": 6,
     "requires_coast": false,
     "training_slots": 0,
-    "default_zone": "front"
+    "default_zone": "front",
+    "stock_capacity": 150
   },
   {
     "id": "naval_base",
@@ -147,7 +154,8 @@
     "sort": 7,
     "requires_coast": true,
     "training_slots": 0,
-    "default_zone": "front"
+    "default_zone": "front",
+    "stock_capacity": 150
   },
   {
     "id": "mp_post",
@@ -165,7 +173,8 @@
     "sort": 8,
     "requires_coast": false,
     "training_slots": 0,
-    "default_zone": "front"
+    "default_zone": "front",
+    "stock_capacity": 150
   },
   {
     "id": "fire_station",
@@ -183,7 +192,8 @@
     "sort": 9,
     "requires_coast": false,
     "training_slots": 0,
-    "default_zone": "front"
+    "default_zone": "front",
+    "stock_capacity": 150
   },
   {
     "id": "training_center",
@@ -199,7 +209,8 @@
     "sort": 10,
     "requires_coast": false,
     "training_slots": 2,
-    "default_zone": "home"
+    "default_zone": "home",
+    "stock_capacity": 0
   },
   {
     "id": "munitions_factory",
@@ -215,7 +226,8 @@
     "sort": 11,
     "requires_coast": false,
     "training_slots": 0,
-    "default_zone": "home"
+    "default_zone": "home",
+    "stock_capacity": 0
   },
   {
     "id": "vehicle_works",
@@ -231,6 +243,7 @@
     "sort": 12,
     "requires_coast": false,
     "training_slots": 0,
-    "default_zone": "home"
+    "default_zone": "home",
+    "stock_capacity": 0
   }
 ]

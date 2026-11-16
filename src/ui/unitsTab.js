@@ -3,7 +3,7 @@
 import { categories, getUnitType } from '../game/content.js';
 import { liveUnitStatus } from '../game/clock.js';
 import { esc, statusPillHtml } from './dom.js';
-import { specialtyTag } from './baseViews.js';
+import { specialtyTag, veterancyLabel } from './baseViews.js';
 
 const statusPill = (unit, dispatches) => statusPillHtml(liveUnitStatus(unit, dispatches));
 
@@ -35,7 +35,7 @@ export function render(state) {
             <span class="row-main">
               <span class="row-title">${esc(getUnitType(unit.unit_type).name)}</span>
               <span class="row-sub">${esc(baseName.get(unit.base_id) ?? 'Unknown base')}
-                ${specialtyTag(unit, profile.nation_id)}</span>
+                ${veterancyLabel(unit)} ${specialtyTag(unit, profile.nation_id)}</span>
             </span>
             ${statusPill(unit, dispatches)}
           </button>`

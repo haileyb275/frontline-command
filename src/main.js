@@ -92,7 +92,7 @@ createTravelLayer(map, {
       to: { lat: s.to_lat, lng: s.to_lng },
       arrives_at: s.arrives_at,
       travel_seconds: (new Date(s.arrives_at) - new Date(s.departed_at)) / 1000,
-      label: s.by_sea ? '⚓' : 'SUP',
+      label: s.by_sea ? '⚓' : s.kind === 'resupply' ? 'SUP' : 'CGO',
     })),
     ...state.units
       .filter((u) => u.status === 'transferring' && u.busy_until)

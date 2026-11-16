@@ -49,12 +49,16 @@ const parts = [
   '-- Edit the JSON files in src/data/ and run `npm run seed` instead.',
   '',
   upsert('nations', ['id', 'name', 'short', 'color', 'bonuses'], readJson('nations.json')),
-  upsert('unit_categories', ['id', 'name', 'icon', 'sort', 'base_power'], readJson('categories.json')),
+  upsert(
+    'unit_categories',
+    ['id', 'name', 'icon', 'sort', 'base_power', 'supply_use', 'recovers_at'],
+    readJson('categories.json')
+  ),
   upsert(
     'building_types',
     ['id', 'name', 'icon', 'description', 'cost_money', 'cost_supplies', 'unit_capacity',
      'unlocks_categories', 'min_level', 'is_hq', 'sort', 'requires_coast', 'training_slots',
-     'default_zone'],
+     'default_zone', 'stock_capacity'],
     readJson('buildings.json')
   ),
   upsert(

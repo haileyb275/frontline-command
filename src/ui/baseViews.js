@@ -17,6 +17,8 @@ import {
   canAfford,
   recruitableUnits,
   convoySeconds,
+  veterancy,
+  stockCapacity,
   settings,
 } from '../game/content.js';
 import { liveUnitStatus, formatDuration } from '../game/clock.js';
@@ -33,6 +35,12 @@ const countdown = (iso) => `<span class="js-countdown" data-until="${esc(iso)}">
 export function specialtyTag(unit, nationId) {
   const spec = getSpecialty(unit.specialty);
   return spec ? `<span class="tag tag--spec" title="${esc(spec.name)}">${esc(specialtyName(spec, nationId))}</span>` : '';
+}
+
+/** "★★ Veteran" for a unit (nothing for green units). */
+export function veterancyLabel(unit) {
+  const v = veterancy(unit.missions_done);
+  return v.tier > 0 ? `<span class="vet" title="${v.name}: +${Math.round((v.powerMult - 1) * 100)}% power">${'★'.repeat(v.tier)} ${v.name}</span>` : '';
 }
 
 /** How many training places the player has, and how many are in use. */
@@ -89,7 +97,7 @@ export function renderBase(state, ui) {
               <span class="row-icon row-icon--unit">${esc(getCategory(ut.category_id).icon)}</span>
               <span class="row-main">
                 <span class="row-title">${esc(ut.name)}</span>
-                ${unit.specialty ? `<span class="row-sub">${specialtyTag(unit, profile.nation_id)}</span>` : ''}
+                <span class="row-sub">${veterancyLabel(unit)} ${specialtyTag(unit, profile.nation_id)}</span>
               </span>
               ${statusPillHtml(liveUnitStatus(unit, dispatches))}
             </button>`;
@@ -132,7 +140,33 @@ export function renderBase(state, ui) {
 
     ${renderZone(base, ui)}
     ${renderUpgrade(profile, base, type, ui)}
+    ${renderStock(state, base, ui)}
     ${sections}`;
+}
+
+/** The base's own stock of supplies, with resupply controls. */
+function renderStock(state, base, ui) {
+  const cap = stockCapacity(base);
+  if (cap === 0) return ''; // factories and training centers send nobody out
+  const stock = base.stock ?? cap;
+  const inbound = state.shipments.filter((s) => s.to_base_id === base.id);
+  const low = stock < cap * settings.resupply_threshold;
+  return `
+    <div class="upgrade stock ${low ? 'is-low' : ''}">
+      <span>
+        <strong>Supplies on hand: ${fmt(stock)} / ${fmt(cap)}</strong>
+        <span class="meter"><span style="width: ${Math.round((stock / cap) * 100)}%"></span></span>
+        <span class="muted">Every unit sent out draws on this.
+          ${inbound.length ? `A resupply convoy arrives in ${countdown(inbound[0].arrives_at)}.` : ''}</span>
+        <label class="check-line">
+          <input type="checkbox" data-action="auto-resupply" ${base.auto_resupply ? 'checked' : ''} />
+          Resupply automatically when low
+        </label>
+      </span>
+      <button class="btn btn--small" data-action="resupply"
+              ${stock >= cap || inbound.length || ui.busy ? 'disabled' : ''}>
+        ${inbound.length ? 'On its way' : stock >= cap ? 'Full' : 'Resupply'}</button>
+    </div>`;
 }
 
 function renderZone(base, ui) {
@@ -232,6 +266,7 @@ export function renderUnit(state, ui) {
   const idle = status === 'idle';
   const spec = getSpecialty(unit.specialty);
   const places = trainingPlaces(state);
+  const vet = veterancy(unit.missions_done);
 
   // ---- Specialties
   let training = '';
@@ -310,10 +345,13 @@ export function renderUnit(state, ui) {
       <h2>${esc(ut.name)}</h2>
       <button class="btn btn--small" data-action="open-base" data-base="${esc(unit.base_id)}">Back</button>
     </div>
-    <p class="muted">${esc(cat.name)} · stationed at ${esc(home?.name ?? '?')} ${statusPillHtml(status)}</p>
+    <p class="muted">${esc(cat.name)} · stationed at ${esc(home?.name ?? '?')} ${statusPillHtml(status)}
+      ${status === 'repairing' ? `· fit again in ${countdown(unit.busy_until)}` : ''}</p>
     <div class="facts">
       <div><span>Speed</span>${Math.round(ut.speed_kmh * (spec?.speed_mult ?? 1))} km/h</div>
-      <div><span>Power</span>${Math.round(ut.power * (spec?.power_mult ?? 1) * 10) / 10}</div>
+      <div><span>Power</span>${Math.round(ut.power * (spec?.power_mult ?? 1) * vet.powerMult * 10) / 10}</div>
+      <div><span>Experience</span>${'★'.repeat(vet.tier)} ${vet.name} · ${unit.missions_done ?? 0} missions${
+        vet.next ? ` (next level at ${vet.next})` : ''}</div>
       <div><span>Specialty</span>${spec ? esc(specialtyName(spec, profile.nation_id)) : 'None'}</div>
     </div>
 

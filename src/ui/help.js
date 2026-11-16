@@ -24,6 +24,9 @@ export function showHelp() {
         <li><strong>Front line and home front.</strong> Each base is one or the other. Enemy
             contact only happens around front-line bases. Put factories and Training Centers on
             the home front, then ship their output and trained units forward by convoy.</li>
+        <li><strong>Keep units supplied and rested.</strong> Each base holds its own stock of
+            supplies, used up as units go out and topped up by convoy from your Headquarters.
+            Units gain experience, and sometimes come back needing repair before they can go again.</li>
         <li><strong>Join an alliance.</strong> Any nation can join any alliance. Share large
             missions, chat, and fund alliance buildings that help every member.</li>
       </ol>

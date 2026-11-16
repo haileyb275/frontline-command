@@ -274,3 +274,7 @@ was revised in a later phase, the highest-numbered file holds the current versio
   (`front` or `home`, `set_base_zone`). Mission requirement keys may now be a category or a
   specialty; `dispatches.category_id` records which place a unit filled. Mission types carry a
   `zone_rule` (`contact`, `front` or `any`) that decides where they may spawn.
+- **Phase 8** added unit experience (`units.missions_done`) and damage (`repair_until`, status
+  `repairing`), a supply `stock` on every base that dispatches draw down (`resupply_base`,
+  automatic resupply convoys), and escort missions for threatened sea convoys
+  (`missions.shipment_id`).

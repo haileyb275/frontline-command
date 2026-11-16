@@ -15,6 +15,7 @@ import {
   getSpecialty,
   specialtyName,
   unitFitsSlot,
+  supplyUse,
 } from '../game/content.js';
 import { dispatchUnits, recallUnits, shareMission } from '../game/actions.js';
 import { msUntil, formatDuration, liveUnitStatus } from '../game/clock.js';
@@ -273,16 +274,19 @@ function renderPicker(state, ui, mission, type, counts) {
           .map(({ unit, eta }) => {
             const on = picked.has(unit.id);
             const spec = getSpecialty(unit.specialty);
+            // Its base must have enough stock left to send it out.
+            const home = baseById.get(unit.base_id);
+            const dry = home && (home.stock ?? Infinity) < supplyUse(unit);
             return `
               <button class="row row--pick ${on ? 'is-picked' : ''}" data-action="toggle-unit"
-                      data-unit="${esc(unit.id)}" aria-pressed="${on}">
+                      data-unit="${esc(unit.id)}" aria-pressed="${on}" ${dry ? 'disabled title="Its base is out of supplies"' : ''}>
                 <span class="check">${on ? '✓' : ''}</span>
                 <span class="row-main">
                   <span class="row-title">${esc(getUnitType(unit.unit_type).name)}</span>
                   <span class="row-sub">${esc(baseById.get(unit.base_id)?.name ?? '')}
                     ${spec ? `<span class="tag tag--spec">${esc(specialtyName(spec, profile.nation_id))}</span>` : ''}</span>
                 </span>
-                <span class="row-side">${formatDuration(eta * 1000)}</span>
+                <span class="row-side">${dry ? 'no supplies' : formatDuration(eta * 1000)}</span>
               </button>`;
           })
           .join('')
@@ -359,6 +363,7 @@ export async function handleAction(action, data, ctx) {
         const remaining = type.requirements[key] - (counts[key] ?? 0);
         idleUnitsFor(key, state.units, state.dispatches)
           .filter((unit) => !picked.includes(unit.id))
+          .filter((unit) => (baseById.get(unit.base_id)?.stock ?? Infinity) >= supplyUse(unit))
           // For ordinary places, send ordinary units before specialists.
           .map((unit) => ({ id: unit.id, eta: etaFor(unit, mission, state, baseById), special: unit.specialty ? 1 : 0 }))
           .sort((a, b) => (getCategory(key) ? a.special - b.special : 0) || a.eta - b.eta)

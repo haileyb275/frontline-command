@@ -18,10 +18,12 @@ import {
   unitPrice,
   canAfford,
   recruitableUnits,
+  stockCapacity,
   settings,
 } from '../game/content.js';
 import {
   placeBase, buyUnit, upgradeBase, dismissUnit, trainUnit, startProduction, transferUnit, setBaseZone,
+  resupplyBase, setAutoResupply,
 } from '../game/actions.js';
 import { renderBase, renderUnit } from './baseViews.js';
 import { msUntil, formatDuration } from '../game/clock.js';
@@ -96,7 +98,7 @@ function renderList(profile, bases, units) {
             <span class="row-title">${esc(base.name)}</span>
             <span class="row-sub">${esc(type.name)} · ${base.zone === 'home' ? 'home front' : 'front line'}</span>
           </span>
-          <span class="row-side">${side}</span>
+          <span class="row-side">${lowStock(base) ? '<span class="dot" title="Low on supplies"></span> ' : ''}${side}</span>
         </button>`;
     })
     .join('');
@@ -205,6 +207,15 @@ export async function handleAction(action, data, ctx) {
       return run(ctx, () => setBaseZone(ui.baseId, data.zone),
         data.zone === 'home' ? 'Base moved to the home front.' : 'Base moved to the front line.');
 
+    case 'resupply':
+      return run(ctx, () => resupplyBase(ui.baseId), 'Resupply convoy dispatched.');
+
+    case 'auto-resupply': {
+      // A checkbox: by the time the click reaches us it already shows the new state.
+      const base = state.bases.find((b) => b.id === ui.baseId);
+      return run(ctx, () => setAutoResupply(ui.baseId, !base?.auto_resupply));
+    }
+
     case 'produce':
       return run(ctx, () => startProduction(ui.baseId, data.product), 'Production started.');
 
@@ -256,6 +267,12 @@ export async function handleAction(action, data, ctx) {
       return update({ busy: false });
     }
   }
+}
+
+/** True when a base that sends units out is running short of supplies. */
+function lowStock(base) {
+  const cap = stockCapacity(base);
+  return cap > 0 && (base.stock ?? cap) < cap * settings.resupply_threshold;
 }
 
 /** Run a server action with the usual busy / message handling. */

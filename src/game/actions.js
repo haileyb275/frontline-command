@@ -16,6 +16,16 @@ import { fmt } from '../ui/dom.js';
 
 function applySnapshot(snapshot) {
   setServerTime(snapshot.server_time);
+
+  // Units that have just come home damaged (the server marks them 'repairing').
+  const wasRepairing = new Set(state.units.filter((u) => u.status === 'repairing').map((u) => u.id));
+  const newlyDamaged = state.units.length
+    ? snapshot.units.filter((u) => u.status === 'repairing' && !wasRepairing.has(u.id)).length
+    : 0;
+  if (newlyDamaged > 0) {
+    toast(`${newlyDamaged} unit${newlyDamaged === 1 ? ' has' : 's have'} come back needing repairs or rest.`, 'info');
+  }
+
   announce(snapshot.events ?? []);
   setState({
     profile: snapshot.profile,
@@ -59,8 +69,11 @@ function announce(events) {
     if (e.type === 'production_done') toast(`${e.name} finished. A convoy is taking it to your Headquarters.`, 'info');
     if (e.type === 'shipment_arrived') {
       const parts = [e.money && `+${fmt(e.money)} funds`, e.supplies && `+${fmt(e.supplies)} supplies`].filter(Boolean);
-      toast(`Convoy arrived (${e.name}): ${parts.join(', ')}`, 'ok');
+      const note = { escorted: ' Escorted in safely: bonus cargo.', raided: ' Raiders got through: part of the cargo was lost.' }[e.outcome] ?? '';
+      toast(`Convoy arrived (${e.name}): ${parts.join(', ')}.${note}`, e.outcome === 'raided' ? 'error' : 'ok');
     }
+    if (e.type === 'convoy_threat') toast(`Raiders are shadowing your ${e.name} convoy. Send warships to escort it.`, 'error');
+    if (e.type === 'repairs_done') toast(`${e.count} unit${e.count === 1 ? ' is' : 's are'} fit for duty again.`, 'ok');
     if (e.type === 'level_up') toast(`Promoted to level ${e.level}. New options may be unlocked.`, 'ok');
     if (e.type === 'followup' && done.length <= 3) toast(`New intelligence: ${e.name}`, 'info');
   }
@@ -353,4 +366,14 @@ export async function transferUnit(unitId, baseId) {
 
 export async function setBaseZone(baseId, zone) {
   applySnapshot(await call('set_base_zone', { p_base_id: baseId, p_zone: zone }));
+}
+
+// ------------------------------------------------------------ phase 8
+
+export async function resupplyBase(baseId) {
+  applySnapshot(await call('resupply_base', { p_base_id: baseId }));
+}
+
+export async function setAutoResupply(baseId, on) {
+  applySnapshot(await call('set_auto_resupply', { p_base_id: baseId, p_on: on }));
 }
