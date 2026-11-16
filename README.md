@@ -59,6 +59,16 @@ After editing any JSON file in `src/data/`, regenerate the seed and run it again
 npm run seed
 ```
 
+## Tests and upkeep
+
+```bash
+npm test
+```
+
+checks the content files and shared arithmetic (no network; also runs before every deploy).
+See [docs/OPERATIONS.md](docs/OPERATIONS.md) for the database tests, the usage
+report, service limits, and how to move to your own routing server.
+
 ## Administrators
 
 An administrator sees an **Admin** link in the top bar: search players, add or take
@@ -119,3 +129,4 @@ npm run balance
 - [x] Phase 10 — Optional daily orders, campaigns, achievements, rank titles, task forces, renaming
 - [x] Phase 11 — Research by year (1939–1945), alliance operations, seasons
 - [x] Phase 12 — Missions at real places, weather and night, sounds, notifications, tutorial
+- [x] Phase 13 — Automated tests, rate limits, housekeeping, usage report, operations guide

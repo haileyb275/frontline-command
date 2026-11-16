@@ -36,6 +36,9 @@ jobs:
       - name: Install dependencies
         run: npm ci # installs the exact versions in package-lock.json
 
+      - name: Check the content files and game arithmetic
+        run: npm test # a broken JSON edit stops here instead of reaching players
+
       - name: Build
         run: npm run build
 

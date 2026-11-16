@@ -1,7 +1,7 @@
 {
   "name": "frontline-command",
   "private": true,
-  "version": "1.6.0",
+  "version": "1.7.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,7 +9,10 @@
     "preview": "vite preview",
     "seed": "node scripts/build-seed.mjs",
     "land": "node scripts/build-land.mjs",
-    "balance": "node scripts/balance-report.mjs"
+    "balance": "node scripts/balance-report.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "test:db": "node --test --test-concurrency=1 tests/db/*.test.mjs",
+    "usage": "node scripts/usage-report.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.119.0",

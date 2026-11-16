@@ -290,3 +290,5 @@ was revised in a later phase, the highest-numbered file holds the current versio
 - **Phase 12** added a map survey (`map_features`, filed by the browser from OpenStreetMap's
   Overpass service and used by `fc_spawn_mission` for missions with a `site`), and weather and
   night (`fc_weather`, `fc_is_night`, mirrored in `src/game/weather.js`).
+- **Phase 13** added `fc_rate_limit`, a throttle on `sync_player`, `fc_maintenance`, and the
+  test suites in `tests/`. See `docs/OPERATIONS.md` for running the game.

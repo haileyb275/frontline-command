@@ -1,24 +1,27 @@
 // Read-only game content, loaded from the JSON files in src/data/.
 //
+// (`with { type: 'json' }` tells both the browser build and plain Node, which
+// runs the tests, that these imports are data files.)
+//
 // The browser uses these to DISPLAY names, prices and requirements. The server
 // has its own copy (loaded by supabase/seed.sql) and that is the one that
 // counts: if you changed a price in here only, the button would show the new
 // number but the server would still charge the real one.
 
-import nations from '../data/nations.json';
-import categories from '../data/categories.json';
-import buildings from '../data/buildings.json';
-import units from '../data/units.json';
-import missions from '../data/missions.json';
-import settings from '../data/settings.json';
-import allianceBuildings from '../data/alliance_buildings.json';
-import specialties from '../data/specialties.json';
-import products from '../data/products.json';
-import dailyOrders from '../data/daily_orders.json';
-import objectives from '../data/objectives.json';
-import ranks from '../data/ranks.json';
-import research from '../data/research.json';
-import operations from '../data/operations.json';
+import nations from '../data/nations.json' with { type: 'json' };
+import categories from '../data/categories.json' with { type: 'json' };
+import buildings from '../data/buildings.json' with { type: 'json' };
+import units from '../data/units.json' with { type: 'json' };
+import missions from '../data/missions.json' with { type: 'json' };
+import settings from '../data/settings.json' with { type: 'json' };
+import allianceBuildings from '../data/alliance_buildings.json' with { type: 'json' };
+import specialties from '../data/specialties.json' with { type: 'json' };
+import products from '../data/products.json' with { type: 'json' };
+import dailyOrders from '../data/daily_orders.json' with { type: 'json' };
+import objectives from '../data/objectives.json' with { type: 'json' };
+import ranks from '../data/ranks.json' with { type: 'json' };
+import research from '../data/research.json' with { type: 'json' };
+import operations from '../data/operations.json' with { type: 'json' };
 
 export { nations, categories, buildings, units, missions, settings, allianceBuildings, specialties, products, dailyOrders, objectives, ranks, research, operations };
 
