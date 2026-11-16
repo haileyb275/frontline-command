@@ -99,3 +99,58 @@ test('administrators can adjust, mute and suspend; everything is logged', { skip
   const log = (await admin.must('admin_overview')).log.filter((l) => l.target_id === target.id).map((l) => l.action);
   assert.deepEqual(log, ['unsuspend', 'suspend', 'adjust']);
 });
+
+test('weekly rivalry, mutual aid, alliance map and a worldwide event', { skip }, async () => {
+  const a = await createPlayer({ nation: 'usa' });
+  const b = await createPlayer({ nation: 'uk' });
+  const outsider = await createPlayer({ nation: 'japan' });
+  const tag = a.username.slice(2, 7).toUpperCase();
+  const alliance = await a.must('create_alliance', { p_name: `Test ${tag}`, p_tag: tag });
+  await b.must('join_alliance', { p_alliance_id: alliance });
+  const hqA = (await a.must('place_base', { p_building_type: 'hq', p_lat: LAND.lat, p_lng: LAND.lng })).base;
+  await b.must('place_base', { p_building_type: 'hq', p_lat: LAND.lat - 0.2, p_lng: LAND.lng });
+
+  // Allies see each other's bases; an outsider sees none.
+  assert.deepEqual((await a.must('get_alliance_map')).map((x) => x.owner), [b.username]);
+  assert.deepEqual(await outsider.must('get_alliance_map'), []);
+
+  // Aid: only to an alliance mate, only what you have; it arrives by convoy.
+  assert.match((await a.rpc('send_aid', { p_username: outsider.username, p_item: 'supplies', p_quantity: 50 })).error, /own alliance/);
+  assert.match((await a.rpc('send_aid', { p_username: b.username, p_item: 'supplies', p_quantity: 2000 })).error, /do not have that much/);
+  assert.match((await a.rpc('send_aid', { p_username: b.username, p_item: 'gold', p_quantity: 5 })).error, /cannot be sent/);
+  const before = (await b.sync()).profile.fuel;
+  assert.equal((await a.must('send_aid', { p_username: b.username, p_item: 'fuel', p_quantity: 100 })).fuel, 50);
+  assert.equal((await b.sync()).shipments.length, 1, 'the convoy shows for the receiver');
+  await sql(`update public.shipments set arrives_at = now() - interval '1 second' where owner_id = '${b.id}'`);
+  assert.equal((await b.sync()).profile.fuel, before + 100);
+
+  // A worldwide event: only an admin starts one; a mission feeds it and the weekly score.
+  assert.match((await a.rpc('admin_start_event', { p_name: 'x', p_counter: 'missions', p_target: 1, p_hours: 1 })).error, /Administrators only/);
+  await sql(`update public.global_events set status = 'failed' where status = 'active';
+    insert into public.global_events (name, counter, target, reward_money, ends_at) values ('Test Event', 'missions', 1, 777, now() + interval '1 hour');
+    insert into public.units (owner_id, base_id, unit_type) select '${a.id}', '${hqA.id}', 'usa_infantry' from generate_series(1, 2);
+    delete from public.missions where owner_id = '${a.id}';
+    insert into public.missions (mission_type, owner_id, lat, lng, expires_at)
+    values ('patrol_contact', '${a.id}', ${LAND.lat - 0.1}, ${LAND.lng}, now() + interval '3 hours');
+    update public.game_config set value = 0 where key = 'damage_chance_per_difficulty';`);
+  try {
+    const s = await a.sync();
+    await a.must('dispatch_units', { p_mission_id: s.missions[0].id, p_unit_ids: s.units.map((u) => u.id) });
+    await sql(`update public.missions set completes_at = now() - interval '1 second' where id = '${s.missions[0].id}'`);
+    await a.sync();
+
+    const event = await a.must('get_global_event');
+    assert.deepEqual([event.status, event.progress, event.mine.amount], ['succeeded', 1, 1]);
+    const funds = (await a.sync()).profile.money;
+    await a.must('claim_event_reward', { p_event: event.id });
+    assert.equal((await a.sync()).profile.money, funds + 777);
+    assert.match((await a.rpc('claim_event_reward', { p_event: event.id })).error, /no reward waiting/);
+    assert.match((await b.rpc('claim_event_reward', { p_event: event.id })).error, /no reward waiting/, 'b took no part');
+
+    const week = await b.must('get_alliance_week');
+    assert.equal(week.this_week.find((x) => x.id === alliance)?.score, 1);
+  } finally {
+    await sql(`update public.game_config set value = 0.04 where key = 'damage_chance_per_difficulty';
+      delete from public.global_events where name = 'Test Event';`);
+  }
+});
