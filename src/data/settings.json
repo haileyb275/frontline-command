@@ -1,0 +1,9 @@
+{
+  "travel_time_scale": 20,
+  "min_travel_seconds": 10,
+  "spawn_interval_seconds": 120,
+  "base_open_missions": 2,
+  "max_open_missions": 12,
+  "spawn_radius_min_km": 3,
+  "spawn_radius_max_km": 20
+}

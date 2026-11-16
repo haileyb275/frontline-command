@@ -1,10 +1,13 @@
 // The "Units" tab: every unit you own, grouped by category.
 
 import { categories, getUnitType } from '../game/content.js';
-import { esc } from './dom.js';
+import { liveUnitStatus } from '../game/clock.js';
+import { esc, statusPillHtml } from './dom.js';
+
+const statusPill = (unit, dispatches) => statusPillHtml(liveUnitStatus(unit, dispatches));
 
 export function render(state) {
-  const { profile, bases, units } = state;
+  const { profile, bases, units, dispatches } = state;
   if (!profile?.nation_id) return '';
 
   if (units.length === 0) {
@@ -32,7 +35,7 @@ export function render(state) {
               <span class="row-title">${esc(getUnitType(unit.unit_type).name)}</span>
               <span class="row-sub">${esc(baseName.get(unit.base_id) ?? 'Unknown base')}</span>
             </span>
-            <span class="status status--${esc(unit.status)}">${esc(unit.status.replace('_', ' '))}</span>
+            ${statusPill(unit, dispatches)}
           </button>`
         )
         .join('');
@@ -42,7 +45,7 @@ export function render(state) {
     })
     .join('');
 
-  const idle = units.filter((u) => u.status === 'idle').length;
+  const idle = units.filter((u) => liveUnitStatus(u, dispatches) === 'idle').length;
 
   return `
     <div class="section-head">

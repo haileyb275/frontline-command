@@ -22,7 +22,8 @@ import {
 import { placeBase, buyUnit } from '../game/actions.js';
 import { friendlyError } from '../supabase.js';
 import { formatLatLng } from '../map.js';
-import { esc, fmt } from './dom.js';
+import { liveUnitStatus } from '../game/clock.js';
+import { esc, fmt, statusPillHtml } from './dom.js';
 import { toast } from './toast.js';
 
 /** "5,000 funds · 100 supplies" (supplies left out when zero). */
@@ -32,6 +33,7 @@ export function priceText(price) {
   return parts.join(' · ');
 }
 
+const statusPill = (unit, dispatches) => statusPillHtml(liveUnitStatus(unit, dispatches));
 const categoryNames = (ids) => ids.map((id) => getCategory(id)?.name ?? id).join(', ');
 
 // ---------------------------------------------------------------- render
@@ -48,7 +50,7 @@ export function render(state, ui) {
     case 'confirm':
       return renderConfirm(profile, ui);
     case 'base':
-      return renderBase(profile, bases, units, ui);
+      return renderBase(profile, bases, units, ui, state.dispatches);
     default:
       return renderList(profile, bases, units);
   }
@@ -158,7 +160,7 @@ function renderConfirm(profile, ui) {
     </form>`;
 }
 
-function renderBase(profile, bases, units, ui) {
+function renderBase(profile, bases, units, ui, dispatches) {
   const base = bases.find((b) => b.id === ui.baseId);
   if (!base) return renderList(profile, bases, units);
 
@@ -175,7 +177,7 @@ function renderBase(profile, bases, units, ui) {
             <div class="row row--static">
               <span class="row-icon row-icon--unit">${esc(getCategory(ut.category_id).icon)}</span>
               <span class="row-main"><span class="row-title">${esc(ut.name)}</span></span>
-              <span class="status status--${esc(unit.status)}">${esc(unit.status.replace('_', ' '))}</span>
+              ${statusPill(unit, dispatches)}
             </div>`;
         })
         .join('')
@@ -269,6 +271,7 @@ export async function handleSubmit(formName, values, ctx) {
   try {
     const base = await placeBase(ui.buildingType, ui.latlng, values.name);
     toast(`${base.name} established.`, 'ok');
+    ctx.baseLayer.focus(base); // zoom in so nearby missions are easy to see
     // Jump straight into the new base so the player can recruit.
     update({ busy: false, view: 'base', baseId: base.id, buildingType: null, latlng: null });
   } catch (error) {

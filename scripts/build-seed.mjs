@@ -49,7 +49,7 @@ const parts = [
   '-- Edit the JSON files in src/data/ and run `npm run seed` instead.',
   '',
   upsert('nations', ['id', 'name', 'short', 'color', 'bonuses'], readJson('nations.json')),
-  upsert('unit_categories', ['id', 'name', 'icon', 'sort'], readJson('categories.json')),
+  upsert('unit_categories', ['id', 'name', 'icon', 'sort', 'base_power'], readJson('categories.json')),
   upsert(
     'building_types',
     ['id', 'name', 'icon', 'description', 'cost_money', 'cost_supplies', 'unit_capacity',
@@ -62,7 +62,20 @@ const parts = [
      'power', 'min_level'],
     readJson('units.json')
   ),
-  // Later phases add: mission_types, alliance_building_types…
+  upsert(
+    'mission_types',
+    ['id', 'name', 'description', 'requirements', 'duration_seconds', 'reward_money',
+     'reward_supplies', 'reward_xp', 'difficulty', 'min_level', 'spawn_weight', 'shareable',
+     'followups', 'expires_seconds'],
+    readJson('missions.json')
+  ),
+  // settings.json is one object; the table wants one row per setting.
+  upsert(
+    'game_config',
+    ['key', 'value'],
+    Object.entries(readJson('settings.json')).map(([key, value]) => ({ key, value }))
+  ),
+  // Later phases add: alliance_building_types…
 ];
 
 const outFile = join(root, 'supabase/seed.sql');

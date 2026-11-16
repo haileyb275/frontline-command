@@ -2,11 +2,13 @@
 // other modules and connect them to each other.
 
 import './style.css';
-import { createMap, createBaseLayer, formatLatLng } from './map.js';
+import { createMap, createBaseLayer, createMissionLayer, createTravelLayer, formatLatLng } from './map.js';
 import { supabase, friendlyError } from './supabase.js';
-import { state, setState, loadProfile } from './state.js';
-import { loadGame } from './game/actions.js';
-import { getBuilding } from './game/content.js';
+import { state, setState, subscribe, loadProfile } from './state.js';
+import { loadGame, startSyncLoop, stopSyncLoop } from './game/actions.js';
+import { getBuilding, getCategory, getMissionType } from './game/content.js';
+import { dispatchPosition } from './game/clock.js';
+import { missionMarkerLabel } from './ui/missionsTab.js';
 import { initPanel } from './ui/panel.js';
 import { initTopbar } from './ui/topbar.js';
 import { showAuthScreen } from './ui/auth.js';
@@ -32,7 +34,29 @@ const baseLayer = createBaseLayer(map, {
   onSelect: (base) => panel.selectBase(base),
 });
 
-const panel = initPanel({ baseLayer, mapElement: mapEl });
+const missionLayer = createMissionLayer(map, {
+  getLabel: missionMarkerLabel,
+  getTitle: (mission) => getMissionType(mission.mission_type)?.name ?? 'Mission',
+  onSelect: (mission) => panel.selectMission(mission),
+});
+
+// A finished mission disappears from state.missions, but its units still
+// have to drive home from it — so remember where every mission was.
+const missionTargets = new Map();
+subscribe((s) => {
+  for (const m of s.missions) missionTargets.set(m.id, { lat: m.lat, lng: m.lng });
+});
+
+// Moving unit markers. The layer asks us for the current dispatches several
+// times a second and works out where each unit should be drawn.
+createTravelLayer(map, {
+  getDispatches: () => state.dispatches,
+  getTarget: (d) => state.missions.find((m) => m.id === d.mission_id) ?? missionTargets.get(d.mission_id) ?? null,
+  getLabel: (d) => getCategory(d.category_id)?.icon ?? '',
+  getPosition: dispatchPosition,
+});
+
+const panel = initPanel({ baseLayer, missionLayer, mapElement: mapEl });
 initTopbar();
 
 // ---------- Deciding which screen to show ----------
@@ -43,7 +67,8 @@ initTopbar();
 
 async function route() {
   if (!state.session) {
-    setState({ profile: null, bases: [], units: [] });
+    stopSyncLoop();
+    setState({ profile: null, bases: [], units: [], missions: [], dispatches: [] });
     panel.reset();
     showAuthScreen();
     return;
@@ -60,12 +85,15 @@ async function route() {
 
     if (!profile.nation_id) {
       showNationPicker(); // bases and units are empty for a brand-new player
+      startSyncLoop(); // harmless until they have a base; then it brings missions
     } else {
-      await loadGame();
+      await loadGame(); // also settles anything that happened while we were offline
+      startSyncLoop();
       hideOverlay();
-      // Returning players: start the map at their Headquarters.
-      const hq = state.bases[0];
-      if (hq) map.setView([hq.lat, hq.lng], Math.max(map.getZoom(), 7));
+      panel.showTab(state.bases.length > 0 ? 'missions' : 'bases');
+      // Returning players: frame the map around their bases and missions.
+      const points = [...state.bases, ...state.missions].map((x) => [x.lat, x.lng]);
+      if (points.length > 0) map.fitBounds(points, { padding: [60, 60], maxZoom: 11 });
     }
   } catch (error) {
     showOverlay(`

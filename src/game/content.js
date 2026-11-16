@@ -9,19 +9,23 @@ import nations from '../data/nations.json';
 import categories from '../data/categories.json';
 import buildings from '../data/buildings.json';
 import units from '../data/units.json';
+import missions from '../data/missions.json';
+import settings from '../data/settings.json';
 
-export { nations, categories, buildings, units };
+export { nations, categories, buildings, units, missions, settings };
 
 const index = (list) => new Map(list.map((item) => [item.id, item]));
 const nationById = index(nations);
 const categoryById = index(categories);
 const buildingById = index(buildings);
 const unitById = index(units);
+const missionById = index(missions);
 
 export const getNation = (id) => nationById.get(id) ?? null;
 export const getCategory = (id) => categoryById.get(id) ?? null;
 export const getBuilding = (id) => buildingById.get(id) ?? null;
 export const getUnitType = (id) => unitById.get(id) ?? null;
+export const getMissionType = (id) => missionById.get(id) ?? null;
 
 /**
  * A nation's multiplier for one kind of bonus (1 = no bonus).
@@ -65,3 +69,35 @@ export function recruitableUnits(buildingTypeId, nationId) {
     (u) => u.nation_id === nationId && building.unlocks_categories.includes(u.category_id)
   );
 }
+
+/** Distance between two { lat, lng } points in km. Mirrors fc_distance_km(). */
+export function distanceKm(a, b) {
+  const rad = (deg) => (deg * Math.PI) / 180;
+  const h =
+    Math.sin(rad(b.lat - a.lat) / 2) ** 2 +
+    Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(rad(b.lng - a.lng) / 2) ** 2;
+  return 2 * 6371 * Math.asin(Math.min(1, Math.sqrt(h)));
+}
+
+/**
+ * How long a unit would take to drive from its base to a mission, in seconds.
+ * This is only an ESTIMATE for the unit picker — the server works out the
+ * real figure itself when you dispatch (see dispatch_units in the SQL).
+ */
+export function travelSeconds(unitType, base, mission, nationId) {
+  const speed = unitType.speed_kmh * nationBonus(nationId, 'speed_mult', unitType.category_id);
+  const seconds = (distanceKm(base, mission) / speed) * 3600 / settings.travel_time_scale;
+  return Math.max(settings.min_travel_seconds, Math.round(seconds));
+}
+
+/** What a mission pays this nation: { money, supplies, xp }. */
+export function missionReward(missionType, nationId) {
+  return {
+    money: Math.round(missionType.reward_money * nationBonus(nationId, 'reward_mult', 'money')),
+    supplies: Math.round(missionType.reward_supplies * nationBonus(nationId, 'reward_mult', 'supplies')),
+    xp: missionType.reward_xp,
+  };
+}
+
+/** XP needed to reach a level. Mirrors fc_level_for_xp(). */
+export const xpForLevel = (level) => 100 * (level - 1) ** 2;

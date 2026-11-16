@@ -2,7 +2,7 @@
 
 import { supabase } from '../supabase.js';
 import { subscribe } from '../state.js';
-import { getNation } from '../game/content.js';
+import { getNation, xpForLevel } from '../game/content.js';
 import { fmt } from './dom.js';
 
 export function initTopbar() {
@@ -21,6 +21,10 @@ export function initTopbar() {
     money.textContent = profile ? fmt(profile.money) : '—';
     supplies.textContent = profile ? fmt(profile.supplies) : '—';
     level.textContent = profile ? `Lv ${profile.level}` : '—';
+    // Hover (or long-press) the rank to see progress to the next level.
+    level.parentElement.title = profile
+      ? `${fmt(profile.xp)} / ${fmt(xpForLevel(profile.level + 1))} XP to level ${profile.level + 1}`
+      : '';
 
     player.hidden = !profile;
     if (!profile) return;

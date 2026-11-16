@@ -17,6 +17,11 @@ export function fmt(n) {
   return Number(n ?? 0).toLocaleString('en-US');
 }
 
+/** The coloured "IDLE" / "EN ROUTE" label for a unit. `status` is one of our own fixed words. */
+export function statusPillHtml(status) {
+  return `<span class="status status--${esc(status)}">${esc(status.replace('_', ' '))}</span>`;
+}
+
 /**
  * Show a full-screen overlay containing `html`, replacing any overlay that
  * is already open. Returns the overlay element.

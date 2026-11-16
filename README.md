@@ -60,6 +60,6 @@ npm run seed
 - [x] Phase 1 — Project setup, deploy workflow, Leaflet map
 - [x] Phase 2 — Supabase auth and nation selection
 - [x] Phase 3 — Bases and units
-- [ ] Phase 4 — Missions and dispatching
+- [x] Phase 4 — Missions and dispatching
 - [ ] Phase 5 — Alliances
 - [ ] Phase 6 — Leaderboards and polish

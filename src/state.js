@@ -12,6 +12,8 @@ export const state = {
   profile: null, // the player's row from the `profiles` table
   bases: [], // the player's rows from the `bases` table
   units: [], // the player's rows from the `units` table
+  missions: [], // open and in-progress missions
+  dispatches: [], // units currently out on (or returning from) a mission
 };
 
 const listeners = new Set();

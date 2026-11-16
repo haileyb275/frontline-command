@@ -3,54 +3,63 @@
     "id": "infantry",
     "name": "Infantry",
     "icon": "INF",
-    "sort": 0
+    "sort": 0,
+    "base_power": 10
   },
   {
     "id": "armor",
     "name": "Armor",
     "icon": "ARM",
-    "sort": 1
+    "sort": 1,
+    "base_power": 30
   },
   {
     "id": "anti_tank",
     "name": "Anti-Tank",
     "icon": "AT",
-    "sort": 2
+    "sort": 2,
+    "base_power": 14
   },
   {
     "id": "artillery",
     "name": "Artillery",
     "icon": "ART",
-    "sort": 3
+    "sort": 3,
+    "base_power": 20
   },
   {
     "id": "air",
     "name": "Air",
     "icon": "AIR",
-    "sort": 4
+    "sort": 4,
+    "base_power": 35
   },
   {
     "id": "recon",
     "name": "Recon",
     "icon": "RCN",
-    "sort": 5
+    "sort": 5,
+    "base_power": 8
   },
   {
     "id": "medical",
     "name": "Medical",
     "icon": "MED",
-    "sort": 6
+    "sort": 6,
+    "base_power": 6
   },
   {
     "id": "engineers",
     "name": "Engineers",
     "icon": "ENG",
-    "sort": 7
+    "sort": 7,
+    "base_power": 10
   },
   {
     "id": "logistics",
     "name": "Logistics",
     "icon": "LOG",
-    "sort": 8
+    "sort": 8,
+    "base_power": 6
   }
 ]
