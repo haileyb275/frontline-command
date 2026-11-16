@@ -172,3 +172,41 @@ test('divisions fight harder together, and a refit keeps a unit\'s experience', 
   assert.deepEqual([refitted.unit_type, refitted.missions_done, refitted.status, refitted.division_id],
     ['germany_infantry_2', 12, 'repairing', division]);
 });
+
+test('fuel speeds vehicles, the market cannot be milked, and a base can be moved', { skip }, async () => {
+  const p = await createPlayer({ nation: 'usa' });
+  const hq = (await p.must('place_base', { p_building_type: 'hq', p_lat: LAND.lat, p_lng: LAND.lng })).base;
+  const recon = (await p.must('buy_unit', { p_base_id: hq.id, p_unit_type: 'usa_recon' })).unit.id;
+  const scout2 = (await p.must('buy_unit', { p_base_id: hq.id, p_unit_type: 'usa_recon' })).unit.id;
+
+  // One unit's worth of fuel: the first scout is fuelled, the second is not.
+  await sql(`update public.profiles set fuel = 2 where id = '${p.id}';
+    delete from public.missions where owner_id = '${p.id}';
+    insert into public.missions (mission_type, owner_id, lat, lng, expires_at)
+    values ('recon_sweep', '${p.id}', ${LAND.lat - 0.2}, ${LAND.lng}, now() + interval '3 hours');`);
+  const mission = (await p.sync()).missions[0];
+  const sent = await p.must('dispatch_units', { p_mission_id: mission.id, p_unit_ids: [recon, scout2] });
+  const [fast, slow] = sent.dispatches.map((d) => d.travel_seconds).sort((a, b) => a - b);
+  assert.deepEqual(sent.dispatches.map((d) => d.fuelled).sort(), [false, true]);
+  assert.ok(fast < slow, 'the fuelled unit gets there sooner');
+  assert.equal(sent.profile.fuel, 0);
+
+  // Market: buying and immediately selling always loses money.
+  const before = (await p.sync()).profile.money;
+  const paid = (await p.must('trade_market', { p_item: 'parts', p_quantity: 200, p_buy: true })).total;
+  const got = (await p.must('trade_market', { p_item: 'parts', p_quantity: 200, p_buy: false })).total;
+  assert.ok(got < paid, 'a round trip must cost something');
+  assert.equal((await p.sync()).profile.money, before - paid + got);
+  assert.match((await p.rpc('trade_market', { p_item: 'parts', p_quantity: 999999, p_buy: false })).error, /between 1 and/);
+  assert.match((await p.rpc('trade_market', { p_item: 'medical', p_quantity: 5000, p_buy: false })).error, /do not have that much/);
+  assert.deepEqual((await p.rest('GET', 'market?select=*')).data, [], 'prices are read through get_market() only');
+
+  // Moving a base: not while a unit is out, not into the sea, and it costs a quarter of the price.
+  assert.match((await p.rpc('move_base', { p_base_id: hq.id, p_lat: LAND.lat - 0.3, p_lng: LAND.lng })).error, /must be home/);
+  await sql(`delete from public.dispatches where player_id = '${p.id}'; update public.units set status = 'idle' where owner_id = '${p.id}'`);
+  assert.match((await p.rpc('move_base', { p_base_id: hq.id, p_lat: 50.6, p_lng: 0.9 })).error, /on land/);
+  const funds = (await p.sync()).profile.money;
+  const moved = await p.must('move_base', { p_base_id: hq.id, p_lat: LAND.lat - 0.3, p_lng: LAND.lng });
+  assert.equal(moved.bases[0].lat, LAND.lat - 0.3);
+  assert.equal(moved.profile.money, funds - 1250, 'a quarter of the 5,000 a Headquarters costs');
+});

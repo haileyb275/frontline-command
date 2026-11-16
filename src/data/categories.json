@@ -7,7 +7,8 @@
     "base_power": 10,
     "domain": "ground",
     "supply_use": 2,
-    "recovers_at": "field_hospital"
+    "recovers_at": "field_hospital",
+    "fuel_use": 0
   },
   {
     "id": "armor",
@@ -17,7 +18,8 @@
     "base_power": 30,
     "domain": "ground",
     "supply_use": 10,
-    "recovers_at": "supply_depot"
+    "recovers_at": "supply_depot",
+    "fuel_use": 5
   },
   {
     "id": "anti_tank",
@@ -27,7 +29,8 @@
     "base_power": 14,
     "domain": "ground",
     "supply_use": 4,
-    "recovers_at": "supply_depot"
+    "recovers_at": "supply_depot",
+    "fuel_use": 2
   },
   {
     "id": "artillery",
@@ -37,7 +40,8 @@
     "base_power": 20,
     "domain": "ground",
     "supply_use": 8,
-    "recovers_at": "supply_depot"
+    "recovers_at": "supply_depot",
+    "fuel_use": 3
   },
   {
     "id": "air",
@@ -47,7 +51,8 @@
     "base_power": 35,
     "domain": "air",
     "supply_use": 15,
-    "recovers_at": "supply_depot"
+    "recovers_at": "supply_depot",
+    "fuel_use": 8
   },
   {
     "id": "recon",
@@ -57,7 +62,8 @@
     "base_power": 8,
     "domain": "ground",
     "supply_use": 2,
-    "recovers_at": "supply_depot"
+    "recovers_at": "supply_depot",
+    "fuel_use": 2
   },
   {
     "id": "medical",
@@ -67,7 +73,8 @@
     "base_power": 6,
     "domain": "ground",
     "supply_use": 3,
-    "recovers_at": "field_hospital"
+    "recovers_at": "field_hospital",
+    "fuel_use": 1
   },
   {
     "id": "engineers",
@@ -77,7 +84,8 @@
     "base_power": 10,
     "domain": "ground",
     "supply_use": 3,
-    "recovers_at": "field_hospital"
+    "recovers_at": "field_hospital",
+    "fuel_use": 0
   },
   {
     "id": "logistics",
@@ -87,7 +95,8 @@
     "base_power": 6,
     "domain": "ground",
     "supply_use": 2,
-    "recovers_at": "supply_depot"
+    "recovers_at": "supply_depot",
+    "fuel_use": 2
   },
   {
     "id": "naval",
@@ -97,7 +106,8 @@
     "base_power": 25,
     "domain": "sea",
     "supply_use": 15,
-    "recovers_at": "supply_depot"
+    "recovers_at": "supply_depot",
+    "fuel_use": 8
   },
   {
     "id": "military_police",
@@ -107,7 +117,8 @@
     "base_power": 8,
     "domain": "ground",
     "supply_use": 2,
-    "recovers_at": "field_hospital"
+    "recovers_at": "field_hospital",
+    "fuel_use": 1
   },
   {
     "id": "fire",
@@ -117,7 +128,8 @@
     "base_power": 8,
     "domain": "ground",
     "supply_use": 3,
-    "recovers_at": "supply_depot"
+    "recovers_at": "supply_depot",
+    "fuel_use": 2
   },
   {
     "id": "command",
@@ -127,6 +139,7 @@
     "base_power": 6,
     "domain": "ground",
     "supply_use": 2,
-    "recovers_at": "supply_depot"
+    "recovers_at": "supply_depot",
+    "fuel_use": 2
   }
 ]

@@ -170,6 +170,42 @@ export function createBaseLayer(map, { getIcon, getKind, onSelect }) {
 }
 
 /**
+ * Draws the supply line from the Headquarters to every base that keeps a
+ * stock: thin and grey when all is well, red when the base is running low.
+ * @param {L.Map} map
+ * @param {{ needsLine: (base) => boolean, isLow: (base) => boolean, isHq: (base) => boolean }} options
+ */
+export function createSupplyLayer(map, { needsLine, isLow, isHq }) {
+  map.createPane('supply').style.zIndex = 360; // above the front shading, below markers
+  const group = L.layerGroup().addTo(map);
+  const lines = new Map();
+
+  return {
+    sync(bases) {
+      const hq = bases.find(isHq);
+      const targets = hq ? bases.filter((b) => b.id !== hq.id && needsLine(b)) : [];
+      const wanted = new Set(targets.map((b) => b.id));
+      for (const [id, line] of lines) {
+        if (!wanted.has(id)) {
+          line.remove();
+          lines.delete(id);
+        }
+      }
+      for (const base of targets) {
+        let line = lines.get(base.id);
+        if (!line) {
+          line = L.polyline([], { pane: 'supply', interactive: false }).addTo(group);
+          lines.set(base.id, line);
+        }
+        line.setLatLngs([[hq.lat, hq.lng], [base.lat, base.lng]]);
+        // Leaflet keeps the class on the SVG path: swap it to recolour the line.
+        line.getElement()?.setAttribute('class', `leaflet-interactive supply-line ${isLow(base) ? 'is-low' : ''}`);
+      }
+    },
+  };
+}
+
+/**
  * Draws the ground each front-line base holds: a shaded circle out to its
  * front. Where circles overlap they read as one continuous front.
  * @param {L.Map} map

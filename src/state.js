@@ -23,6 +23,7 @@ export const state = {
   operation: null, // our alliance's current or latest joint operation
   season: null, // the season leaderboard
   objectives: null, // daily orders, campaign and achievement progress
+  market: null, // current market prices
   divisions: [], // our divisions (units carry a division_id)
   taskForces: [], // saved groups of units
   leaderboard: null, // { players, alliances, me, player_count } once loaded

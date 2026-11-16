@@ -19,11 +19,13 @@ import {
   canAfford,
   recruitableUnits,
   stockCapacity,
+  GOODS,
   settings,
 } from '../game/content.js';
 import {
   placeBase, buyUnit, upgradeBase, dismissUnit, trainUnit, startProduction, transferUnit, setBaseZone,
   resupplyBase, setAutoResupply, renameBase, renameUnit, startResearch, refitUnit, assignDivision,
+  loadMarket, tradeMarket, moveBase,
 } from '../game/actions.js';
 import { renderBase, renderUnit } from './baseViews.js';
 import { msUntil, formatDuration } from '../game/clock.js';
@@ -57,6 +59,10 @@ export function render(state, ui) {
       return renderPlacing(ui);
     case 'confirm':
       return renderConfirm(profile, ui);
+    case 'market':
+      return renderMarket(state, ui);
+    case 'moving':
+      return renderMoving(state, ui);
     case 'base':
       return renderBase(state, ui) ?? renderList(profile, bases, units);
     case 'unit':
@@ -90,7 +96,7 @@ function renderList(profile, bases, units) {
       if (type.unit_capacity === 0) {
         side = base.production_id
           ? `<span class="js-countdown" data-until="${esc(base.production_done_at)}"></span>`
-          : type.training_slots > 0 ? 'courses' : type.id === 'research_office' ? 'research' : 'idle';
+          : type.training_slots > 0 ? 'courses' : type.id === 'research_office' ? 'research' : type.infra ? type.infra : 'idle';
       }
       return `
         <button class="row" data-action="open-base" data-base="${esc(base.id)}">
@@ -109,7 +115,75 @@ function renderList(profile, bases, units) {
       <h2>Your bases <span class="count">${bases.length}</span></h2>
       <button class="btn btn--small" data-action="show-build">+ Build</button>
     </div>
-    <div class="rows">${rows}</div>`;
+    <div class="rows">${rows}</div>
+    ${renderStores(profile)}`;
+}
+
+/** What the player holds, with a way in to the market. */
+function renderStores(profile) {
+  return `
+    <h3>Stores</h3>
+    <div class="facts">
+      <div><span>Supplies</span>${fmt(profile.supplies)}</div>
+      ${GOODS.map((g) => `<div title="${esc(g.use)}"><span>${esc(g.name)}</span>${fmt(profile[g.id])}</div>`).join('')}
+    </div>
+    <p class="muted">Fuel speeds vehicles, spare parts speed repairs, medical stores speed recovery.
+       Running out of one never stops you; things just take the normal time.</p>
+    <button class="btn btn--block" data-action="show-market">Open the market</button>`;
+}
+
+function renderMarket(state, ui) {
+  const { profile, market } = state;
+  if (!market) return '<p class="muted">Loading prices…</p>';
+  const spread = settings.market_spread;
+  const rows = market.map((m) => {
+    const drift = m.price / m.base_price - 1; // how far above or below normal
+    const trend = Math.abs(drift) < 0.01 ? 'normal' : `${drift > 0 ? '+' : ''}${Math.round(drift * 100)}% on normal`;
+    return `
+      <form class="card option" data-form="trade" data-item="${esc(m.item)}">
+        <div class="option-head">
+          <h2>${esc(m.name)}</h2>
+          <span class="count">you hold ${fmt(profile[m.item])}</span>
+        </div>
+        <p class="muted">Buy at <strong>${(m.price * (1 + spread)).toFixed(2)}</strong> ·
+           sell at <strong>${(m.price * (1 - spread)).toFixed(2)}</strong> funds each · ${trend}</p>
+        <div class="inline-form">
+          <input name="qty_${esc(m.item)}" type="number" min="1" max="${settings.market_max_trade}" step="1"
+                 placeholder="Quantity" inputmode="numeric" required />
+          <button class="btn btn--small" type="submit" name="side" value="buy" ${ui.busy ? 'disabled' : ''}>Buy</button>
+          <button class="btn btn--small" type="submit" name="side" value="sell" ${ui.busy ? 'disabled' : ''}>Sell</button>
+        </div>
+      </form>`;
+  }).join('');
+  return `
+    <div class="section-head">
+      <h2>Market</h2>
+      <button class="btn btn--small" data-action="back">Back</button>
+    </div>
+    <p class="muted">One price for every player. Buying pushes a price up, selling pushes it down, and left alone it
+       drifts back to normal over a few hours. You have <strong>${fmt(profile.money)}</strong> funds.</p>
+    ${rows}`;
+}
+
+function renderMoving(state, ui) {
+  const base = state.bases.find((b) => b.id === ui.baseId);
+  if (!base) return '';
+  const type = getBuilding(base.building_type);
+  const price = buildingPrice(type, state.profile.nation_id);
+  price.money = Math.round(price.money * base.level * settings.move_cost_share);
+  price.supplies = Math.round(price.supplies * base.level * settings.move_cost_share);
+  return `
+    <div class="card card--notice">
+      <h2>Move ${esc(base.name)}</h2>
+      ${ui.latlng
+        ? `<p>New site: <strong>${esc(formatLatLng(ui.latlng))}</strong><br /><span class="muted">Click the map again to choose a different spot.</span></p>`
+        : '<p>Click the map where the base should go.</p>'}
+      <p class="muted">Cost: ${priceText(price)}. The same rules apply as when building${type.requires_coast ? ' (it must be on the coast)' : ''}.
+         Its front starts again at ${settings.front_start_km} km, and every unit stationed here must be home.</p>
+      <button class="btn btn--primary btn--block" data-action="confirm-move" ${!ui.latlng || ui.busy ? 'disabled' : ''}>
+        ${ui.busy ? 'Moving…' : 'Move here'}</button>
+      <button class="btn btn--block" data-action="cancel-move">Cancel</button>
+    </div>`;
 }
 
 function renderBuildMenu(profile, bases) {
@@ -136,6 +210,7 @@ function renderBuildMenu(profile, bases) {
             : b.training_slots > 0
               ? `Runs ${b.training_slots} specialty courses at a time`
               : b.id === 'research_office' ? 'Runs one research programme at a time'
+              : b.infra ? `Speeds convoys within ${settings.convoy_infra_km} km`
               : 'Runs one production job at a time'}${b.requires_coast ? ' · coast only' : ''}</p>
           <div class="option-foot">
             <span class="price">${priceText(price)}</span>
@@ -221,6 +296,31 @@ export async function handleAction(action, data, ctx) {
       const name = window.prompt('Call sign for this unit (leave empty to remove it):', unit?.name ?? '');
       if (name === null) return; // cancelled
       return run(ctx, () => renameUnit(ui.unitId, name));
+    }
+
+    case 'show-market':
+      loadMarket().catch((error) => toast(friendlyError(error), 'error'));
+      return update({ view: 'market' });
+
+    case 'start-move':
+      return update({ view: 'moving', latlng: null });
+
+    case 'cancel-move':
+      return update({ view: 'base', latlng: null });
+
+    case 'confirm-move': {
+      if (!ui.latlng) return;
+      update({ busy: true });
+      try {
+        await moveBase(ui.baseId, ui.latlng);
+        toast('Base moved.', 'ok');
+        update({ busy: false, view: 'base', latlng: null });
+        baseLayer.focus(state.bases.find((b) => b.id === ui.baseId));
+      } catch (error) {
+        toast(friendlyError(error), 'error');
+        update({ busy: false });
+      }
+      return;
     }
 
     case 'refit':
@@ -325,8 +425,9 @@ export function tick(root) {
 }
 
 /** Called by panel.js when the confirm form is submitted. */
-export async function handleSubmit(formName, values, ctx) {
+export async function handleSubmit(formName, values, ctx, form) {
   const { ui, update } = ctx;
+  if (formName === 'trade') return handleTrade(values, ctx, form);
   if (formName !== 'confirm-base' || !ui.latlng) return;
 
   update({ busy: true });
@@ -342,9 +443,30 @@ export async function handleSubmit(formName, values, ctx) {
   }
 }
 
+/** A Buy or Sell on the market. Which button was pressed arrives as values.side. */
+async function handleTrade(values, ctx, form) {
+  const item = form.dataset.item;
+  const quantity = Math.floor(Number(values[`qty_${item}`]));
+  const buying = values.side !== 'sell';
+  if (!(quantity > 0)) return toast('Enter a quantity.', 'error');
+  form.reset();
+  ctx.update({ busy: true });
+  try {
+    const total = await tradeMarket(item, quantity, buying);
+    toast(buying ? `Bought ${fmt(quantity)} for ${fmt(total)} funds.` : `Sold ${fmt(quantity)} for ${fmt(total)} funds.`, 'ok');
+  } catch (error) {
+    toast(friendlyError(error), 'error');
+  }
+  ctx.update({ busy: false });
+}
+
 /** Called by panel.js when the map is clicked. Returns true if we used the click. */
 export function handleMapClick(latlng, ctx) {
   const { ui, update } = ctx;
+  if (ui.view === 'moving') {
+    update({ latlng }); // choosing where an existing base should go
+    return true;
+  }
   if (ui.view !== 'placing' && ui.view !== 'confirm') return false;
   update({ view: 'confirm', latlng });
   return true;

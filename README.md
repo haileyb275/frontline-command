@@ -132,3 +132,4 @@ npm run balance
 - [x] Phase 13 — Automated tests, rate limits, housekeeping, usage report, operations guide
 - [x] Phase 14 — A moving front line, enemy offensives, unconfirmed reports and scouting
 - [x] Phase 15 — Divisions, refits, captured equipment, historical notes for every unit
+- [x] Phase 16 — Fuel, parts and medical stores, Refinery, Rail Yard, Port, supply lines, market, movable bases

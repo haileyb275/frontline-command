@@ -154,6 +154,7 @@ declare
   hq    public.bases;
   cap   int;
   want  int;
+  overhead numeric;
 begin
   select * into prof from public.profiles where id = p_me for update;
   select * into base from public.bases where id = p_base_id and owner_id = p_me for update;
@@ -163,14 +164,17 @@ begin
   -- Count what is already on its way, so we never over-order.
   want := cap - coalesce(base.stock, 0)
           - coalesce((select sum(stock) from public.shipments where to_base_id = base.id), 0);
-  want := least(want, prof.supplies);
-  if want <= 0 then return 0; end if;
-
   select b.* into hq from public.bases b join public.building_types t on t.id = b.building_type
    where b.owner_id = p_me and t.is_hq limit 1;
   if hq.id is null then return 0; end if;
 
-  update public.profiles set supplies = supplies - want where id = p_me;
+  -- A long supply line costs more to run: the convoy itself uses some of
+  -- what it carries. (Phase 16; 1 = no overhead.)
+  overhead := public.fc_resupply_overhead(hq.lat, hq.lng, base.lat, base.lng);
+  want := least(want, floor(prof.supplies / overhead));
+  if want <= 0 then return 0; end if;
+
+  update public.profiles set supplies = supplies - ceil(want * overhead) where id = p_me;
   insert into public.shipments
     (owner_id, kind, label, from_lat, from_lng, to_lat, to_lng, to_base_id, by_sea, stock, departed_at, arrives_at)
   values
@@ -231,6 +235,7 @@ declare
   port   public.bases;
   cargo_money    bigint;
   cargo_supplies bigint;
+  cargo_share    numeric;
   outcome text;
 begin
   -- Suspended accounts stop here: this function runs at the start of every
@@ -289,7 +294,7 @@ begin
   -- (d) Factory jobs finished: load a convoy for the Headquarters
   for r in
     select b.id, b.lat, b.lng, b.level, b.production_done_at,
-           p.name, p.output_money, p.output_supplies
+           p.name, p.output_money, p.output_supplies, p.output_fuel, p.output_parts, p.output_medical
       from public.bases b join public.products p on p.id = b.production_id
      where b.owner_id = p_me and b.production_done_at <= v_now
   loop
@@ -297,11 +302,14 @@ begin
       public.fc_convoy_seconds(r.lat, r.lng, coalesce(hq.lat, r.lat), coalesce(hq.lng, r.lng)));
 
     insert into public.shipments
-      (owner_id, kind, label, from_lat, from_lng, to_lat, to_lng, by_sea, money, supplies, departed_at, arrives_at)
+      (owner_id, kind, label, from_lat, from_lng, to_lat, to_lng, by_sea, money, supplies,
+       fuel, parts, medical, departed_at, arrives_at)
     values
       (p_me, 'cargo', r.name, r.lat, r.lng, coalesce(hq.lat, r.lat), coalesce(hq.lng, r.lng),
        hq.id is not null and public.fc_route_by_sea(r.lat, r.lng, hq.lat, hq.lng),
-       r.output_money * r.level, r.output_supplies * r.level, r.production_done_at, arrive)
+       r.output_money * r.level, r.output_supplies * r.level,
+       r.output_fuel * r.level, r.output_parts * r.level, r.output_medical * r.level,   -- goods (Phase 16)
+       r.production_done_at, arrive)
     returning id into new_id;
     update public.bases set production_id = null, production_done_at = null where id = r.id;
     events := events || jsonb_build_object('type', 'production_done', 'name', r.name);
@@ -346,23 +354,32 @@ begin
     else
       cargo_money := r.money;
       cargo_supplies := r.supplies;
+      cargo_share := 1;                -- how much of the goods aboard gets through
       outcome := 'safe';
       if r.threatened then
         if exists (select 1 from public.missions where shipment_id = r.id and status = 'completed') then
           outcome := 'escorted';       -- seen in safely: a small bonus
           cargo_money    := round(cargo_money    * (1 + public.fc_cfg('convoy_escort_bonus')));
           cargo_supplies := round(cargo_supplies * (1 + public.fc_cfg('convoy_escort_bonus')));
+          cargo_share := 1 + public.fc_cfg('convoy_escort_bonus');
         elsif exists (select 1 from public.missions where shipment_id = r.id and status = 'open') then
           outcome := 'raided';         -- nobody came: part of the cargo is lost
           cargo_money    := round(cargo_money    * (1 - public.fc_cfg('convoy_loss')));
           cargo_supplies := round(cargo_supplies * (1 - public.fc_cfg('convoy_loss')));
+          cargo_share := 1 - public.fc_cfg('convoy_loss');
           -- Close the escort mission; fc_sync() expires it and recalls any units.
           update public.missions set expires_at = v_now where shipment_id = r.id and status = 'open';
         end if;
       end if;
-      update public.profiles set money = money + cargo_money, supplies = supplies + cargo_supplies where id = p_me;
+      update public.profiles
+         set money = money + cargo_money, supplies = supplies + cargo_supplies,
+             fuel = fuel + round(r.fuel * cargo_share), parts = parts + round(r.parts * cargo_share),
+             medical = medical + round(r.medical * cargo_share)
+       where id = p_me;
       events := events || jsonb_build_object('type', 'shipment_arrived', 'name', r.label,
-                 'money', cargo_money, 'supplies', cargo_supplies, 'outcome', outcome);
+                 'money', cargo_money, 'supplies', cargo_supplies,
+                 'fuel', round(r.fuel * cargo_share), 'parts', round(r.parts * cargo_share),
+                 'medical', round(r.medical * cargo_share), 'outcome', outcome);
     end if;
   end loop;
 

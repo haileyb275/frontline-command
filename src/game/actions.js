@@ -89,7 +89,9 @@ function announce(events) {
     if (e.type === 'transfer_done') toast(`${e.unit} has arrived at ${e.base}.`, 'ok');
     if (e.type === 'production_done') toast(`${e.name} finished. A convoy is taking it to your Headquarters.`, 'info');
     if (e.type === 'shipment_arrived') {
-      const parts = [e.money && `+${fmt(e.money)} funds`, e.supplies && `+${fmt(e.supplies)} supplies`].filter(Boolean);
+      const parts = [e.money && `+${fmt(e.money)} funds`, e.supplies && `+${fmt(e.supplies)} supplies`,
+        e.fuel && `+${fmt(e.fuel)} fuel`, e.parts && `+${fmt(e.parts)} spare parts`,
+        e.medical && `+${fmt(e.medical)} medical stores`].filter(Boolean);
       const note = { escorted: ' Escorted in safely: bonus cargo.', raided: ' Raiders got through: part of the cargo was lost.' }[e.outcome] ?? '';
       toast(`Convoy arrived (${e.name}): ${parts.join(', ')}.${note}`, e.outcome === 'raided' ? 'error' : 'ok');
     }
@@ -598,4 +600,23 @@ export async function assignDivision(unitId, divisionId) {
 
 export async function refitUnit(unitId, unitTypeId) {
   applySnapshot(await call('refit_unit', { p_unit_id: unitId, p_unit_type: unitTypeId }));
+}
+
+// ------------------------------------------------------------ phase 16
+
+export async function loadMarket() {
+  setState({ market: await call('get_market') });
+}
+
+/** Buy (buy = true) or sell goods on the market. Returns the funds paid or received. */
+export async function tradeMarket(item, quantity, buy) {
+  const result = await call('trade_market', { p_item: item, p_quantity: quantity, p_buy: buy });
+  setState({ profile: result.profile, market: result.market });
+  return result.total;
+}
+
+/** Re-site one of our own bases. */
+export async function moveBase(baseId, latlng) {
+  applySnapshot(await call('move_base', { p_base_id: baseId, p_lat: latlng.lat, p_lng: latlng.lng }));
+  surveyBases(); // the new neighbourhood needs surveying
 }

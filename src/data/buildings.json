@@ -18,7 +18,8 @@
     "requires_coast": false,
     "training_slots": 0,
     "default_zone": "front",
-    "stock_capacity": 250
+    "stock_capacity": 250,
+    "infra": null
   },
   {
     "id": "barracks",
@@ -39,7 +40,8 @@
     "requires_coast": false,
     "training_slots": 0,
     "default_zone": "front",
-    "stock_capacity": 150
+    "stock_capacity": 150,
+    "infra": null
   },
   {
     "id": "supply_depot",
@@ -59,7 +61,8 @@
     "requires_coast": false,
     "training_slots": 0,
     "default_zone": "front",
-    "stock_capacity": 150
+    "stock_capacity": 150,
+    "infra": null
   },
   {
     "id": "field_hospital",
@@ -78,7 +81,8 @@
     "requires_coast": false,
     "training_slots": 0,
     "default_zone": "front",
-    "stock_capacity": 150
+    "stock_capacity": 150,
+    "infra": null
   },
   {
     "id": "artillery_park",
@@ -98,7 +102,8 @@
     "requires_coast": false,
     "training_slots": 0,
     "default_zone": "front",
-    "stock_capacity": 150
+    "stock_capacity": 150,
+    "infra": null
   },
   {
     "id": "tank_depot",
@@ -117,7 +122,8 @@
     "requires_coast": false,
     "training_slots": 0,
     "default_zone": "front",
-    "stock_capacity": 150
+    "stock_capacity": 150,
+    "infra": null
   },
   {
     "id": "airfield",
@@ -136,7 +142,8 @@
     "requires_coast": false,
     "training_slots": 0,
     "default_zone": "front",
-    "stock_capacity": 150
+    "stock_capacity": 150,
+    "infra": null
   },
   {
     "id": "naval_base",
@@ -155,7 +162,8 @@
     "requires_coast": true,
     "training_slots": 0,
     "default_zone": "front",
-    "stock_capacity": 150
+    "stock_capacity": 150,
+    "infra": null
   },
   {
     "id": "mp_post",
@@ -174,7 +182,8 @@
     "requires_coast": false,
     "training_slots": 0,
     "default_zone": "front",
-    "stock_capacity": 150
+    "stock_capacity": 150,
+    "infra": null
   },
   {
     "id": "fire_station",
@@ -193,7 +202,8 @@
     "requires_coast": false,
     "training_slots": 0,
     "default_zone": "front",
-    "stock_capacity": 150
+    "stock_capacity": 150,
+    "infra": null
   },
   {
     "id": "training_center",
@@ -210,7 +220,8 @@
     "requires_coast": false,
     "training_slots": 2,
     "default_zone": "home",
-    "stock_capacity": 0
+    "stock_capacity": 0,
+    "infra": null
   },
   {
     "id": "munitions_factory",
@@ -227,7 +238,8 @@
     "requires_coast": false,
     "training_slots": 0,
     "default_zone": "home",
-    "stock_capacity": 0
+    "stock_capacity": 0,
+    "infra": null
   },
   {
     "id": "vehicle_works",
@@ -244,7 +256,8 @@
     "requires_coast": false,
     "training_slots": 0,
     "default_zone": "home",
-    "stock_capacity": 0
+    "stock_capacity": 0,
+    "infra": null
   },
   {
     "id": "research_office",
@@ -261,6 +274,61 @@
     "requires_coast": false,
     "training_slots": 0,
     "default_zone": "home",
-    "stock_capacity": 0
+    "stock_capacity": 0,
+    "infra": null
+  },
+  {
+    "id": "refinery",
+    "name": "Refinery",
+    "icon": "RF",
+    "description": "Refines motor and aviation fuel. Fuelled vehicles, ships and aircraft reach their missions faster.",
+    "cost_money": 18000,
+    "cost_supplies": 400,
+    "unit_capacity": 0,
+    "unlocks_categories": [],
+    "min_level": 3,
+    "is_hq": false,
+    "sort": 14,
+    "requires_coast": false,
+    "training_slots": 0,
+    "default_zone": "home",
+    "stock_capacity": 0,
+    "infra": null
+  },
+  {
+    "id": "rail_yard",
+    "name": "Rail Yard",
+    "icon": "RY",
+    "description": "Sidings and a railhead. Overland convoys, resupply and transfers that start or end nearby move much faster.",
+    "cost_money": 14000,
+    "cost_supplies": 300,
+    "unit_capacity": 0,
+    "unlocks_categories": [],
+    "min_level": 2,
+    "is_hq": false,
+    "sort": 15,
+    "requires_coast": false,
+    "training_slots": 0,
+    "default_zone": "front",
+    "stock_capacity": 0,
+    "infra": "rail"
+  },
+  {
+    "id": "port",
+    "name": "Port",
+    "icon": "PT",
+    "description": "Quays and cranes. Sea convoys, resupply and transfers that start or end nearby move much faster. Must be built on the coast.",
+    "cost_money": 20000,
+    "cost_supplies": 500,
+    "unit_capacity": 0,
+    "unlocks_categories": [],
+    "min_level": 3,
+    "is_hq": false,
+    "sort": 16,
+    "requires_coast": true,
+    "training_slots": 0,
+    "default_zone": "front",
+    "stock_capacity": 0,
+    "infra": "port"
   }
 ]

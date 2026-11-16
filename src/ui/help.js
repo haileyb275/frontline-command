@@ -40,6 +40,12 @@ export function showHelp() {
             them and it falls back. Some reports arrive unconfirmed (marked ?) and need a recon unit
             or aircraft to look first. An enemy offensive (marked ⚠) against a base must be stopped
             in time, or the base is out of action for a while.</li>
+        <li><strong>Stores, supply lines and the market.</strong> Fuel makes vehicles faster, spare
+            parts halve repairs and medical stores halve recovery; a Refinery, Vehicle Works and
+            Field Hospital make them. Lines on the map show each base's supply line from your
+            Headquarters (red when it is running low). Rail Yards and Ports speed convoys. Buy and
+            sell goods on the market from the Bases tab. Any base can be moved for a quarter of
+            its cost.</li>
         <li><strong>Divisions, refits and captures.</strong> Form a division in the Units tab; with a
             command unit attached, its units fight harder together and the division gains its own
             experience. Open a unit to refit it with later equipment while keeping its experience.

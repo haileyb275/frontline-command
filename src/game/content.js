@@ -22,8 +22,9 @@ import objectives from '../data/objectives.json' with { type: 'json' };
 import ranks from '../data/ranks.json' with { type: 'json' };
 import research from '../data/research.json' with { type: 'json' };
 import operations from '../data/operations.json' with { type: 'json' };
+import market from '../data/market.json' with { type: 'json' };
 
-export { nations, categories, buildings, units, missions, settings, allianceBuildings, specialties, products, dailyOrders, objectives, ranks, research, operations };
+export { nations, categories, buildings, units, missions, settings, allianceBuildings, specialties, products, dailyOrders, objectives, ranks, research, operations, market };
 
 const index = (list) => new Map(list.map((item) => [item.id, item]));
 const nationById = index(nations);
@@ -97,13 +98,15 @@ export function distanceKm(a, b) {
  * This is only an ESTIMATE for the unit picker — the server works out the
  * real figure itself when you dispatch (see dispatch_units in the SQL).
  */
-export function travelSeconds(unitType, base, mission, nationId, alliance = null, specialtyId = null, slowdown = 1) {
+export function travelSeconds(unitType, base, mission, nationId, alliance = null, specialtyId = null, slowdown = 1, fuelled = false) {
   const speed =
     unitType.speed_kmh *
     (getSpecialty(specialtyId)?.speed_mult ?? 1) *
     nationBonus(nationId, 'speed_mult', unitType.category_id) *
     (1 + allianceBonus(alliance, 'speed'));
-  const seconds = (distanceKm(base, mission) / speed) * 3600 / settings.travel_time_scale * slowdown;
+  // A fuelled vehicle makes the trip faster (see fc_dispatch_fuel in the SQL).
+  const fuel = fuelled ? 1 + settings.fuel_speed_bonus : 1;
+  const seconds = (distanceKm(base, mission) / speed) * 3600 / settings.travel_time_scale * slowdown / fuel;
   return Math.max(settings.min_travel_seconds, Math.round(seconds));
 }
 
@@ -261,4 +264,36 @@ export function refitPrice(fromType, toType, nationId) {
     money: Math.max(0, Math.round(toType.cost_money * mult - fromType.cost_money * mult * settings.refit_credit)),
     supplies: Math.max(0, Math.round(toType.cost_supplies * mult - fromType.cost_supplies * mult * settings.refit_credit)),
   };
+}
+
+// ------------------------------------------------------------ phase 16
+
+/** The goods a player holds besides funds and supplies. */
+export const GOODS = [
+  { id: 'fuel', name: 'Fuel', use: 'Fuelled vehicles, ships and aircraft travel 20% faster.' },
+  { id: 'parts', name: 'Spare parts', use: 'Damaged vehicles are repaired in half the time.' },
+  { id: 'medical', name: 'Medical stores', use: 'Damaged troops recover in half the time.' },
+];
+
+/** How much fuel sending this unit out uses (0 for troops on foot). */
+export const fuelUse = (unit) => getCategory(getUnitType(unit.unit_type)?.category_id)?.fuel_use ?? 0;
+
+/** Does the player have a Rail Yard ('rail') or Port ('port') near either end of a route? */
+function hasInfra(kind, bases, a, b) {
+  return bases.some((base) => getBuilding(base.building_type)?.infra === kind &&
+    Math.min(distanceKm(base, a), distanceKm(base, b)) <= settings.convoy_infra_km);
+}
+
+/**
+ * What a resupply run to a base costs on top of what it delivers, as a
+ * fraction (0.08 = 8% extra). An ESTIMATE: the browser cannot tell whether
+ * the route crosses the sea, so it shows the land figure; the server adds
+ * the sea surcharge itself (fc_resupply_overhead).
+ */
+export function resupplyOverhead(hq, base, bases) {
+  if (!hq || hq.id === base.id) return 0;
+  let extra = Math.min(settings.resupply_overhead_cap,
+    (distanceKm(hq, base) / 500) * settings.resupply_overhead_per_500km);
+  if (hasInfra('rail', bases, hq, base) || hasInfra('port', bases, hq, base)) extra /= 2;
+  return extra;
 }

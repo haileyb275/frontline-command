@@ -25,6 +25,7 @@ import {
   refitOptions,
   refitPrice,
   divisionTier,
+  resupplyOverhead,
   settings,
 } from '../game/content.js';
 import { liveUnitStatus, formatDuration, now, msUntil } from '../game/clock.js';
@@ -150,7 +151,8 @@ export function renderBase(state, ui) {
     </div>
     <p class="muted">${esc(type.name)} · ${esc(formatLatLng(base))}
       · <button class="link-btn" data-action="focus-base">Show on map</button>
-      · <button class="link-btn" data-action="rename-base">Rename</button></p>
+      · <button class="link-btn" data-action="rename-base">Rename</button>
+      · <button class="link-btn" data-action="start-move">Move</button></p>
 
     ${base.disabled_until && msUntil(base.disabled_until) > 0
       ? `<p class="note note--danger">Overrun by an enemy offensive. Out of action for ${countdown(base.disabled_until)}:
@@ -159,6 +161,15 @@ export function renderBase(state, ui) {
     ${renderUpgrade(profile, base, type, ui)}
     ${renderStock(state, base, ui)}
     ${sections}`;
+}
+
+/** "Its supply line costs about 6% extra" for a base a long way from the Headquarters. */
+function overheadNote(state, base) {
+  const hq = state.bases.find((b) => getBuilding(b.building_type)?.is_hq);
+  const extra = resupplyOverhead(hq, base, state.bases);
+  return extra >= 0.01
+    ? `Its supply line is long: resupply costs about ${Math.round(extra * 100)}% extra (more across the sea; a Rail Yard or Port nearby halves it).`
+    : '';
 }
 
 /** The base's own stock of supplies, with resupply controls. */
@@ -174,6 +185,7 @@ function renderStock(state, base, ui) {
         <strong>Supplies on hand: ${fmt(stock)} / ${fmt(cap)}</strong>
         <span class="meter"><span style="width: ${Math.round((stock / cap) * 100)}%"></span></span>
         <span class="muted">Every unit sent out draws on this.
+          ${overheadNote(state, base)}
           ${inbound.length ? `A resupply convoy arrives in ${countdown(inbound[0].arrives_at)}.` : ''}</span>
         <label class="check-line">
           <input type="checkbox" data-action="auto-resupply" ${base.auto_resupply ? 'checked' : ''} />
@@ -247,7 +259,7 @@ function renderUpgrade(profile, base, type, ui) {
     ? `adds room for ${type.unit_capacity} more units`
     : type.training_slots > 0
       ? `adds ${type.training_slots} more training places`
-      : type.id === 'research_office' ? 'has no further effect yet'
+      : type.id === 'research_office' || type.infra ? 'has no further effect yet'
       : 'increases what each production run makes';
   return `
     <div class="upgrade">
@@ -277,7 +289,10 @@ function renderProduction(state, ui, base, products) {
   const rows = products.map((p) => {
     const input = { money: p.cost_money * base.level, supplies: p.cost_supplies * base.level };
     const out = [p.output_money && `${fmt(p.output_money * base.level)} funds`,
-                 p.output_supplies && `${fmt(p.output_supplies * base.level)} supplies`].filter(Boolean).join(' · ');
+                 p.output_supplies && `${fmt(p.output_supplies * base.level)} supplies`,
+                 p.output_fuel && `${fmt(p.output_fuel * base.level)} fuel`,
+                 p.output_parts && `${fmt(p.output_parts * base.level)} spare parts`,
+                 p.output_medical && `${fmt(p.output_medical * base.level)} medical stores`].filter(Boolean).join(' · ');
     const cost = [input.money && `${fmt(input.money)} funds`, input.supplies && `${fmt(input.supplies)} supplies`]
       .filter(Boolean).join(' · ');
     let blocked = '';

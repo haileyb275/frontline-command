@@ -16,6 +16,7 @@ import {
   specialtyName,
   unitFitsSlot,
   supplyUse,
+  fuelUse,
   unitTitle,
   settings,
 } from '../game/content.js';
@@ -345,7 +346,8 @@ const grounded = (unit, mission) =>
 const etaFor = (unit, mission, state, baseById) =>
   travelSeconds(getUnitType(unit.unit_type), baseById.get(unit.base_id), mission,
     state.profile.nation_id, state.alliance, unit.specialty,
-    travelSlowdown(weatherAt(mission.lat, mission.lng, now()), domainOf(unit)));
+    travelSlowdown(weatherAt(mission.lat, mission.lng, now()), domainOf(unit)),
+    fuelUse(unit) > 0 && state.profile.fuel >= fuelUse(unit));
 
 /** The list of idle units you can tick and send. */
 function renderPicker(state, ui, mission, type, counts) {

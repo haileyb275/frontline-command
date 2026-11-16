@@ -56,5 +56,18 @@
   "division_missions_3": 50,
   "refit_credit": 0.5,
   "refit_seconds": 300,
-  "capture_chance": 0.06
+  "capture_chance": 0.06,
+  "fuel_speed_bonus": 0.2,
+  "repair_goods_cost": 10,
+  "repair_goods_speedup": 0.5,
+  "convoy_infra_km": 30,
+  "convoy_infra_mult": 0.6,
+  "resupply_overhead_per_500km": 0.05,
+  "resupply_overhead_sea": 0.1,
+  "resupply_overhead_cap": 0.5,
+  "market_spread": 0.05,
+  "market_depth": 40000,
+  "market_max_trade": 5000,
+  "market_recover_hours": 6,
+  "move_cost_share": 0.25
 }

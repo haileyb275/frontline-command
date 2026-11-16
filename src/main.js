@@ -3,13 +3,13 @@
 
 import './style.css';
 import {
-  createMap, createBaseLayer, createFrontLayer, createMissionLayer, createTravelLayer, formatLatLng,
+  createMap, createBaseLayer, createFrontLayer, createSupplyLayer, createMissionLayer, createTravelLayer, formatLatLng,
 } from './map.js';
 import { supabase, friendlyError } from './supabase.js';
 import { state, setState, subscribe, loadProfile } from './state.js';
 import { loadGame, startSyncLoop, stopSyncLoop, stopRealtime } from './game/actions.js';
 import {
-  getBuilding, getCategory, getMissionType, getSlot, getUnitType, convoySeconds, distanceKm,
+  getBuilding, getCategory, getMissionType, getSlot, getUnitType, convoySeconds, distanceKm, stockCapacity, settings,
 } from './game/content.js';
 import { dispatchPosition } from './game/clock.js';
 import { getRoute, pointAlong } from './game/routes.js';
@@ -55,6 +55,14 @@ const baseLayer = createBaseLayer(map, {
 // The shaded ground each front-line base holds.
 const frontLayer = createFrontLayer(map);
 subscribe((s) => frontLayer.sync(s.bases));
+
+// Supply lines from the Headquarters to each base that keeps a stock.
+const supplyLayer = createSupplyLayer(map, {
+  isHq: (b) => getBuilding(b.building_type)?.is_hq,
+  needsLine: (b) => stockCapacity(b) > 0,
+  isLow: (b) => (b.stock ?? Infinity) < stockCapacity(b) * settings.resupply_threshold,
+});
+subscribe((s) => supplyLayer.sync(s.bases));
 
 const missionLayer = createMissionLayer(map, {
   getLabel: missionMarkerLabel,

@@ -96,13 +96,14 @@ export function initPanel({ baseLayer, missionLayer, mapElement, flyTo, fitTo })
       ?.classList.toggle('has-unread', state.unread > 0);
 
     // Keep the map in step with the panel.
-    const placing = ui.tab === 'bases' && (ui.view === 'placing' || ui.view === 'confirm');
+    const placing = ui.tab === 'bases' && ['placing', 'confirm', 'moving'].includes(ui.view);
     mapElement.classList.toggle('is-placing', placing);
     baseLayer.setGhost(
       placing ? ui.latlng : null,
-      placing ? buildingIcon(getBuilding(ui.buildingType)) : ''
+      placing ? buildingIcon(getBuilding(ui.view === 'moving'
+        ? state.bases.find((b) => b.id === ui.baseId)?.building_type : ui.buildingType)) : ''
     );
-    baseLayer.sync(state.bases, ui.tab === 'bases' && (ui.view === 'base' || ui.view === 'unit') ? ui.baseId : null);
+    baseLayer.sync(state.bases, ui.tab === 'bases' && ['base', 'unit', 'moving'].includes(ui.view) ? ui.baseId : null);
     missionLayer.sync(state.missions, ui.tab === 'missions' && ui.view === 'mission' ? ui.missionId : null);
 
     // If the mission being viewed has finished, drop back to the list.
@@ -166,7 +167,10 @@ export function initPanel({ baseLayer, missionLayer, mapElement, flyTo, fitTo })
     const form = event.target.closest('[data-form]');
     if (!form) return;
     event.preventDefault();
-    TABS[ui.tab].handleSubmit?.(form.dataset.form, Object.fromEntries(new FormData(form)), ctx, form);
+    // event.submitter is the button that was pressed; include its name and
+    // value so a form with two buttons (Buy / Sell) can tell them apart.
+    const values = Object.fromEntries(new FormData(form, event.submitter));
+    TABS[ui.tab].handleSubmit?.(form.dataset.form, values, ctx, form);
   });
 
   // Drop-down menus (<select data-change="…">) report through "change".

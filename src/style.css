@@ -1892,3 +1892,21 @@ button.player-name:hover {
   width: 21px;
   height: 21px;
 }
+
+/* ==========================================================================
+   Phase 16: supply lines, market
+   ========================================================================== */
+
+.supply-line {
+  stroke: #4b5435;
+  stroke-width: 2;
+  stroke-opacity: 0.7;
+  stroke-dasharray: 2 7;
+  fill: none;
+}
+
+.supply-line.is-low {
+  stroke: var(--danger);
+  stroke-opacity: 0.95;
+  stroke-width: 3;
+}

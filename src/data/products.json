@@ -9,7 +9,10 @@
     "output_money": 0,
     "output_supplies": 250,
     "min_level": 2,
-    "sort": 0
+    "sort": 0,
+    "output_fuel": 0,
+    "output_parts": 0,
+    "output_medical": 0
   },
   {
     "id": "artillery_shells",
@@ -21,7 +24,10 @@
     "output_money": 0,
     "output_supplies": 1400,
     "min_level": 2,
-    "sort": 1
+    "sort": 1,
+    "output_fuel": 0,
+    "output_parts": 0,
+    "output_medical": 0
   },
   {
     "id": "bulk_munitions",
@@ -33,7 +39,10 @@
     "output_money": 0,
     "output_supplies": 5200,
     "min_level": 3,
-    "sort": 2
+    "sort": 2,
+    "output_fuel": 0,
+    "output_parts": 0,
+    "output_medical": 0
   },
   {
     "id": "spare_parts",
@@ -45,7 +54,10 @@
     "output_money": 2500,
     "output_supplies": 0,
     "min_level": 3,
-    "sort": 3
+    "sort": 3,
+    "output_fuel": 0,
+    "output_parts": 0,
+    "output_medical": 0
   },
   {
     "id": "truck_assembly",
@@ -57,7 +69,10 @@
     "output_money": 11000,
     "output_supplies": 0,
     "min_level": 3,
-    "sort": 4
+    "sort": 4,
+    "output_fuel": 0,
+    "output_parts": 0,
+    "output_medical": 0
   },
   {
     "id": "tank_overhaul",
@@ -69,6 +84,99 @@
     "output_money": 40000,
     "output_supplies": 0,
     "min_level": 4,
-    "sort": 5
+    "sort": 5,
+    "output_fuel": 0,
+    "output_parts": 0,
+    "output_medical": 0
+  },
+  {
+    "id": "motor_fuel",
+    "name": "Motor Fuel",
+    "building_type": "refinery",
+    "duration_seconds": 1800,
+    "cost_money": 400,
+    "cost_supplies": 0,
+    "output_money": 0,
+    "output_supplies": 0,
+    "min_level": 3,
+    "sort": 6,
+    "output_fuel": 300,
+    "output_parts": 0,
+    "output_medical": 0
+  },
+  {
+    "id": "fuel_bulk",
+    "name": "Bulk Fuel Order",
+    "building_type": "refinery",
+    "duration_seconds": 14400,
+    "cost_money": 2400,
+    "cost_supplies": 0,
+    "output_money": 0,
+    "output_supplies": 0,
+    "min_level": 3,
+    "sort": 7,
+    "output_fuel": 2200,
+    "output_parts": 0,
+    "output_medical": 0
+  },
+  {
+    "id": "parts_batch",
+    "name": "Spare Parts Batch",
+    "building_type": "vehicle_works",
+    "duration_seconds": 1800,
+    "cost_money": 0,
+    "cost_supplies": 100,
+    "output_money": 0,
+    "output_supplies": 0,
+    "min_level": 3,
+    "sort": 8,
+    "output_fuel": 0,
+    "output_parts": 120,
+    "output_medical": 0
+  },
+  {
+    "id": "parts_bulk",
+    "name": "Workshop Stores Order",
+    "building_type": "vehicle_works",
+    "duration_seconds": 14400,
+    "cost_money": 0,
+    "cost_supplies": 600,
+    "output_money": 0,
+    "output_supplies": 0,
+    "min_level": 4,
+    "sort": 9,
+    "output_fuel": 0,
+    "output_parts": 900,
+    "output_medical": 0
+  },
+  {
+    "id": "medical_stores",
+    "name": "Medical Stores",
+    "building_type": "field_hospital",
+    "duration_seconds": 1800,
+    "cost_money": 300,
+    "cost_supplies": 0,
+    "output_money": 0,
+    "output_supplies": 0,
+    "min_level": 2,
+    "sort": 10,
+    "output_fuel": 0,
+    "output_parts": 0,
+    "output_medical": 120
+  },
+  {
+    "id": "medical_bulk",
+    "name": "Hospital Stores Order",
+    "building_type": "field_hospital",
+    "duration_seconds": 14400,
+    "cost_money": 1800,
+    "cost_supplies": 0,
+    "output_money": 0,
+    "output_supplies": 0,
+    "min_level": 3,
+    "sort": 11,
+    "output_fuel": 0,
+    "output_parts": 0,
+    "output_medical": 900
   }
 ]

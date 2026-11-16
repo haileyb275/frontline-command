@@ -51,14 +51,14 @@ const parts = [
   upsert('nations', ['id', 'name', 'short', 'color', 'bonuses'], readJson('nations.json')),
   upsert(
     'unit_categories',
-    ['id', 'name', 'icon', 'sort', 'base_power', 'supply_use', 'recovers_at', 'domain'],
+    ['id', 'name', 'icon', 'sort', 'base_power', 'supply_use', 'recovers_at', 'domain', 'fuel_use'],
     readJson('categories.json')
   ),
   upsert(
     'building_types',
     ['id', 'name', 'icon', 'description', 'cost_money', 'cost_supplies', 'unit_capacity',
      'unlocks_categories', 'min_level', 'is_hq', 'sort', 'requires_coast', 'training_slots',
-     'default_zone', 'stock_capacity'],
+     'default_zone', 'stock_capacity', 'infra'],
     readJson('buildings.json')
   ),
   upsert(
@@ -83,7 +83,7 @@ const parts = [
   upsert(
     'products',
     ['id', 'name', 'building_type', 'duration_seconds', 'cost_money', 'cost_supplies',
-     'output_money', 'output_supplies', 'min_level', 'sort'],
+     'output_money', 'output_supplies', 'min_level', 'sort', 'output_fuel', 'output_parts', 'output_medical'],
     readJson('products.json')
   ),
   upsert(
@@ -104,6 +104,7 @@ const parts = [
      'reward_supplies', 'reward_xp', 'alliance_xp', 'sort'],
     readJson('operations.json')
   ),
+  upsert('market', ['item', 'name', 'base_price'], readJson('market.json')),
   // settings.json is one object; the table wants one row per setting.
   upsert(
     'game_config',

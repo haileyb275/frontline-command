@@ -299,3 +299,6 @@ was revised in a later phase, the highest-numbered file holds the current versio
 - **Phase 15** added divisions (`divisions`, `units.division_id`, a formation bonus applied by a
   trigger on `dispatches`), refits (`refit_unit`), captured equipment (a trigger on `missions`,
   announced through `player_notices`), and a `note` on every unit in `units.json`.
+- **Phase 16** added goods (`profiles.fuel`, `parts`, `medical`, spent by triggers on `dispatches`
+  and `units`), infrastructure (`building_types.infra`, used by `fc_convoy_seconds`), resupply
+  overhead (`fc_resupply_overhead`), a shared market (`market`, `trade_market`), and `move_base`.
