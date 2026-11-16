@@ -14,6 +14,7 @@ import { friendlyError } from '../supabase.js';
 import { formatLatLng } from '../map.js';
 import { esc, fmt } from './dom.js';
 import { toast } from './toast.js';
+import { buildingIcon } from './icons.js';
 
 const when = (iso) => new Date(iso).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
 
@@ -114,7 +115,7 @@ function renderPlayer(state, ui) {
 
   const bases = data.bases.map((b) => `
     <div class="row row--static row--wrap">
-      <span class="row-icon">${esc(getBuilding(b.building_type)?.icon ?? '?')}</span>
+      <span class="row-icon">${buildingIcon(getBuilding(b.building_type) ?? b.building_type)}</span>
       <span class="row-main">
         <span class="row-title">${esc(b.name)}</span>
         <span class="row-sub">${esc(getBuilding(b.building_type)?.name ?? b.building_type)} · level ${b.level} · ${esc(formatLatLng(b))}</span>

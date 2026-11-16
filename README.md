@@ -87,7 +87,7 @@ All content is data in `src/data/`. No game logic needs to change.
 
 | To add… | Edit | Notes |
 |---|---|---|
-| a unit | `units.json` | `category_id` must exist in `categories.json`; a building must unlock that category |
+| a unit | `units.json` | `category_id` must exist in `categories.json`; a building must unlock that category. `icon` picks its symbol (keys are listed in `src/ui/icons.js`); `note` is its historical note |
 | a building | `buildings.json` | `unlocks_categories` lists what it can station; `requires_coast` for harbors |
 | a mission | `missions.json` | `requirements` are category → count; `terrain` is `land`, `water` or `any`; `min_km`/`max_km` set how far from your bases it appears |
 | a nation | `nations.json` + its rows in `units.json` | bonuses are data: `cost_mult`, `speed_mult`, `power_mult`, `reward_mult`, `building_cost_mult` |

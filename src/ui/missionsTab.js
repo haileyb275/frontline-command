@@ -28,6 +28,7 @@ import { weatherAt, isNight, travelSlowdown, conditionsText } from '../game/weat
 import { friendlyError } from '../supabase.js';
 import { esc, fmt } from './dom.js';
 import { toast } from './toast.js';
+import { unitIcon, slotIcon } from './icons.js';
 
 // ---------------------------------------------------------------- helpers
 
@@ -59,6 +60,12 @@ function statusText(mission, dispatches) {
   return sent > 0 ? `Needs more units · ${expires}` : `Awaiting units · ${expires}`;
 }
 
+/** A committed unit's own symbol if it is ours; otherwise the symbol of the place it fills. */
+function iconForDispatch(d, units) {
+  const mine = units.find((u) => u.id === d.unit_id);
+  return mine ? unitIcon(mine.unit_type) : slotIcon(d.unit_category ?? d.category_id);
+}
+
 /** The little "INF 1/2" boxes. */
 function requirementChips(type, counts = {}) {
   return Object.entries(type.requirements)
@@ -66,7 +73,7 @@ function requirementChips(type, counts = {}) {
       const have = Math.min(counts[categoryId] ?? 0, needed);
       const cat = getSlot(categoryId); // a category or a specialty
       return `<span class="chip ${have >= needed ? 'is-met' : ''}" title="${esc(cat.name)}">
-                ${esc(cat.icon)} ${have}/${needed}</span>`;
+                ${slotIcon(categoryId)} ${have}/${needed}</span>`;
     })
     .join('');
 }
@@ -175,7 +182,7 @@ function renderUnconfirmed(state, ui, mission) {
           const stormed = grounded(unit, mission);
           return `
             <div class="row row--static">
-              <span class="row-icon row-icon--unit">${esc(getCategory(getUnitType(unit.unit_type).category_id).icon)}</span>
+              <span class="row-icon row-icon--unit">${unitIcon(unit.unit_type)}</span>
               <span class="row-main">
                 <span class="row-title">${esc(unitTitle(unit))}</span>
                 <span class="row-sub">${esc(baseById.get(unit.base_id)?.name ?? '')} · ${stormed ? 'grounded by the storm' : `there in ${formatDuration(eta * 1000)}`}</span>
@@ -228,7 +235,7 @@ function renderMission(state, ui, mission) {
         const ally = d.player_id !== profile.id;
         return `
           <div class="row row--static">
-            <span class="row-icon row-icon--unit ${ally ? 'row-icon--ally' : ''}">${esc(getSlot(d.category_id).icon)}</span>
+            <span class="row-icon row-icon--unit ${ally ? 'row-icon--ally' : ''}">${iconForDispatch(d, units)}</span>
             <span class="row-main">
               <span class="row-title">${esc(d.unit_name)}</span>
               ${mission.alliance_id ? `<span class="row-sub">${ally ? esc(d.player_name) : 'You'}</span>` : ''}

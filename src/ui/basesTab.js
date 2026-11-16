@@ -32,6 +32,7 @@ import { formatLatLng } from '../map.js';
 import { liveUnitStatus } from '../game/clock.js';
 import { esc, fmt, statusPillHtml } from './dom.js';
 import { toast } from './toast.js';
+import { buildingIcon } from './icons.js';
 
 /** "5,000 funds · 100 supplies" (supplies left out when zero). */
 export function priceText(price) {
@@ -93,7 +94,7 @@ function renderList(profile, bases, units) {
       }
       return `
         <button class="row" data-action="open-base" data-base="${esc(base.id)}">
-          <span class="row-icon ${base.zone === 'home' ? 'row-icon--home' : ''}">${esc(type.icon)}</span>
+          <span class="row-icon ${base.zone === 'home' ? 'row-icon--home' : ''}">${buildingIcon(type)}</span>
           <span class="row-main">
             <span class="row-title">${esc(base.name)}</span>
             <span class="row-sub">${esc(type.name)} · ${base.zone === 'home' ? 'home front' : 'front line'}</span>
@@ -126,7 +127,7 @@ function renderBuildMenu(profile, bases) {
       return `
         <div class="card option ${blocked ? 'is-blocked' : ''}">
           <div class="option-head">
-            <span class="row-icon">${esc(b.icon)}</span>
+            <span class="row-icon">${buildingIcon(b)}</span>
             <h2>${esc(b.name)}</h2>
           </div>
           <p>${esc(b.description)}</p>

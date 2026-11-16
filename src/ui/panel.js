@@ -13,6 +13,7 @@ import * as adminTab from './adminTab.js';
 import { openProfile, closeProfile } from '../game/actions.js';
 import { friendlyError } from '../supabase.js';
 import { toast } from './toast.js';
+import { buildingIcon } from './icons.js';
 
 const TABS = {
   missions: missionsTab,
@@ -99,7 +100,7 @@ export function initPanel({ baseLayer, missionLayer, mapElement, flyTo, fitTo })
     mapElement.classList.toggle('is-placing', placing);
     baseLayer.setGhost(
       placing ? ui.latlng : null,
-      placing ? getBuilding(ui.buildingType)?.icon : ''
+      placing ? buildingIcon(getBuilding(ui.buildingType)) : ''
     );
     baseLayer.sync(state.bases, ui.tab === 'bases' && (ui.view === 'base' || ui.view === 'unit') ? ui.baseId : null);
     missionLayer.sync(state.missions, ui.tab === 'missions' && ui.view === 'mission' ? ui.missionId : null);

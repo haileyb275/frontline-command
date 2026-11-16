@@ -6,6 +6,7 @@ import {
   categories, getBuilding, getNation, getSpecialty, getUnitType, specialtyName, veterancy, rankTitle, getObjective,
 } from '../game/content.js';
 import { esc, fmt } from './dom.js';
+import { unitIcon, buildingIcon } from './icons.js';
 
 export function renderProfile(state) {
   const p = state.viewedProfile;
@@ -21,7 +22,7 @@ export function renderProfile(state) {
         const type = getBuilding(b.building_type);
         return `
           <button class="row" data-action="profile-focus" data-lat="${b.lat}" data-lng="${b.lng}">
-            <span class="row-icon ${b.zone === 'home' ? 'row-icon--home' : ''}">${esc(type?.icon ?? '?')}</span>
+            <span class="row-icon ${b.zone === 'home' ? 'row-icon--home' : ''}">${buildingIcon(type ?? b.building_type)}</span>
             <span class="row-main">
               <span class="row-title">${esc(b.name)}</span>
               <span class="row-sub">${esc(type?.name ?? b.building_type)} · level ${b.level} · ${b.zone === 'home' ? 'home front' : 'front line'}</span>
@@ -41,7 +42,7 @@ export function renderProfile(state) {
       const vet = veterancy(u.missions_done);
       return `
         <div class="row row--static">
-          <span class="row-icon row-icon--unit">${esc(cat.icon)}</span>
+          <span class="row-icon row-icon--unit">${unitIcon(u.unit_type)}</span>
           <span class="row-main">
             <span class="row-title">${esc(u.name || ut?.name || u.unit_type)}</span>
             <span class="row-sub">${esc(baseName.get(u.base_id) ?? '')}

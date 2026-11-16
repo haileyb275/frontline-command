@@ -1848,3 +1848,47 @@ button.player-name:hover {
 .section-head--sub h3 {
   margin: 0;
 }
+
+/* ==========================================================================
+   Icons (src/ui/icons.js)
+   ========================================================================== */
+
+.icon {
+  display: block;
+  width: 22px;
+  height: 22px;
+}
+
+/* In list rows the icon fills its little box */
+.row-icon .icon {
+  width: 24px;
+  height: 24px;
+}
+
+.row-icon--unit .icon {
+  width: 26px;
+  height: 26px;
+}
+
+/* Requirement chips: a small symbol next to the count */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.chip .icon {
+  width: 17px;
+  height: 17px;
+}
+
+/* On the map */
+.marker .icon {
+  width: 22px;
+  height: 22px;
+}
+
+.marker--unit .icon {
+  width: 21px;
+  height: 21px;
+}

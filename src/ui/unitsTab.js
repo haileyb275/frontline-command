@@ -4,6 +4,7 @@ import { categories, getUnitType, unitTitle, divisionTier, divisionSlots, settin
 import { deleteTaskForce, createDivision, renameDivision, disbandDivision } from '../game/actions.js';
 import { friendlyError } from '../supabase.js';
 import { toast } from './toast.js';
+import { unitIcon } from './icons.js';
 import { liveUnitStatus } from '../game/clock.js';
 import { esc, statusPillHtml } from './dom.js';
 import { specialtyTag, veterancyLabel } from './baseViews.js';
@@ -34,7 +35,7 @@ export function render(state) {
         .map(
           (unit) => `
           <button class="row" data-action="open-unit" data-unit="${esc(unit.id)}">
-            <span class="row-icon row-icon--unit">${esc(cat.icon)}</span>
+            <span class="row-icon row-icon--unit">${unitIcon(unit.unit_type)}</span>
             <span class="row-main">
               <span class="row-title">${esc(unitTitle(unit))}</span>
               <span class="row-sub">${esc(baseName.get(unit.base_id) ?? 'Unknown base')}

@@ -159,6 +159,7 @@ test('divisions fight harder together, and a refit keeps a unit\'s experience', 
       .dispatches.map((d) => Number(d.power));
 
   assert.deepEqual(await powers(), [10, 10], 'no command unit attached: no bonus');
+  await sql(`update public.profiles set level = 2, xp = 100 where id = '${p.id}'`);   // command units need level 2
   await p.must('assign_division', { p_unit_id: await buy('germany_command'), p_division_id: division });
   assert.deepEqual(await powers(), [10.5, 10.5], 'with a command unit: +5% each');
 

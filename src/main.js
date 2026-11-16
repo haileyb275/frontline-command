@@ -17,6 +17,7 @@ import { conditionsText } from './game/weather.js';
 import { now } from './game/clock.js';
 import { initTutorial } from './ui/tutorial.js';
 import { missionMarkerLabel } from './ui/missionsTab.js';
+import { unitIcon, categoryIcon, buildingIcon } from './ui/icons.js';
 import { initPanel } from './ui/panel.js';
 import { initTopbar } from './ui/topbar.js';
 import { showAuthScreen } from './ui/auth.js';
@@ -47,7 +48,7 @@ function frameEverything() {
 }
 
 const baseLayer = createBaseLayer(map, {
-  getIcon: (base) => getBuilding(base.building_type)?.icon ?? '?',
+  getIcon: (base) => buildingIcon(getBuilding(base.building_type) ?? base.building_type),
   onSelect: (base) => panel.selectBase(base),
 });
 
@@ -78,7 +79,11 @@ subscribe((s) => {
 createTravelLayer(map, {
   getDispatches: () => state.dispatches,
   getTarget: (d) => state.missions.find((m) => m.id === d.mission_id) ?? missionTargets.get(d.mission_id) ?? null,
-  getLabel: (d) => getSlot(d.category_id).icon,
+  // Our own units show their exact symbol; allies' units show their branch.
+  getLabel: (d) => {
+    const mine = state.units.find((u) => u.id === d.unit_id);
+    return mine ? unitIcon(mine.unit_type) : categoryIcon(d.unit_category ?? d.category_id);
+  },
   // Allied units on shared missions are drawn in a different colour.
   getKind: (d) => (d.player_id === state.profile?.id ? 'unit' : 'unit ally'),
   getPosition: dispatchPosition,
@@ -124,7 +129,7 @@ createTravelLayer(map, {
           to: { lat: to.lat, lng: to.lng },
           arrives_at: outbound ? u.scout_arrives_at : u.busy_until,
           travel_seconds: legSeconds,
-          label: getCategory(getUnitType(u.unit_type)?.category_id)?.icon ?? '',
+          label: unitIcon(u.unit_type),
         };
       })
       .filter(Boolean),
@@ -141,7 +146,7 @@ createTravelLayer(map, {
           to: { lat: to.lat, lng: to.lng },
           arrives_at: u.busy_until,
           travel_seconds: convoySeconds(from, to),
-          label: getCategory(getUnitType(u.unit_type)?.category_id)?.icon ?? '',
+          label: unitIcon(u.unit_type),
         };
       })
       .filter(Boolean),
@@ -155,7 +160,7 @@ createTravelLayer(map, {
 // Another player's bases, shown while their profile (or the admin view of
 // their account) is open. Same layer type as our own bases, different style.
 const visitorLayer = createBaseLayer(map, {
-  getIcon: (base) => getBuilding(base.building_type)?.icon ?? '?',
+  getIcon: (base) => buildingIcon(getBuilding(base.building_type) ?? base.building_type),
   getKind: () => 'base foreign',
   onSelect: () => {},
 });

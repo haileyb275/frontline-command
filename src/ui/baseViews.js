@@ -30,6 +30,7 @@ import {
 import { liveUnitStatus, formatDuration, now, msUntil } from '../game/clock.js';
 import { formatLatLng } from '../map.js';
 import { esc, fmt, statusPillHtml } from './dom.js';
+import { unitIcon, buildingIcon } from './icons.js';
 import { priceText } from './basesTab.js';
 
 const pct = (mult) => `${mult > 1 ? '+' : ''}${Math.round((mult - 1) * 100)}%`;
@@ -103,7 +104,7 @@ export function renderBase(state, ui) {
           const ut = getUnitType(unit.unit_type);
           return `
             <button class="row" data-action="open-unit" data-unit="${esc(unit.id)}">
-              <span class="row-icon row-icon--unit">${esc(getCategory(ut.category_id).icon)}</span>
+              <span class="row-icon row-icon--unit">${unitIcon(ut)}</span>
               <span class="row-main">
                 <span class="row-title">${esc(unitTitle(unit))}</span>
                 <span class="row-sub">${unit.name ? `${esc(ut.name)} ` : ''}${unit.captured ? '<span class="tag tag--bad">Captured</span> ' : ''}${veterancyLabel(unit)} ${specialtyTag(unit, profile.nation_id)}</span>
@@ -122,7 +123,7 @@ export function renderBase(state, ui) {
       else if (!canAfford(profile, price)) blocked = 'Too costly';
       return `
         <div class="row row--static">
-          <span class="row-icon row-icon--unit">${esc(getCategory(ut.category_id).icon)}</span>
+          <span class="row-icon row-icon--unit">${unitIcon(ut)}</span>
           <span class="row-main">
             <span class="row-title">${esc(ut.name)}</span>
             <span class="row-sub">${esc(getCategory(ut.category_id).name)} · ${ut.speed_kmh} km/h · power ${ut.power}${
@@ -422,7 +423,7 @@ export function renderUnit(state, ui) {
       const full = there >= type.unit_capacity * b.level;
       return `
         <div class="row row--static">
-          <span class="row-icon">${esc(type.icon)}</span>
+          <span class="row-icon">${buildingIcon(type)}</span>
           <span class="row-main">
             <span class="row-title">${esc(b.name)}</span>
             <span class="row-sub">${b.zone === 'home' ? 'Home front' : 'Front line'} ·
