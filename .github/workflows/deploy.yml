@@ -1,0 +1,63 @@
+# Builds the game and publishes it to GitHub Pages every time you push to main.
+#
+# One-time setup on GitHub:
+#   Repository → Settings → Pages → "Build and deployment" → Source: GitHub Actions
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # adds a "Run workflow" button in the Actions tab
+
+# The minimum permissions the deploy needs.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# If you push twice quickly, finish the running deploy instead of overlapping.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci # installs the exact versions in package-lock.json
+
+      - name: Build
+        run: npm run build
+        # Phase 2 adds the Supabase settings here, e.g.:
+        # env:
+        #   VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+        #   VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload the built site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

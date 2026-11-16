@@ -1,0 +1,16 @@
+# Dependencies (re-created by `npm install`)
+node_modules/
+
+# Build output (re-created by `npm run build`; GitHub Actions builds it for us)
+dist/
+
+# Local secrets. From Phase 2 on, your Supabase URL/key live in .env.local
+.env
+.env.local
+.env.*.local
+
+# Editor / OS noise
+.DS_Store
+.vscode/
+*.log
+*.zip

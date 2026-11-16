@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- viewport-fit=cover lets us use the full screen on phones with notches -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#2b301f" />
+    <meta name="description" content="A persistent multiplayer WW2 command game played on a real-world map." />
+    <title>Frontline Command</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- ===== Top bar: game title + player resources ===== -->
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-star" aria-hidden="true">★</span>
+          <span class="brand-name">Frontline Command</span>
+        </div>
+
+        <!-- Resource readouts. Real values arrive in Phase 2/3; the IDs are
+             here now so later phases only have to fill them in. -->
+        <ul class="resources" aria-label="Resources">
+          <li class="resource" title="Money"><span class="resource-label">Funds</span><span id="res-money">—</span></li>
+          <li class="resource" title="Supplies"><span class="resource-label">Supplies</span><span id="res-supplies">—</span></li>
+          <li class="resource" title="Experience level"><span class="resource-label">Rank</span><span id="res-level">—</span></li>
+        </ul>
+
+        <button id="panel-toggle" class="icon-btn" aria-label="Toggle side panel" aria-expanded="true">☰</button>
+      </header>
+
+      <!-- ===== Main area: map + side panel ===== -->
+      <main class="layout">
+        <section class="map-wrap">
+          <div id="map" aria-label="Operations map"></div>
+          <!-- Small readout showing the last clicked map position -->
+          <div id="coords" class="coords">Click the map to read a position</div>
+        </section>
+
+        <aside id="panel" class="panel">
+          <nav class="tabs" role="tablist">
+            <button class="tab is-active" role="tab" data-tab="missions">Missions</button>
+            <button class="tab" role="tab" data-tab="units">Units</button>
+            <button class="tab" role="tab" data-tab="bases">Bases</button>
+            <button class="tab" role="tab" data-tab="alliance">Alliance</button>
+          </nav>
+          <div id="panel-body" class="panel-body"></div>
+        </aside>
+      </main>
+    </div>
+
+    <!-- type="module" lets us use `import` — Vite bundles everything from here -->
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

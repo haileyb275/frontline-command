@@ -1,0 +1,315 @@
+/* ==========================================================================
+   Frontline Command — styles
+   Olive / khaki "field map" theme. All colours are CSS variables, so you can
+   re-theme the whole game by editing the :root block.
+   ========================================================================== */
+
+:root {
+  --olive-900: #1e2216; /* darkest: page background */
+  --olive-800: #2b301f; /* top bar */
+  --olive-700: #3a4129; /* panel */
+  --olive-600: #4b5435; /* cards, hover */
+  --olive-500: #5f6b43; /* borders */
+  --khaki-300: #d8c98f; /* headings, accents */
+  --khaki-200: #e6dcb4; /* body text */
+  --khaki-100: #f2ecd6;
+  --muted: #a9a584;
+  --danger: #b5523b;
+  --ok: #7fa650;
+
+  --topbar-h: 52px;
+  --panel-w: 360px;
+  --radius: 6px;
+  --font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--olive-900);
+  color: var(--khaki-200);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.45;
+  overflow: hidden; /* the map and panel scroll, not the page */
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh; /* dvh = correct height on mobile when the URL bar shows/hides */
+}
+
+/* ---------- Top bar ---------- */
+
+.topbar {
+  flex: 0 0 var(--topbar-h);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 12px;
+  padding-left: max(12px, env(safe-area-inset-left));
+  padding-right: max(12px, env(safe-area-inset-right));
+  background: var(--olive-800);
+  border-bottom: 2px solid var(--olive-500);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--khaki-300);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.brand-star {
+  font-size: 18px;
+}
+
+.resources {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 0 auto;
+  padding: 0;
+  list-style: none;
+}
+
+.resource {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 68px;
+  padding: 3px 10px;
+  background: var(--olive-900);
+  border: 1px solid var(--olive-500);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.resource-label {
+  color: var(--muted);
+  font-family: var(--font);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.icon-btn {
+  width: 38px;
+  height: 38px;
+  background: var(--olive-600);
+  color: var(--khaki-100);
+  border: 1px solid var(--olive-500);
+  border-radius: var(--radius);
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.icon-btn:hover {
+  background: var(--olive-500);
+}
+
+/* ---------- Layout: map + panel ---------- */
+
+.layout {
+  flex: 1 1 auto;
+  display: flex;
+  min-height: 0; /* lets children shrink and scroll inside a flex column */
+}
+
+.map-wrap {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+#map {
+  position: absolute;
+  inset: 0;
+  background: #cfc9ae; /* shown while tiles are loading */
+}
+
+.coords {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  z-index: 500; /* above the map tiles, below Leaflet popups */
+  padding: 4px 12px;
+  background: rgba(30, 34, 22, 0.88);
+  border: 1px solid var(--olive-500);
+  border-radius: 999px;
+  color: var(--khaki-200);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none; /* clicks pass through to the map */
+}
+
+.panel {
+  flex: 0 0 var(--panel-w);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--olive-700);
+  border-left: 2px solid var(--olive-500);
+}
+
+.panel.is-collapsed {
+  display: none;
+}
+
+.tabs {
+  display: flex;
+  flex: 0 0 auto;
+  background: var(--olive-800);
+  border-bottom: 1px solid var(--olive-500);
+}
+
+.tab {
+  flex: 1;
+  padding: 11px 4px;
+  background: none;
+  color: var(--muted);
+  border: 0;
+  border-bottom: 3px solid transparent;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.tab:hover {
+  color: var(--khaki-100);
+}
+
+.tab.is-active {
+  color: var(--khaki-300);
+  border-bottom-color: var(--khaki-300);
+}
+
+.panel-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 12px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
+
+/* ---------- Reusable bits ---------- */
+
+.card {
+  padding: 14px;
+  background: var(--olive-600);
+  border: 1px solid var(--olive-500);
+  border-radius: var(--radius);
+}
+
+.card h2 {
+  margin: 0 0 6px;
+  color: var(--khaki-300);
+  font-size: 15px;
+  letter-spacing: 0.04em;
+}
+
+.card p {
+  margin: 0 0 10px;
+}
+
+.card--empty {
+  border-style: dashed;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  background: var(--olive-900);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Map markers built by makeIcon() in map.js */
+.marker {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 2px solid var(--olive-900);
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  color: var(--olive-900);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.marker--base {
+  background: var(--khaki-300);
+  border-radius: 6px;
+}
+
+.marker--mission {
+  background: var(--danger);
+  color: #fff;
+}
+
+.marker--unit {
+  background: var(--ok);
+}
+
+/* Make Leaflet's own controls match the theme */
+.leaflet-bar a,
+.leaflet-bar a:hover {
+  background: var(--olive-800);
+  color: var(--khaki-200);
+  border-bottom-color: var(--olive-500);
+}
+
+.leaflet-bar a:hover {
+  background: var(--olive-600);
+}
+
+.leaflet-container {
+  font-family: var(--font);
+}
+
+/* ---------- Mobile: panel becomes a bottom sheet ---------- */
+
+@media (max-width: 760px) {
+  .brand-name {
+    display: none; /* just the star, to leave room for resources */
+  }
+
+  .layout {
+    flex-direction: column;
+  }
+
+  .panel {
+    flex: 0 0 42%;
+    border-left: 0;
+    border-top: 2px solid var(--olive-500);
+  }
+
+  .resource {
+    min-width: 56px;
+    padding: 3px 7px;
+  }
+}
