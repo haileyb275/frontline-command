@@ -313,3 +313,300 @@ body {
     padding: 3px 7px;
   }
 }
+
+/* ==========================================================================
+   Phase 2: player badge, overlays, forms, nation picker
+   ========================================================================== */
+
+[hidden] {
+  display: none !important;
+}
+
+.player {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.player-name {
+  max-width: 140px;
+  overflow: hidden;
+  color: var(--khaki-100);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.link-btn {
+  padding: 4px 6px;
+  background: none;
+  color: var(--muted);
+  border: 0;
+  font: inherit;
+  font-size: 12px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.link-btn:hover {
+  color: var(--khaki-100);
+}
+
+/* The coloured "USA" / "UK" tag. --nation is set per nation from the JSON. */
+.nation-chip {
+  display: inline-block;
+  padding: 3px 9px;
+  background: var(--nation, var(--olive-500));
+  border: 1px solid rgba(0, 0, 0, 0.35);
+  border-radius: 4px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.nation-chip--sm {
+  padding: 2px 6px;
+  font-size: 10px;
+}
+
+/* ---------- Overlay + dialog ---------- */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000; /* above everything Leaflet draws */
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 16px;
+  overflow-y: auto;
+  background: rgba(20, 23, 14, 0.82);
+  backdrop-filter: blur(2px);
+}
+
+.dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 400px;
+  margin: auto; /* centres vertically, but still scrolls when too tall */
+  padding: 22px;
+  background: var(--olive-700);
+  border: 2px solid var(--olive-500);
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.dialog--wide {
+  max-width: 920px;
+}
+
+.dialog-head {
+  text-align: center;
+}
+
+.dialog-head .brand-star {
+  color: var(--khaki-300);
+  font-size: 26px;
+}
+
+.dialog-head h1 {
+  margin: 0 0 4px;
+  color: var(--khaki-300);
+  font-size: 20px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.dialog-head p {
+  margin: 0;
+  color: var(--muted);
+}
+
+/* Log in / Sign up switch */
+.seg {
+  display: flex;
+  padding: 3px;
+  background: var(--olive-900);
+  border-radius: var(--radius);
+}
+
+.seg-btn {
+  flex: 1;
+  padding: 8px;
+  background: none;
+  color: var(--muted);
+  border: 0;
+  border-radius: 4px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.seg-btn.is-active {
+  background: var(--olive-600);
+  color: var(--khaki-100);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.field > span {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.field input {
+  padding: 10px;
+  background: var(--olive-900);
+  color: var(--khaki-100);
+  border: 1px solid var(--olive-500);
+  border-radius: var(--radius);
+  font: inherit;
+  font-size: 16px; /* 16px stops iPhones zooming in when the field is tapped */
+}
+
+.field input:focus {
+  border-color: var(--khaki-300);
+  outline: none;
+}
+
+.form-msg {
+  min-height: 1.4em;
+  margin: 0;
+  font-size: 13px;
+}
+
+.form-msg[data-kind='error'] {
+  color: #e39a84;
+}
+
+.form-msg[data-kind='ok'] {
+  color: #a9cf7c;
+}
+
+.form-msg[data-kind='info'] {
+  color: var(--muted);
+}
+
+.btn {
+  padding: 11px 14px;
+  background: var(--olive-600);
+  color: var(--khaki-100);
+  border: 1px solid var(--olive-500);
+  border-radius: var(--radius);
+  font: inherit;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--olive-500);
+}
+
+.btn--primary {
+  background: var(--khaki-300);
+  color: var(--olive-900);
+  border-color: var(--khaki-300);
+}
+
+.btn--primary:hover:not(:disabled) {
+  background: var(--khaki-100);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---------- Nation picker ---------- */
+
+.nation-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+}
+
+.nation-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 12px;
+  background: var(--olive-600);
+  color: var(--khaki-200);
+  border: 2px solid var(--olive-500);
+  border-left: 6px solid var(--nation);
+  border-radius: var(--radius);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.nation-card:hover {
+  border-color: var(--muted);
+  border-left-color: var(--nation);
+}
+
+.nation-card.is-selected {
+  background: var(--olive-500);
+  border-color: var(--khaki-300);
+  border-left-color: var(--nation);
+}
+
+.nation-name {
+  color: var(--khaki-100);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.nation-desc {
+  font-size: 13px;
+}
+
+.nation-bonus {
+  color: var(--khaki-300);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.nation-units {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+@media (max-width: 760px) {
+  .player-name {
+    display: none; /* the nation chip + log out are enough on a phone */
+  }
+
+  .topbar {
+    gap: 8px;
+  }
+}
+
+.link-btn {
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  /* Move the position readout to the top so it clears the scale bar */
+  .coords {
+    top: 10px;
+    bottom: auto;
+  }
+
+  .resource {
+    min-width: 0;
+  }
+}

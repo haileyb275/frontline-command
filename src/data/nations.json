@@ -1,0 +1,84 @@
+[
+  {
+    "id": "usa",
+    "name": "United States",
+    "short": "USA",
+    "color": "#4f6d8f",
+    "description": "Industrial depth and an unmatched supply chain keep American formations moving.",
+    "bonus_text": "Logistics units travel 15% faster. +10% supplies from missions.",
+    "bonuses": [
+      { "type": "speed_mult", "category": "logistics", "value": 1.15 },
+      { "type": "reward_mult", "resource": "supplies", "value": 1.1 }
+    ],
+    "signature_units": ["M4 Sherman", "M1 Garand Rifle Squad", "M3 Half-track"]
+  },
+  {
+    "id": "uk",
+    "name": "United Kingdom",
+    "short": "UK",
+    "color": "#8f4f4f",
+    "description": "Experienced reconnaissance regiments and a strong air arm find the enemy first.",
+    "bonus_text": "Recon and Air units travel 10% faster.",
+    "bonuses": [
+      { "type": "speed_mult", "category": "recon", "value": 1.1 },
+      { "type": "speed_mult", "category": "air", "value": 1.1 }
+    ],
+    "signature_units": ["Cromwell", "Bren Carrier", "25-pounder Battery"]
+  },
+  {
+    "id": "ussr",
+    "name": "Soviet Union",
+    "short": "USSR",
+    "color": "#a8552f",
+    "description": "Mass production of rugged, simple designs puts more units in the field.",
+    "bonus_text": "Infantry and Armor units cost 10% less.",
+    "bonuses": [
+      { "type": "cost_mult", "category": "infantry", "value": 0.9 },
+      { "type": "cost_mult", "category": "armor", "value": 0.9 }
+    ],
+    "signature_units": ["T-34", "Guards Rifle Squad", "Katyusha Battery"]
+  },
+  {
+    "id": "germany",
+    "name": "Germany",
+    "short": "GER",
+    "color": "#6b6b63",
+    "description": "Well-engineered armored vehicles and combined-arms doctrine.",
+    "bonus_text": "Armor units count for +10% mission power.",
+    "bonuses": [{ "type": "power_mult", "category": "armor", "value": 1.1 }],
+    "signature_units": ["Panzer IV", "Panzergrenadier Squad", "Pak 40 Team"]
+  },
+  {
+    "id": "france",
+    "name": "France",
+    "short": "FRA",
+    "color": "#4f5f9f",
+    "description": "A tradition of military engineering makes for sturdy, economical fortifications.",
+    "bonus_text": "Bases and buildings cost 10% less.",
+    "bonuses": [{ "type": "building_cost_mult", "value": 0.9 }],
+    "signature_units": ["Char B1 bis", "Chasseurs Squad", "Canon de 75 Battery"]
+  },
+  {
+    "id": "italy",
+    "name": "Italy",
+    "short": "ITA",
+    "color": "#4f8f62",
+    "description": "Skilled engineers and capable gun crews, at home in mountains and desert alike.",
+    "bonus_text": "Engineer and Artillery units cost 10% less.",
+    "bonuses": [
+      { "type": "cost_mult", "category": "engineers", "value": 0.9 },
+      { "type": "cost_mult", "category": "artillery", "value": 0.9 }
+    ],
+    "signature_units": ["M13/40", "Bersaglieri Squad", "Semovente 75/18"]
+  },
+  {
+    "id": "japan",
+    "name": "Japan",
+    "short": "JPN",
+    "color": "#9f8f4f",
+    "description": "Light infantry trained to cover long distances over difficult terrain.",
+    "bonus_text": "Infantry units travel 15% faster.",
+    "bonuses": [{ "type": "speed_mult", "category": "infantry", "value": 1.15 }],
+    "signature_units": ["Type 97 Chi-Ha", "Rifle Section", "Type 92 Battalion Gun"]
+  }
+]

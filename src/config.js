@@ -21,3 +21,11 @@ export const MAP_CONFIG = {
 export const STORAGE_KEYS = {
   mapView: 'fc.mapView',
 };
+
+// ---------- Supabase ----------
+// These two values are SAFE to publish: the "publishable" key only lets a
+// browser do what the database's row-level security rules allow. The keys
+// that must NEVER go in this file (or anywhere in the repo) are the
+// "secret" / service_role key and the database password.
+export const SUPABASE_URL = 'https://rluljthdnkejrsrtpavi.supabase.co';
+export const SUPABASE_KEY = 'sb_publishable_snnW1wpe-b0WCtBblBD5Rg_gyXZA5mR';

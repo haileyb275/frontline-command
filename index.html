@@ -18,13 +18,19 @@
           <span class="brand-name">Frontline Command</span>
         </div>
 
-        <!-- Resource readouts. Real values arrive in Phase 2/3; the IDs are
-             here now so later phases only have to fill them in. -->
+        <!-- Resource readouts, filled in by src/ui/topbar.js -->
         <ul class="resources" aria-label="Resources">
           <li class="resource" title="Money"><span class="resource-label">Funds</span><span id="res-money">—</span></li>
           <li class="resource" title="Supplies"><span class="resource-label">Supplies</span><span id="res-supplies">—</span></li>
           <li class="resource" title="Experience level"><span class="resource-label">Rank</span><span id="res-level">—</span></li>
         </ul>
+
+        <!-- Who is logged in. Hidden until a profile is loaded. -->
+        <div id="player" class="player" hidden>
+          <span id="player-nation" class="nation-chip nation-chip--sm"></span>
+          <span id="player-name" class="player-name"></span>
+          <button id="logout" class="link-btn" title="Log out">Log out</button>
+        </div>
 
         <button id="panel-toggle" class="icon-btn" aria-label="Toggle side panel" aria-expanded="true">☰</button>
       </header>
