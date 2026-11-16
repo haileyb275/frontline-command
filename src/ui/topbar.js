@@ -2,7 +2,7 @@
 
 import { supabase } from '../supabase.js';
 import { subscribe } from '../state.js';
-import { getNation } from './nationPicker.js';
+import { getNation } from '../game/content.js';
 import { fmt } from './dom.js';
 
 export function initTopbar() {

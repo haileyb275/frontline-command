@@ -2,15 +2,10 @@
 // The cards are generated from src/data/nations.json — add a nation there
 // (and re-run the seed) and it appears here automatically.
 
-import nations from '../data/nations.json';
+import { nations, getNation } from '../game/content.js';
 import { supabase, friendlyError } from '../supabase.js';
 import { setState } from '../state.js';
 import { esc, showOverlay, hideOverlay } from './dom.js';
-
-/** Look up a nation's display data by id (used by the top bar too). */
-export function getNation(id) {
-  return nations.find((n) => n.id === id) ?? null;
-}
 
 export function showNationPicker() {
   let selectedId = null;

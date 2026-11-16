@@ -1,0 +1,112 @@
+[
+  {
+    "id": "hq",
+    "name": "Headquarters",
+    "icon": "HQ",
+    "description": "Your command post. Every commander needs exactly one, and it must be built first.",
+    "cost_money": 5000,
+    "cost_supplies": 0,
+    "unit_capacity": 6,
+    "unlocks_categories": [
+      "infantry",
+      "recon"
+    ],
+    "min_level": 1,
+    "is_hq": true,
+    "sort": 0
+  },
+  {
+    "id": "barracks",
+    "name": "Barracks",
+    "icon": "BK",
+    "description": "Houses and trains foot soldiers, scouts and anti-tank crews.",
+    "cost_money": 6000,
+    "cost_supplies": 100,
+    "unit_capacity": 8,
+    "unlocks_categories": [
+      "infantry",
+      "recon",
+      "anti_tank"
+    ],
+    "min_level": 1,
+    "is_hq": false,
+    "sort": 1
+  },
+  {
+    "id": "supply_depot",
+    "name": "Supply Depot",
+    "icon": "SD",
+    "description": "Truck parks and workshops for logistics and engineer units.",
+    "cost_money": 7000,
+    "cost_supplies": 150,
+    "unit_capacity": 6,
+    "unlocks_categories": [
+      "logistics",
+      "engineers"
+    ],
+    "min_level": 1,
+    "is_hq": false,
+    "sort": 2
+  },
+  {
+    "id": "field_hospital",
+    "name": "Field Hospital",
+    "icon": "FH",
+    "description": "Medical teams that recover and treat the wounded.",
+    "cost_money": 8000,
+    "cost_supplies": 200,
+    "unit_capacity": 4,
+    "unlocks_categories": [
+      "medical"
+    ],
+    "min_level": 2,
+    "is_hq": false,
+    "sort": 3
+  },
+  {
+    "id": "artillery_park",
+    "name": "Artillery Park",
+    "icon": "AP",
+    "description": "Gun lines for artillery batteries and anti-tank guns.",
+    "cost_money": 12000,
+    "cost_supplies": 300,
+    "unit_capacity": 6,
+    "unlocks_categories": [
+      "artillery",
+      "anti_tank"
+    ],
+    "min_level": 2,
+    "is_hq": false,
+    "sort": 4
+  },
+  {
+    "id": "tank_depot",
+    "name": "Tank Depot",
+    "icon": "TD",
+    "description": "Maintenance sheds and fuel for armored vehicles.",
+    "cost_money": 18000,
+    "cost_supplies": 500,
+    "unit_capacity": 6,
+    "unlocks_categories": [
+      "armor"
+    ],
+    "min_level": 3,
+    "is_hq": false,
+    "sort": 5
+  },
+  {
+    "id": "airfield",
+    "name": "Airfield",
+    "icon": "AF",
+    "description": "A runway and hangars for aircraft flights.",
+    "cost_money": 30000,
+    "cost_supplies": 800,
+    "unit_capacity": 4,
+    "unlocks_categories": [
+      "air"
+    ],
+    "min_level": 5,
+    "is_hq": false,
+    "sort": 6
+  }
+]

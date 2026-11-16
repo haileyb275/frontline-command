@@ -49,7 +49,20 @@ const parts = [
   '-- Edit the JSON files in src/data/ and run `npm run seed` instead.',
   '',
   upsert('nations', ['id', 'name', 'short', 'color', 'bonuses'], readJson('nations.json')),
-  // Later phases add: unit_categories, unit_types, building_types, mission_types…
+  upsert('unit_categories', ['id', 'name', 'icon', 'sort'], readJson('categories.json')),
+  upsert(
+    'building_types',
+    ['id', 'name', 'icon', 'description', 'cost_money', 'cost_supplies', 'unit_capacity',
+     'unlocks_categories', 'min_level', 'is_hq', 'sort'],
+    readJson('buildings.json')
+  ),
+  upsert(
+    'unit_types',
+    ['id', 'nation_id', 'category_id', 'name', 'cost_money', 'cost_supplies', 'speed_kmh',
+     'power', 'min_level'],
+    readJson('units.json')
+  ),
+  // Later phases add: mission_types, alliance_building_types…
 ];
 
 const outFile = join(root, 'supabase/seed.sql');

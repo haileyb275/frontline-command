@@ -10,6 +10,8 @@ import { supabase } from './supabase.js';
 export const state = {
   session: null, // Supabase login session (null = logged out)
   profile: null, // the player's row from the `profiles` table
+  bases: [], // the player's rows from the `bases` table
+  units: [], // the player's rows from the `units` table
 };
 
 const listeners = new Set();

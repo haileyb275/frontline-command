@@ -2,9 +2,11 @@
 // other modules and connect them to each other.
 
 import './style.css';
-import { createMap, formatLatLng } from './map.js';
+import { createMap, createBaseLayer, formatLatLng } from './map.js';
 import { supabase, friendlyError } from './supabase.js';
 import { state, setState, loadProfile } from './state.js';
+import { loadGame } from './game/actions.js';
+import { getBuilding } from './game/content.js';
 import { initPanel } from './ui/panel.js';
 import { initTopbar } from './ui/topbar.js';
 import { showAuthScreen } from './ui/auth.js';
@@ -14,16 +16,23 @@ import { esc, showOverlay, hideOverlay } from './ui/dom.js';
 // ---------- The map and panel are always there, behind any overlay ----------
 
 const coordsEl = document.getElementById('coords');
+const mapEl = document.getElementById('map');
 
-const map = createMap(document.getElementById('map'), {
-  // Clicking reports the position. In Phase 3 this same click becomes
-  // "place a base here".
+const map = createMap(mapEl, {
   onClick: (latlng) => {
+    // If the panel is waiting for a building site it takes the click;
+    // otherwise we just show the position.
+    panel.handleMapClick(latlng);
     coordsEl.textContent = formatLatLng(latlng);
   },
 });
 
-initPanel();
+const baseLayer = createBaseLayer(map, {
+  getIcon: (base) => getBuilding(base.building_type)?.icon ?? '?',
+  onSelect: (base) => panel.selectBase(base),
+});
+
+const panel = initPanel({ baseLayer, mapElement: mapEl });
 initTopbar();
 
 // ---------- Deciding which screen to show ----------
@@ -34,7 +43,8 @@ initTopbar();
 
 async function route() {
   if (!state.session) {
-    setState({ profile: null });
+    setState({ profile: null, bases: [], units: [] });
+    panel.reset();
     showAuthScreen();
     return;
   }
@@ -49,9 +59,13 @@ async function route() {
     }
 
     if (!profile.nation_id) {
-      showNationPicker();
+      showNationPicker(); // bases and units are empty for a brand-new player
     } else {
+      await loadGame();
       hideOverlay();
+      // Returning players: start the map at their Headquarters.
+      const hq = state.bases[0];
+      if (hq) map.setView([hq.lat, hq.lng], Math.max(map.getZoom(), 7));
     }
   } catch (error) {
     showOverlay(`

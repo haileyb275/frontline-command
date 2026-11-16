@@ -1,0 +1,56 @@
+[
+  {
+    "id": "infantry",
+    "name": "Infantry",
+    "icon": "INF",
+    "sort": 0
+  },
+  {
+    "id": "armor",
+    "name": "Armor",
+    "icon": "ARM",
+    "sort": 1
+  },
+  {
+    "id": "anti_tank",
+    "name": "Anti-Tank",
+    "icon": "AT",
+    "sort": 2
+  },
+  {
+    "id": "artillery",
+    "name": "Artillery",
+    "icon": "ART",
+    "sort": 3
+  },
+  {
+    "id": "air",
+    "name": "Air",
+    "icon": "AIR",
+    "sort": 4
+  },
+  {
+    "id": "recon",
+    "name": "Recon",
+    "icon": "RCN",
+    "sort": 5
+  },
+  {
+    "id": "medical",
+    "name": "Medical",
+    "icon": "MED",
+    "sort": 6
+  },
+  {
+    "id": "engineers",
+    "name": "Engineers",
+    "icon": "ENG",
+    "sort": 7
+  },
+  {
+    "id": "logistics",
+    "name": "Logistics",
+    "icon": "LOG",
+    "sort": 8
+  }
+]

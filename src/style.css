@@ -610,3 +610,295 @@ body {
     min-width: 0;
   }
 }
+
+/* ==========================================================================
+   Phase 3: bases and units
+   ========================================================================== */
+
+.muted {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.count {
+  margin-left: 4px;
+  padding: 1px 7px;
+  background: var(--olive-900);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.section-head h2 {
+  margin: 0;
+  overflow: hidden;
+  color: var(--khaki-300);
+  font-size: 16px;
+  letter-spacing: 0.04em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.panel-body h3 {
+  margin: 16px 0 6px;
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.panel-body .card + .card {
+  margin-top: 10px;
+}
+
+.card--notice {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-color: var(--khaki-300);
+}
+
+.card--notice p,
+.card--notice h2 {
+  margin: 0;
+}
+
+.btn--small {
+  padding: 6px 10px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.btn--block {
+  width: 100%;
+}
+
+/* A list of rows: bases, units, recruit options */
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  background: var(--olive-600);
+  color: var(--khaki-200);
+  border: 1px solid var(--olive-500);
+  border-radius: var(--radius);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+button.row:hover {
+  border-color: var(--khaki-300);
+}
+
+.row--static {
+  cursor: default;
+}
+
+.row-icon {
+  flex: 0 0 34px;
+  display: grid;
+  place-items: center;
+  height: 30px;
+  background: var(--khaki-300);
+  border-radius: 4px;
+  color: var(--olive-900);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.row-icon--unit {
+  background: var(--olive-900);
+  border: 1px solid var(--olive-500);
+  color: var(--khaki-300);
+  font-size: 10px;
+}
+
+.row-main {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.row-title {
+  overflow: hidden;
+  color: var(--khaki-100);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.row-sub {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.row-side {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.price {
+  color: var(--khaki-300);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Building options in the build menu */
+.option-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.option-head h2 {
+  margin: 0;
+}
+
+.option p {
+  margin: 0 0 6px;
+  font-size: 13px;
+}
+
+.option-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.option.is-blocked {
+  opacity: 0.7;
+}
+
+/* Unit status pill */
+.status {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--olive-900);
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.status--idle {
+  color: #a9cf7c;
+}
+
+.status--en_route,
+.status--returning {
+  color: var(--khaki-300);
+}
+
+.status--on_mission {
+  color: #e39a84;
+}
+
+/* Map: placement mode and marker states */
+#map.is-placing {
+  cursor: crosshair;
+}
+
+.marker {
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+
+.marker.is-selected {
+  outline: 3px solid var(--khaki-100);
+  outline-offset: 2px;
+}
+
+.marker--ghost {
+  opacity: 0.75;
+  border-style: dashed;
+}
+
+/* Toast messages */
+.toasts {
+  position: fixed;
+  left: 50%;
+  top: calc(var(--topbar-h) + 10px);
+  z-index: 3000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: max-content;
+  max-width: calc(100vw - 24px);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.toast {
+  padding: 8px 14px;
+  background: var(--olive-800);
+  border: 1px solid var(--olive-500);
+  border-left: 4px solid var(--muted);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  color: var(--khaki-100);
+  font-size: 13px;
+}
+
+.toast--ok {
+  border-left-color: var(--ok);
+}
+
+.toast--error {
+  border-left-color: var(--danger);
+}
+
+.resource span {
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  /* Fit funds, supplies, rank, nation tag and log out on one phone-width row */
+  .resources {
+    gap: 4px;
+  }
+
+  .resource {
+    padding: 3px 6px;
+    font-size: 12px;
+  }
+
+  .resource-label {
+    font-size: 9px;
+  }
+
+  .player {
+    gap: 4px;
+  }
+
+  .link-btn {
+    padding: 4px 2px;
+  }
+}

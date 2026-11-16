@@ -73,17 +73,73 @@ export function createMap(element, { onClick } = {}) {
 
 /**
  * Build a marker icon out of HTML/CSS instead of an image file.
- * We'll use this for bases, units and missions in later phases.
- * @param {string} symbol   a short label or emoji shown in the marker
- * @param {string} kind     CSS modifier: 'base' | 'mission' | 'unit'
+ * @param {string} symbol   a short label shown in the marker (from our JSON, not player text)
+ * @param {string} kind     CSS modifiers, e.g. 'base', 'base is-selected', 'ghost'
  */
 export function makeIcon(symbol, kind = 'base') {
+  const classes = kind
+    .split(' ')
+    .map((k) => (k.startsWith('is-') ? k : `marker--${k}`))
+    .join(' ');
   return L.divIcon({
     className: '', // stop Leaflet adding its default white box
-    html: `<div class="marker marker--${kind}">${symbol}</div>`,
+    html: `<div class="marker ${classes}">${symbol}</div>`,
     iconSize: [32, 32],
     iconAnchor: [16, 16], // the centre of the icon sits on the coordinate
   });
+}
+
+/**
+ * Manages the base markers. Call `sync()` whenever the list of bases or the
+ * selected base changes and it adds / removes / restyles markers to match.
+ *
+ * @param {L.Map} map
+ * @param {{ getIcon: (base) => string, onSelect: (base) => void }} options
+ */
+export function createBaseLayer(map, { getIcon, onSelect }) {
+  const group = L.layerGroup().addTo(map);
+  const markers = new Map(); // base id → Leaflet marker
+  let ghost = null; // the "you are about to build here" marker
+
+  return {
+    sync(bases, selectedId = null) {
+      const wanted = new Set(bases.map((b) => b.id));
+
+      // Remove markers for bases that no longer exist (e.g. after logging out).
+      for (const [id, marker] of markers) {
+        if (!wanted.has(id)) {
+          marker.remove();
+          markers.delete(id);
+        }
+      }
+
+      for (const base of bases) {
+        const kind = base.id === selectedId ? 'base is-selected' : 'base';
+        let marker = markers.get(base.id);
+        if (!marker) {
+          marker = L.marker([base.lat, base.lng]).addTo(group);
+          marker.on('click', () => onSelect(base));
+          markers.set(base.id, marker);
+        }
+        marker.setIcon(makeIcon(getIcon(base), kind));
+        // bindTooltip with a text node: player-chosen names are never parsed as HTML.
+        marker.unbindTooltip();
+        marker.bindTooltip(document.createTextNode(base.name), { direction: 'top', offset: [0, -14] });
+      }
+    },
+
+    /** Show (or with null, hide) the placement preview marker. */
+    setGhost(latlng, symbol = '') {
+      ghost?.remove();
+      ghost = latlng
+        ? L.marker(latlng, { icon: makeIcon(symbol, 'base ghost'), interactive: false }).addTo(map)
+        : null;
+    },
+
+    focus(base) {
+      map.flyTo([base.lat, base.lng], Math.max(map.getZoom(), 9), { duration: 0.6 });
+    },
+  };
 }
 
 /** Format a position like "50.1234° N, 10.5678° E". */
