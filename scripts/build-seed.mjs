@@ -51,7 +51,7 @@ const parts = [
   upsert('nations', ['id', 'name', 'short', 'color', 'bonuses'], readJson('nations.json')),
   upsert(
     'unit_categories',
-    ['id', 'name', 'icon', 'sort', 'base_power', 'supply_use', 'recovers_at'],
+    ['id', 'name', 'icon', 'sort', 'base_power', 'supply_use', 'recovers_at', 'domain'],
     readJson('categories.json')
   ),
   upsert(
@@ -71,7 +71,7 @@ const parts = [
     'mission_types',
     ['id', 'name', 'description', 'requirements', 'duration_seconds', 'reward_money',
      'reward_supplies', 'reward_xp', 'difficulty', 'min_level', 'spawn_weight', 'shareable',
-     'followups', 'expires_seconds', 'terrain', 'min_km', 'max_km', 'zone_rule'],
+     'followups', 'expires_seconds', 'terrain', 'min_km', 'max_km', 'zone_rule', 'site'],
     readJson('missions.json')
   ),
   upsert(

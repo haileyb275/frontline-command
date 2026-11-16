@@ -11,6 +11,9 @@ import {
 } from './game/content.js';
 import { dispatchPosition } from './game/clock.js';
 import { getRoute, pointAlong } from './game/routes.js';
+import { conditionsText } from './game/weather.js';
+import { now } from './game/clock.js';
+import { initTutorial } from './ui/tutorial.js';
 import { missionMarkerLabel } from './ui/missionsTab.js';
 import { initPanel } from './ui/panel.js';
 import { initTopbar } from './ui/topbar.js';
@@ -49,7 +52,8 @@ const baseLayer = createBaseLayer(map, {
 const missionLayer = createMissionLayer(map, {
   getLabel: missionMarkerLabel,
   getKind: (mission) => getMissionType(mission.mission_type)?.terrain ?? 'land',
-  getTitle: (mission) => getMissionType(mission.mission_type)?.name ?? 'Mission',
+  getTitle: (mission) =>
+    (getMissionType(mission.mission_type)?.name ?? 'Mission') + (mission.site_name ? ` · ${mission.site_name}` : ''),
   onSelect: (mission) => panel.selectMission(mission),
 });
 
@@ -134,6 +138,18 @@ const panel = initPanel({
   flyTo: (point) => map.flyTo([point.lat, point.lng], Math.max(map.getZoom(), 10), { duration: 0.6 }),
   fitTo: (points) => points.length && map.fitBounds(points.map((x) => [x.lat, x.lng]), { padding: [60, 60], maxZoom: 11 }),
 });
+
+// The weather where the map is looking, refreshed as it moves and once a minute.
+const weatherEl = document.getElementById('weather');
+function showWeather() {
+  const c = map.getCenter();
+  weatherEl.textContent = conditionsText(c.lat, c.lng, now());
+}
+map.on('moveend', showWeather);
+setInterval(showWeather, 60000);
+showWeather();
+
+initTutorial();
 
 // Top bar: our own name opens our profile; "Admin" opens the admin panel.
 document.getElementById('player-name').addEventListener('click', () => state.profile && panel.openProfile(state.profile.username));

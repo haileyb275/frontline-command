@@ -22,7 +22,8 @@ import {
   dispatchUnits, recallUnits, shareMission, claimDailyOrder, claimObjective, loadObjectives, saveTaskForce,
 } from '../game/actions.js';
 import { renderOrders, tickOrders, claimableCount } from './ordersView.js';
-import { msUntil, formatDuration, liveUnitStatus } from '../game/clock.js';
+import { msUntil, formatDuration, liveUnitStatus, now } from '../game/clock.js';
+import { weatherAt, isNight, travelSlowdown, conditionsText } from '../game/weather.js';
 import { friendlyError } from '../supabase.js';
 import { esc, fmt } from './dom.js';
 import { toast } from './toast.js';
@@ -127,7 +128,7 @@ function renderList({ missions, dispatches, profile }) {
         <button class="row row--mission ${mission.status === 'in_progress' ? 'is-active' : ''}"
                 data-action="open-mission" data-mission="${esc(mission.id)}">
           <span class="row-main">
-            <span class="row-title">${esc(type.name)}
+            <span class="row-title">${esc(type.name)}${mission.site_name ? ` <span class="site">${esc(mission.site_name)}</span>` : ''}
               ${mission.alliance_id ? '<span class="tag tag--shared">Alliance</span>' : ''}</span>
             ${mission.owner_id !== profile.id ? `<span class="row-sub">shared by ${esc(mission.owner_name)}</span>` : ''}
             <span class="row-sub js-mission-status" data-mission="${esc(mission.id)}">
@@ -196,6 +197,8 @@ function renderMission(state, ui, mission) {
 
     <div class="facts">
       <div><span>Difficulty</span>${difficultyPips(type.difficulty)}</div>
+      ${mission.site_name ? `<div><span>Place</span>${esc(mission.site_name)}</div>` : ''}
+      <div><span>Conditions</span>${conditionsText(mission.lat, mission.lng, now())}</div>
       <div><span>Location</span>${{ land: 'On land', water: 'At sea', any: 'Air operation' }[type.terrain] ?? ''}
         · ${Math.round(nearestBaseKm(mission, bases))} km from base</div>
       <div><span>Duration</span>${formatDuration(type.duration_seconds * 1000)}</div>
@@ -259,9 +262,17 @@ function unitsFit(unitIds, mission, state) {
   return true;
 }
 
+/** The movement domain ('ground', 'air' or 'sea') of a unit. */
+const domainOf = (unit) => getCategory(getUnitType(unit.unit_type)?.category_id)?.domain ?? 'ground';
+
+/** Aircraft cannot be sent into a storm (the server refuses too). */
+const grounded = (unit, mission) =>
+  domainOf(unit) === 'air' && weatherAt(mission.lat, mission.lng, now()) === 'storm';
+
 const etaFor = (unit, mission, state, baseById) =>
   travelSeconds(getUnitType(unit.unit_type), baseById.get(unit.base_id), mission,
-    state.profile.nation_id, state.alliance, unit.specialty);
+    state.profile.nation_id, state.alliance, unit.specialty,
+    travelSlowdown(weatherAt(mission.lat, mission.lng, now()), domainOf(unit)));
 
 /** The list of idle units you can tick and send. */
 function renderPicker(state, ui, mission, type, counts) {
@@ -290,17 +301,18 @@ function renderPicker(state, ui, mission, type, counts) {
             const spec = getSpecialty(unit.specialty);
             // Its base must have enough stock left to send it out.
             const home = baseById.get(unit.base_id);
-            const dry = home && (home.stock ?? Infinity) < supplyUse(unit);
+            const stormed = grounded(unit, mission);
+            const dry = stormed || (home && (home.stock ?? Infinity) < supplyUse(unit));
             return `
               <button class="row row--pick ${on ? 'is-picked' : ''}" data-action="toggle-unit"
-                      data-unit="${esc(unit.id)}" aria-pressed="${on}" ${dry ? 'disabled title="Its base is out of supplies"' : ''}>
+                      data-unit="${esc(unit.id)}" aria-pressed="${on}" ${dry ? `disabled title="${stormed ? 'Grounded by the storm' : 'Its base is out of supplies'}"` : ''}>
                 <span class="check">${on ? '✓' : ''}</span>
                 <span class="row-main">
                   <span class="row-title">${esc(unitTitle(unit))}</span>
                   <span class="row-sub">${esc(baseById.get(unit.base_id)?.name ?? '')}
                     ${spec ? `<span class="tag tag--spec">${esc(specialtyName(spec, profile.nation_id))}</span>` : ''}</span>
                 </span>
-                <span class="row-side">${dry ? 'no supplies' : formatDuration(eta * 1000)}</span>
+                <span class="row-side">${stormed ? 'grounded' : dry ? 'no supplies' : formatDuration(eta * 1000)}</span>
               </button>`;
           })
           .join('')
@@ -322,7 +334,16 @@ function renderPicker(state, ui, mission, type, counts) {
          `<button class="btn btn--small" data-action="pick-force" data-force="${esc(f.id)}">${esc(f.name)}</button>`).join('')}</div>`
     : '';
 
+  // A line about what the conditions mean for this mission, if anything.
+  const weather = weatherAt(mission.lat, mission.lng, now());
+  const notes = [
+    weather === 'storm' && 'Storm: ground and sea units are 30% slower, and aircraft cannot fly.',
+    weather === 'rain' && 'Rain: ground and sea units are 15% slower.',
+    isNight(mission.lng, now()) && 'Night: recon units and commandos fight 20% harder.',
+  ].filter(Boolean);
+
   return `
+    ${notes.length ? `<p class="note">${notes.join(' ')}</p>` : ''}
     ${forces}
     ${sections}
     <div class="btn-row btn--spaced">
@@ -441,6 +462,7 @@ export async function handleAction(action, data, ctx) {
         idleUnitsFor(key, state.units, state.dispatches)
           .filter((unit) => !picked.includes(unit.id))
           .filter((unit) => (baseById.get(unit.base_id)?.stock ?? Infinity) >= supplyUse(unit))
+          .filter((unit) => !grounded(unit, mission))
           // For ordinary places, send ordinary units before specialists.
           .map((unit) => ({ id: unit.id, eta: etaFor(unit, mission, state, baseById), special: unit.specialty ? 1 : 0 }))
           .sort((a, b) => (getCategory(key) ? a.special - b.special : 0) || a.eta - b.eta)

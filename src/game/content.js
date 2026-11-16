@@ -94,13 +94,13 @@ export function distanceKm(a, b) {
  * This is only an ESTIMATE for the unit picker — the server works out the
  * real figure itself when you dispatch (see dispatch_units in the SQL).
  */
-export function travelSeconds(unitType, base, mission, nationId, alliance = null, specialtyId = null) {
+export function travelSeconds(unitType, base, mission, nationId, alliance = null, specialtyId = null, slowdown = 1) {
   const speed =
     unitType.speed_kmh *
     (getSpecialty(specialtyId)?.speed_mult ?? 1) *
     nationBonus(nationId, 'speed_mult', unitType.category_id) *
     (1 + allianceBonus(alliance, 'speed'));
-  const seconds = (distanceKm(base, mission) / speed) * 3600 / settings.travel_time_scale;
+  const seconds = (distanceKm(base, mission) / speed) * 3600 / settings.travel_time_scale * slowdown;
   return Math.max(settings.min_travel_seconds, Math.round(seconds));
 }
 

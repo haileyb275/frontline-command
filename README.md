@@ -118,3 +118,4 @@ npm run balance
 - [x] Phase 9 — Admin panel, moderation (reports, mutes, suspensions), public player profiles
 - [x] Phase 10 — Optional daily orders, campaigns, achievements, rank titles, task forces, renaming
 - [x] Phase 11 — Research by year (1939–1945), alliance operations, seasons
+- [x] Phase 12 — Missions at real places, weather and night, sounds, notifications, tutorial

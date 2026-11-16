@@ -29,5 +29,10 @@
   "daily_bonus_supplies": 150,
   "daily_bonus_xp": 60,
   "daily_level_scale": 0.2,
-  "max_task_forces": 10
+  "max_task_forces": 10,
+  "weather_rain_slow": 1.15,
+  "weather_storm_slow": 1.3,
+  "night_power_bonus": 0.2,
+  "night_start_hour": 21,
+  "night_end_hour": 5
 }

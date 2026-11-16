@@ -35,3 +35,8 @@ export const SUPABASE_KEY = 'sb_publishable_snnW1wpe-b0WCtBblBD5Rg_gyXZA5mR';
 // use; if the game ever gets busy, host your own OSRM or use a paid routing
 // service and change this one line.
 export const ROUTING_URL = 'https://router.project-osrm.org/route/v1/driving';
+
+// ---------- Map survey ----------
+// The public Overpass server (OpenStreetMap data, no key). Like the routing
+// server it is a shared free service: the game asks it once per base.
+export const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';

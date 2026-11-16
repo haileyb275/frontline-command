@@ -2,6 +2,7 @@
 // "?" button in the top bar afterwards.
 
 import { showOverlay, hideOverlay } from './dom.js';
+import { getAlertPrefs, setAlertPref, requestNotifyPermission, playSound } from './alerts.js';
 
 const SEEN_KEY = 'fc.helpSeen';
 
@@ -34,21 +35,42 @@ export function showHelp() {
             pays extra funds, supplies and XP.</li>
         <li><strong>Join an alliance.</strong> Any nation can join any alliance. Share large
             missions, chat, and fund alliance buildings that help every member.</li>
+        <li><strong>Weather and night.</strong> Rain and storms slow ground and sea units, storms
+            ground aircraft, and scouts and commandos fight harder after dark. Conditions are shown
+            on the map and on each mission.</li>
       </ol>
+
+      <h2 class="help-sub">Settings</h2>
+      <label class="check-line"><input type="checkbox" id="pref-sound" ${getAlertPrefs().sound ? 'checked' : ''} />
+        Play a sound for new missions and completed missions</label>
+      <label class="check-line"><input type="checkbox" id="pref-notify" ${getAlertPrefs().notify ? 'checked' : ''} />
+        Show a notification when the game is in a background tab</label>
+
       <p class="muted">Everything keeps running while you are away: missions finish and units
          return on time, and you collect the results when you next log in.</p>
       <button class="btn btn--primary" id="help-close">Understood</button>
     </div>
   `);
+  overlay.querySelector('#pref-sound').addEventListener('change', (event) => {
+    setAlertPref('sound', event.target.checked);
+    if (event.target.checked) playSound('complete'); // let them hear what they switched on
+  });
+  overlay.querySelector('#pref-notify').addEventListener('change', async (event) => {
+    // The browser asks the player for permission the first time.
+    const allowed = event.target.checked ? await requestNotifyPermission() : false;
+    setAlertPref('notify', allowed);
+    event.target.checked = allowed;
+  });
+
   overlay.querySelector('#help-close').addEventListener('click', () => {
     try { localStorage.setItem(SEEN_KEY, '1'); } catch { /* private mode: fine */ }
     hideOverlay();
   });
 }
 
-/** Show the help once per browser. */
-export function showHelpFirstTime() {
-  let seen = false;
-  try { seen = localStorage.getItem(SEEN_KEY) === '1'; } catch { /* ignore */ }
-  if (!seen) showHelp();
-}
+/**
+ * New players are now walked through by the tutorial card instead (see
+ * tutorial.js), so the full help no longer opens by itself. It stays one
+ * click away under "Help" in the top bar.
+ */
+export function showHelpFirstTime() {}

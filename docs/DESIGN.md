@@ -287,3 +287,6 @@ was revised in a later phase, the highest-numbered file holds the current versio
 - **Phase 11** added research (`unit_types.year`, `profiles.research_year`, enforced by a trigger
   on `units`), alliance operations (`alliance_operations`, fed by `fc_bump`), and quarterly
   seasons (`season_scores`, filled by a trigger on `profiles.xp`).
+- **Phase 12** added a map survey (`map_features`, filed by the browser from OpenStreetMap's
+  Overpass service and used by `fc_spawn_mission` for missions with a `site`), and weather and
+  night (`fc_weather`, `fc_is_night`, mirrored in `src/game/weather.js`).

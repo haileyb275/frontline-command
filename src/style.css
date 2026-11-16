@@ -1685,3 +1685,93 @@ button.player-name:hover {
   color: var(--khaki-300);
   font-family: var(--font);
 }
+
+/* ==========================================================================
+   Phase 12: places, weather, tutorial
+   ========================================================================== */
+
+.site {
+  color: var(--khaki-300);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.weather {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  z-index: 500;
+  padding: 4px 10px;
+  background: rgba(30, 34, 22, 0.88);
+  border: 1px solid var(--olive-500);
+  border-radius: 999px;
+  color: var(--khaki-200);
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.tutorial {
+  position: absolute;
+  left: 10px;
+  bottom: 56px;
+  z-index: 600;
+  max-width: min(340px, calc(100% - 20px));
+  padding: 12px 14px;
+  background: var(--olive-800);
+  border: 2px solid var(--khaki-300);
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+  font-size: 13px;
+}
+
+.tutorial-title {
+  color: var(--khaki-300);
+  letter-spacing: 0.03em;
+}
+
+.tutorial p {
+  margin: 6px 0 8px;
+}
+
+/* The tab the tutorial is pointing at */
+.tab.is-hint {
+  color: var(--khaki-100);
+  animation: hint 1.4s ease-in-out infinite;
+}
+
+@keyframes hint {
+  0%, 100% { background: transparent; }
+  50% { background: var(--olive-500); }
+}
+
+.help-sub {
+  margin: 4px 0 0;
+  color: var(--khaki-300);
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.dialog--help .check-line {
+  color: var(--khaki-200);
+  font-size: 14px;
+}
+
+@media (max-width: 760px) {
+  /* The position readout sits at the top on phones: move the weather under it */
+  .weather {
+    top: 44px;
+  }
+
+  .tutorial {
+    bottom: 50px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab.is-hint {
+    animation: none;
+    background: var(--olive-500);
+  }
+}

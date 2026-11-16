@@ -6,6 +6,8 @@ import { supabase } from '../supabase.js';
 import { state, setState } from '../state.js';
 import { setServerTime, msUntil } from './clock.js';
 import { toast } from '../ui/toast.js';
+import { playSound, notify } from '../ui/alerts.js';
+import { surveyBases } from './features.js';
 import { fmt } from '../ui/dom.js';
 
 // ------------------------------------------------------------ snapshots
@@ -22,6 +24,14 @@ function applySnapshot(snapshot) {
   const newlyDamaged = state.units.length
     ? snapshot.units.filter((u) => u.status === 'repairing' && !wasRepairing.has(u.id)).length
     : 0;
+  // New mission reports since the last check-in (not on the very first load).
+  const known = new Set(state.missions.map((m) => m.id));
+  const fresh = state.profile ? snapshot.missions.filter((m) => !known.has(m.id)) : [];
+  if (fresh.length > 0 && state.missions.length + state.units.length > 0) {
+    playSound(fresh.some((m) => m.mission_type === 'convoy_threat') ? 'warning' : 'mission');
+    notify('New mission report', `${fresh.length} new mission${fresh.length === 1 ? '' : 's'} waiting.`);
+  }
+
   if (newlyDamaged > 0) {
     toast(`${newlyDamaged} unit${newlyDamaged === 1 ? ' has' : 's have'} come back needing repairs or rest.`, 'info');
   }
@@ -49,6 +59,8 @@ function announce(events) {
   const done = events.filter((e) => e.type === 'mission_completed');
   // Finished missions move daily orders, campaigns and alliance operations along.
   if (done.length > 0) {
+    playSound('complete');
+    notify('Mission complete', done.length === 1 ? `${done[0].name}: +${fmt(done[0].money)} funds` : `${done.length} missions completed.`);
     refreshObjectivesSoon();
     if (state.alliance) refreshOperationSoon();
   }
@@ -163,6 +175,7 @@ export async function loadGame() {
   if (error) throw error;
   setState({ bases: data });
   await Promise.all([sync(), loadAlliance()]);
+  surveyBases(); // look up real places around any base not yet surveyed
   // Not needed to start playing, so these load in the background.
   loadObjectives().catch(() => {});
   loadTaskForces().catch(() => {});
@@ -179,7 +192,7 @@ export async function placeBase(buildingType, latlng, name) {
   if (error) throw error;
   // The function returns our updated profile (less money) and the new base.
   setState({ profile: data.profile, bases: [...state.bases, data.base] });
-  sync().catch(() => {}); // a new base can mean new missions
+  sync().catch(() => {}).then(surveyBases); // new missions, and survey the new neighbourhood
   return data.base;
 }
 
