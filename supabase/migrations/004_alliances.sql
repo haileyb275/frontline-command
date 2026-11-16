@@ -205,6 +205,48 @@ begin
 end;
 $$;
 
+-- Spawn up to p_due new missions for a player (never above their cap).
+-- Split out of fc_sync so later phases can change HOW missions are chosen
+-- and placed without touching the rest of the settling logic.
+create or replace function public.fc_spawn_due_missions(p_me uuid, p_level int, p_due int)
+returns void
+language plpgsql security definer set search_path = public
+as $$
+declare
+  n_bases    int;
+  max_open   int;
+  open_now   int;
+  spawn_type text;
+  spawn_base public.bases;
+begin
+  select count(*) into n_bases from public.bases where owner_id = p_me;
+  -- Bigger commands get more simultaneous missions, up to a hard cap. This
+  -- cap is also what stops a week offline from creating 5,000 missions.
+  max_open := least(public.fc_cfg('max_open_missions'),
+                    public.fc_cfg('base_open_missions') + n_bases + p_level);
+  select count(*) into open_now from public.missions where owner_id = p_me and status = 'open';
+
+  for i in 1 .. greatest(0, least(p_due, max_open - open_now)) loop
+    -- Weighted random pick among missions this player could actually do.
+    select t.id into spawn_type
+      from public.mission_types t
+     where t.min_level <= p_level
+       and not exists (
+             select 1 from jsonb_object_keys(t.requirements) as need(category)
+              where not exists (
+                      select 1 from public.bases b
+                        join public.building_types bt on bt.id = b.building_type
+                       where b.owner_id = p_me and bt.unlocks_categories ? need.category))
+     order by -ln(1 - random()) / t.spawn_weight
+     limit 1;
+    exit when spawn_type is null;
+
+    select * into spawn_base from public.bases where owner_id = p_me order by random() limit 1;
+    perform public.fc_spawn_mission(p_me, spawn_type, spawn_base.lat, spawn_base.lng, 3, 20);
+  end loop;
+end;
+$$;
+
 -- ---------------------------------------------------------------------
 -- 4. fc_sync(), now aware of shared missions
 -- ---------------------------------------------------------------------
@@ -230,10 +272,6 @@ declare
   new_level  int;
   n_bases    int;
   due        int;
-  max_open   int;
-  open_now   int;
-  spawn_type text;
-  spawn_base public.bases;
 begin
   select * into prof from public.profiles where id = p_me for update;
   if not found or prof.nation_id is null then return events; end if;
@@ -386,29 +424,7 @@ begin
   end if;
 
   if n_bases > 0 and due > 0 then
-    max_open := least(public.fc_cfg('max_open_missions'),
-                      public.fc_cfg('base_open_missions') + n_bases + prof.level);
-    select count(*) into open_now from public.missions where owner_id = p_me and status = 'open';
-
-    for i in 1 .. greatest(0, least(due, max_open - open_now)) loop
-      select t.id into spawn_type
-        from public.mission_types t
-       where t.min_level <= prof.level
-         and not exists (
-               select 1 from jsonb_object_keys(t.requirements) as need(category)
-                where not exists (
-                        select 1 from public.bases b
-                          join public.building_types bt on bt.id = b.building_type
-                         where b.owner_id = p_me and bt.unlocks_categories ? need.category))
-       order by -ln(1 - random()) / t.spawn_weight
-       limit 1;
-      exit when spawn_type is null;
-
-      select * into spawn_base from public.bases where owner_id = p_me order by random() limit 1;
-      perform public.fc_spawn_mission(p_me, spawn_type, spawn_base.lat, spawn_base.lng,
-                public.fc_cfg('spawn_radius_min_km'), public.fc_cfg('spawn_radius_max_km'));
-    end loop;
-
+    perform public.fc_spawn_due_missions(p_me, prof.level, due);
     prof.last_spawn_at := v_now;
   end if;
 
@@ -969,6 +985,7 @@ revoke all on function public.fc_sync(uuid) from public, anon, authenticated;
 revoke all on function public.fc_snapshot(uuid, jsonb) from public, anon, authenticated;
 revoke all on function public.fc_spawn_mission(uuid, text, double precision, double precision, numeric, numeric, uuid, uuid)
   from public, anon, authenticated;
+revoke all on function public.fc_spawn_due_missions(uuid, int, int) from public, anon, authenticated;
 revoke all on function public.fc_system_message(uuid, text) from public, anon, authenticated;
 revoke all on function public.fc_remove_member(uuid, text) from public, anon, authenticated;
 revoke all on function public.fc_alliance_bonus(uuid, text) from public, anon, authenticated;

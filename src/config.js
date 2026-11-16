@@ -29,3 +29,9 @@ export const STORAGE_KEYS = {
 // "secret" / service_role key and the database password.
 export const SUPABASE_URL = 'https://rluljthdnkejrsrtpavi.supabase.co';
 export const SUPABASE_KEY = 'sb_publishable_snnW1wpe-b0WCtBblBD5Rg_gyXZA5mR';
+
+// ---------- Road routing ----------
+// OSRM's free demo server (OpenStreetMap data, no key). It is meant for light
+// use; if the game ever gets busy, host your own OSRM or use a paid routing
+// service and change this one line.
+export const ROUTING_URL = 'https://router.project-osrm.org/route/v1/driving';

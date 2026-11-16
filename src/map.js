@@ -147,7 +147,7 @@ export function createBaseLayer(map, { getIcon, onSelect }) {
  * @param {L.Map} map
  * @param {{ getLabel: (mission) => string, getTitle: (mission) => string, onSelect: (mission) => void }} options
  */
-export function createMissionLayer(map, { getLabel, getTitle, onSelect }) {
+export function createMissionLayer(map, { getLabel, getKind, getTitle, onSelect }) {
   const group = L.layerGroup().addTo(map);
   const markers = new Map();
 
@@ -162,6 +162,7 @@ export function createMissionLayer(map, { getLabel, getTitle, onSelect }) {
       }
       for (const mission of missions) {
         let kind = mission.status === 'in_progress' ? 'mission active' : 'mission';
+        if (getKind) kind += ` ${getKind(mission)}`; // e.g. 'water' for missions at sea
         if (mission.id === selectedId) kind += ' is-selected';
         let marker = markers.get(mission.id);
         if (!marker) {
@@ -196,7 +197,7 @@ export function createMissionLayer(map, { getLabel, getTitle, onSelect }) {
  * @param {{ getDispatches: () => object[], getTarget: (dispatch) => {lat,lng}|null,
  *           getLabel: (dispatch) => string, getPosition: (dispatch) => {phase, progress} }} options
  */
-export function createTravelLayer(map, { getDispatches, getTarget, getLabel, getKind, getPosition }) {
+export function createTravelLayer(map, { getDispatches, getTarget, getLabel, getKind, getPosition, getRoute, pointAlong }) {
   const group = L.layerGroup().addTo(map);
   const items = new Map(); // dispatch id → { marker, line }
 
@@ -233,11 +234,22 @@ export function createTravelLayer(map, { getDispatches, getTarget, getLabel, get
         items.set(d.id, item);
       }
 
-      // Straight-line interpolation between base and mission.
-      item.marker.setLatLng([
-        d.from_lat + (target.lat - d.from_lat) * progress,
-        d.from_lng + (target.lng - d.from_lng) * progress,
-      ]);
+      // Ground units follow the road route once it has loaded (getRoute
+      // returns null until then, and always for aircraft and ships).
+      const route = getRoute?.(d, target) ?? null;
+      if (route && !item.onRoad) {
+        item.line.setLatLngs(route.points); // redraw the dashed line along the road
+        item.onRoad = true;
+      }
+      item.marker.setLatLng(
+        route
+          ? pointAlong(route, progress)
+          : [
+              // Straight-line interpolation between base and mission.
+              d.from_lat + (target.lat - d.from_lat) * progress,
+              d.from_lng + (target.lng - d.from_lng) * progress,
+            ]
+      );
       // While a unit is at the mission (or home) its own marker is hidden.
       const moving = phase === 'en_route' || phase === 'returning';
       item.marker.setOpacity(moving ? 1 : 0);

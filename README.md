@@ -48,6 +48,8 @@ in this order:
 
 1. every file in `supabase/migrations/`, lowest number first
 2. `supabase/seed.sql`
+3. once per database, the coastline data: run `npm run land`, then every file in
+   `supabase/land/` in order (this is what tells the server where the sea is)
 
 After editing any JSON file in `src/data/`, regenerate the seed and run it again:
 
@@ -62,4 +64,5 @@ npm run seed
 - [x] Phase 3 — Bases and units
 - [x] Phase 4 — Missions and dispatching
 - [x] Phase 5 — Alliances
+- [x] Phase 5b — Terrain-aware missions, naval units, road-following movement
 - [ ] Phase 6 — Leaderboards and polish

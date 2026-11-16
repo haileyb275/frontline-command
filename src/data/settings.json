@@ -4,8 +4,6 @@
   "spawn_interval_seconds": 120,
   "base_open_missions": 2,
   "max_open_missions": 12,
-  "spawn_radius_min_km": 3,
-  "spawn_radius_max_km": 20,
   "alliance_create_cost": 5000,
   "alliance_base_members": 20,
   "alliance_treasury_cut": 0.05,

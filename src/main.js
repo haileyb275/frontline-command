@@ -8,6 +8,7 @@ import { state, setState, subscribe, loadProfile } from './state.js';
 import { loadGame, startSyncLoop, stopSyncLoop, stopRealtime } from './game/actions.js';
 import { getBuilding, getCategory, getMissionType } from './game/content.js';
 import { dispatchPosition } from './game/clock.js';
+import { getRoute, pointAlong } from './game/routes.js';
 import { missionMarkerLabel } from './ui/missionsTab.js';
 import { initPanel } from './ui/panel.js';
 import { initTopbar } from './ui/topbar.js';
@@ -36,6 +37,7 @@ const baseLayer = createBaseLayer(map, {
 
 const missionLayer = createMissionLayer(map, {
   getLabel: missionMarkerLabel,
+  getKind: (mission) => getMissionType(mission.mission_type)?.terrain ?? 'land',
   getTitle: (mission) => getMissionType(mission.mission_type)?.name ?? 'Mission',
   onSelect: (mission) => panel.selectMission(mission),
 });
@@ -56,6 +58,12 @@ createTravelLayer(map, {
   // Allied units on shared missions are drawn in a different colour.
   getKind: (d) => (d.player_id === state.profile?.id ? 'unit' : 'unit ally'),
   getPosition: dispatchPosition,
+  // Only ground units use roads; aircraft and ships travel in straight lines.
+  getRoute: (d, target) =>
+    getCategory(d.category_id)?.domain === 'ground'
+      ? getRoute({ lat: d.from_lat, lng: d.from_lng }, target)
+      : null,
+  pointAlong,
 });
 
 const panel = initPanel({ baseLayer, missionLayer, mapElement: mapEl });

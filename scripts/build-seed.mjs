@@ -53,7 +53,7 @@ const parts = [
   upsert(
     'building_types',
     ['id', 'name', 'icon', 'description', 'cost_money', 'cost_supplies', 'unit_capacity',
-     'unlocks_categories', 'min_level', 'is_hq', 'sort'],
+     'unlocks_categories', 'min_level', 'is_hq', 'sort', 'requires_coast'],
     readJson('buildings.json')
   ),
   upsert(
@@ -66,7 +66,7 @@ const parts = [
     'mission_types',
     ['id', 'name', 'description', 'requirements', 'duration_seconds', 'reward_money',
      'reward_supplies', 'reward_xp', 'difficulty', 'min_level', 'spawn_weight', 'shareable',
-     'followups', 'expires_seconds'],
+     'followups', 'expires_seconds', 'terrain', 'min_km', 'max_km'],
     readJson('missions.json')
   ),
   // settings.json is one object; the table wants one row per setting.

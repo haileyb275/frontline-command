@@ -13,7 +13,8 @@
     ],
     "min_level": 1,
     "is_hq": true,
-    "sort": 0
+    "sort": 0,
+    "requires_coast": false
   },
   {
     "id": "barracks",
@@ -30,7 +31,8 @@
     ],
     "min_level": 1,
     "is_hq": false,
-    "sort": 1
+    "sort": 1,
+    "requires_coast": false
   },
   {
     "id": "supply_depot",
@@ -46,7 +48,8 @@
     ],
     "min_level": 1,
     "is_hq": false,
-    "sort": 2
+    "sort": 2,
+    "requires_coast": false
   },
   {
     "id": "field_hospital",
@@ -61,7 +64,8 @@
     ],
     "min_level": 2,
     "is_hq": false,
-    "sort": 3
+    "sort": 3,
+    "requires_coast": false
   },
   {
     "id": "artillery_park",
@@ -77,7 +81,8 @@
     ],
     "min_level": 2,
     "is_hq": false,
-    "sort": 4
+    "sort": 4,
+    "requires_coast": false
   },
   {
     "id": "tank_depot",
@@ -92,7 +97,8 @@
     ],
     "min_level": 3,
     "is_hq": false,
-    "sort": 5
+    "sort": 5,
+    "requires_coast": false
   },
   {
     "id": "airfield",
@@ -107,6 +113,23 @@
     ],
     "min_level": 5,
     "is_hq": false,
-    "sort": 6
+    "sort": 6,
+    "requires_coast": false
+  },
+  {
+    "id": "naval_base",
+    "name": "Naval Base",
+    "icon": "NB",
+    "description": "A harbor with moorings and fuel for warships. Must be built on the coast.",
+    "cost_money": 20000,
+    "cost_supplies": 500,
+    "unit_capacity": 4,
+    "unlocks_categories": [
+      "naval"
+    ],
+    "min_level": 3,
+    "is_hq": false,
+    "sort": 7,
+    "requires_coast": true
   }
 ]

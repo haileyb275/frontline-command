@@ -4,62 +4,79 @@
     "name": "Infantry",
     "icon": "INF",
     "sort": 0,
-    "base_power": 10
+    "base_power": 10,
+    "domain": "ground"
   },
   {
     "id": "armor",
     "name": "Armor",
     "icon": "ARM",
     "sort": 1,
-    "base_power": 30
+    "base_power": 30,
+    "domain": "ground"
   },
   {
     "id": "anti_tank",
     "name": "Anti-Tank",
     "icon": "AT",
     "sort": 2,
-    "base_power": 14
+    "base_power": 14,
+    "domain": "ground"
   },
   {
     "id": "artillery",
     "name": "Artillery",
     "icon": "ART",
     "sort": 3,
-    "base_power": 20
+    "base_power": 20,
+    "domain": "ground"
   },
   {
     "id": "air",
     "name": "Air",
     "icon": "AIR",
     "sort": 4,
-    "base_power": 35
+    "base_power": 35,
+    "domain": "air"
   },
   {
     "id": "recon",
     "name": "Recon",
     "icon": "RCN",
     "sort": 5,
-    "base_power": 8
+    "base_power": 8,
+    "domain": "ground"
   },
   {
     "id": "medical",
     "name": "Medical",
     "icon": "MED",
     "sort": 6,
-    "base_power": 6
+    "base_power": 6,
+    "domain": "ground"
   },
   {
     "id": "engineers",
     "name": "Engineers",
     "icon": "ENG",
     "sort": 7,
-    "base_power": 10
+    "base_power": 10,
+    "domain": "ground"
   },
   {
     "id": "logistics",
     "name": "Logistics",
     "icon": "LOG",
     "sort": 8,
-    "base_power": 6
+    "base_power": 6,
+    "domain": "ground"
+  },
+  {
+    "id": "naval",
+    "name": "Naval",
+    "icon": "NAV",
+    "sort": 9,
+    "base_power": 25,
+    "domain": "sea"
   }
 ]

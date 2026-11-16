@@ -61,5 +61,12 @@
   {"id": "japan_recon", "nation_id": "japan", "category_id": "recon", "name": "Type 97 Te-Ke Tankette", "cost_money": 1200, "cost_supplies": 30, "speed_kmh": 55, "power": 10, "min_level": 1},
   {"id": "japan_medical", "nation_id": "japan", "category_id": "medical", "name": "Field Medical Team", "cost_money": 1000, "cost_supplies": 40, "speed_kmh": 55, "power": 6, "min_level": 2},
   {"id": "japan_engineers", "nation_id": "japan", "category_id": "engineers", "name": "Engineer Platoon", "cost_money": 1400, "cost_supplies": 50, "speed_kmh": 40, "power": 10, "min_level": 1},
-  {"id": "japan_logistics", "nation_id": "japan", "category_id": "logistics", "name": "Type 94 Truck Section", "cost_money": 1200, "cost_supplies": 30, "speed_kmh": 50, "power": 6, "min_level": 1}
+  {"id": "japan_logistics", "nation_id": "japan", "category_id": "logistics", "name": "Type 94 Truck Section", "cost_money": 1200, "cost_supplies": 30, "speed_kmh": 50, "power": 6, "min_level": 1},
+  {"id": "usa_naval", "nation_id": "usa", "category_id": "naval", "name": "Fletcher-class Destroyer", "cost_money": 5000, "cost_supplies": 150, "speed_kmh": 65, "power": 25, "min_level": 3},
+  {"id": "uk_naval", "nation_id": "uk", "category_id": "naval", "name": "Flower-class Corvette", "cost_money": 4500, "cost_supplies": 150, "speed_kmh": 30, "power": 24, "min_level": 3},
+  {"id": "ussr_naval", "nation_id": "ussr", "category_id": "naval", "name": "G-5 Torpedo Boat Flight", "cost_money": 4200, "cost_supplies": 150, "speed_kmh": 95, "power": 18, "min_level": 3},
+  {"id": "germany_naval", "nation_id": "germany", "category_id": "naval", "name": "S-boat Flotilla", "cost_money": 4500, "cost_supplies": 150, "speed_kmh": 80, "power": 20, "min_level": 3},
+  {"id": "france_naval", "nation_id": "france", "category_id": "naval", "name": "Le Fantasque-class Destroyer", "cost_money": 5000, "cost_supplies": 150, "speed_kmh": 80, "power": 24, "min_level": 3},
+  {"id": "italy_naval", "nation_id": "italy", "category_id": "naval", "name": "MAS Torpedo Boat Flight", "cost_money": 4200, "cost_supplies": 150, "speed_kmh": 85, "power": 18, "min_level": 3},
+  {"id": "japan_naval", "nation_id": "japan", "category_id": "naval", "name": "Fubuki-class Destroyer", "cost_money": 5000, "cost_supplies": 150, "speed_kmh": 65, "power": 25, "min_level": 3}
 ]

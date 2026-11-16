@@ -10,6 +10,7 @@ import {
   getUnitType,
   missionReward,
   travelSeconds,
+  distanceKm,
 } from '../game/content.js';
 import { dispatchUnits, recallUnits, shareMission } from '../game/actions.js';
 import { msUntil, formatDuration, liveUnitStatus } from '../game/clock.js';
@@ -56,6 +57,11 @@ function requirementChips(type, counts = {}) {
 
 const difficultyPips = (n) =>
   `<span class="pips" title="Difficulty ${n} of 5">${'●'.repeat(n)}${'○'.repeat(5 - n)}</span>`;
+
+/** Distance from a mission to the closest of our bases, in km. */
+function nearestBaseKm(mission, bases) {
+  return Math.min(...bases.map((b) => distanceKm(b, mission)));
+}
 
 // ---------------------------------------------------------------- render
 
@@ -171,6 +177,8 @@ function renderMission(state, ui, mission) {
 
     <div class="facts">
       <div><span>Difficulty</span>${difficultyPips(type.difficulty)}</div>
+      <div><span>Location</span>${{ land: 'On land', water: 'At sea', any: 'Air operation' }[type.terrain] ?? ''}
+        · ${Math.round(nearestBaseKm(mission, bases))} km from base</div>
       <div><span>Duration</span>${formatDuration(type.duration_seconds * 1000)}</div>
       <div><span>Reward</span>${fmt(reward.money)} funds · ${fmt(reward.supplies)} supplies · ${reward.xp} XP</div>
     </div>

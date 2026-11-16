@@ -1252,3 +1252,33 @@ button.row:hover {
     height: 180px;
   }
 }
+
+/* ==========================================================================
+   Phase 5b: terrain
+   ========================================================================== */
+
+/* Missions at sea are blue instead of red */
+.marker--water:not(.marker--active) {
+  background: #3f6f9f;
+  animation-name: pulse-water;
+}
+
+@keyframes pulse-water {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(63, 111, 159, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(63, 111, 159, 0);
+  }
+}
+
+/* Aircraft missions that can be anywhere */
+.marker--any:not(.marker--active) {
+  background: #7a6aa8;
+  animation-name: none;
+}
+
+.facts > div {
+  align-items: baseline;
+}
