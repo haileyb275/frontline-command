@@ -1569,3 +1569,80 @@ button.row:hover {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* ==========================================================================
+   Phase 9: profiles and the admin panel
+   ========================================================================== */
+
+button.player-name {
+  padding: 0;
+  background: none;
+  border: 0;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button.player-name:hover {
+  text-decoration: underline;
+}
+
+.link-btn--name {
+  padding: 0;
+  color: var(--khaki-200);
+  font-size: inherit;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.link-btn--name:hover {
+  text-decoration: underline;
+}
+
+.chat-meta .link-btn {
+  font-size: 11px;
+}
+
+/* Another player's bases on the map */
+.marker--foreign {
+  background: #c9b6d8;
+  border-style: dotted;
+}
+
+.tag--bad {
+  border-color: var(--danger);
+  color: #e39a84;
+  font-family: var(--font);
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.grid-3 input {
+  min-width: 0;
+  width: 100%;
+}
+
+.select {
+  max-width: 150px;
+  padding: 5px 6px;
+  background: var(--olive-900);
+  color: var(--khaki-100);
+  border: 1px solid var(--olive-500);
+  border-radius: var(--radius);
+  font: inherit;
+  font-size: 12px;
+}
+
+.log-line .btn--quiet {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 760px) {
+  #admin-link {
+    font-size: 11px;
+  }
+}

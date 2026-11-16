@@ -1,7 +1,8 @@
 // The "Ranks" tab: global leaderboards for players and alliances.
 
 import { getNation } from '../game/content.js';
-import { loadLeaderboard } from '../game/actions.js';
+import { loadLeaderboard, openProfile, closeProfile, reportPlayer } from '../game/actions.js';
+import { renderProfile } from './profileView.js';
 import { friendlyError } from '../supabase.js';
 import { esc, fmt } from './dom.js';
 import { toast } from './toast.js';
@@ -15,6 +16,7 @@ function nationChip(nationId) {
 }
 
 export function render(state, ui) {
+  if (ui.ranksView === 'profile') return renderProfile(state);
   const board = state.leaderboard;
   if (!board) return '<p class="muted">Loading rankings…</p>';
 
@@ -37,7 +39,7 @@ function renderPlayers(state, board) {
   const myName = state.profile?.username;
   const rows = board.players
     .map((p) => `
-      <div class="row row--static ${p.username === myName ? 'is-me' : ''}">
+      <button class="row ${p.username === myName ? 'is-me' : ''}" data-action="open-profile" data-username="${esc(p.username)}">
         <span class="rank-no">${p.position}</span>
         ${nationChip(p.nation_id)}
         <span class="row-main">
@@ -45,7 +47,7 @@ function renderPlayers(state, board) {
           <span class="row-sub">Level ${p.level} · ${fmt(p.missions_completed)} missions</span>
         </span>
         <span class="row-side">${fmt(p.xp)} XP</span>
-      </div>`)
+      </button>`)
     .join('');
 
   // If we're outside the top 50, show our own line underneath.
@@ -90,7 +92,25 @@ export function onShow() {
   loadLeaderboard().catch((error) => toast(friendlyError(error), 'error'));
 }
 
-export function handleAction(action, data, ctx) {
+export async function handleAction(action, data, ctx) {
+  const viewed = ctx.state.viewedProfile;
+  if (action === 'profile-close') {
+    closeProfile();
+    return ctx.update({ ranksView: 'players' });
+  }
+  if (action === 'profile-focus') return ctx.flyTo({ lat: +data.lat, lng: +data.lng });
+  if (action === 'profile-show-map' && viewed) return ctx.fitTo(viewed.bases);
+  if (action === 'profile-report' && viewed) {
+    const reason = window.prompt(`Why are you reporting ${viewed.username}? An administrator will read this.`, '');
+    if (!reason) return;
+    try {
+      await reportPlayer(viewed.username, reason);
+      toast('Report sent. Thank you.', 'ok');
+    } catch (error) {
+      toast(friendlyError(error), 'error');
+    }
+    return;
+  }
   if (action === 'ranks-view') return ctx.update({ ranksView: data.view });
   if (action === 'refresh-ranks') return onShow();
 }

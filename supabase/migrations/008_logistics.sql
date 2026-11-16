@@ -220,6 +220,10 @@ declare
   cargo_supplies bigint;
   outcome text;
 begin
+  -- Suspended accounts stop here: this function runs at the start of every
+  -- check-in and every action, so raising an error locks the account out.
+  perform public.fc_assert_active(p_me);
+
   perform 1 from public.profiles where id = p_me for update;
   if not found then return events; end if;
 

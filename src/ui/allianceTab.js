@@ -167,7 +167,10 @@ function renderChat(state, ui) {
           return `
             <div class="chat-line ${msg.sender_id === profile.id ? 'is-mine' : ''}">
               <div class="chat-meta">${nationChip(msg.sender_nation)}
-                <strong>${esc(msg.sender_name)}</strong> <time>${time}</time></div>
+                <button class="link-btn link-btn--name" data-action="open-profile" data-username="${esc(msg.sender_name)}">${esc(msg.sender_name)}</button>
+                <time>${time}</time>
+                ${msg.sender_id !== profile.id
+                  ? `<button class="link-btn" data-action="report-message" data-message="${msg.id}" data-username="${esc(msg.sender_name)}">report</button>` : ''}</div>
               <div class="chat-body">${esc(msg.body)}</div>
             </div>`;
         })
@@ -213,7 +216,7 @@ function renderMembers(state, ui) {
         <div class="row row--static row--wrap">
           ${nationChip(m.nation_id)}
           <span class="row-main">
-            <span class="row-title">${online ? '<span class="dot dot--ok" title="Online"></span> ' : ''}${esc(m.username)}${isMe ? ' (you)' : ''}</span>
+            <span class="row-title">${online ? '<span class="dot dot--ok" title="Online"></span> ' : ''}<button class="link-btn link-btn--name" data-action="open-profile" data-username="${esc(m.username)}">${esc(m.username)}</button>${isMe ? ' (you)' : ''}</span>
             <span class="row-sub">Level ${m.level} · donated ${fmt(m.donated_total)}</span>
           </span>
           <span class="status status--${esc(m.role)}">${esc(m.role)}</span>
@@ -289,6 +292,17 @@ async function run(ctx, fn, successMessage) {
 
 export async function handleAction(action, data, ctx) {
   switch (action) {
+    case 'report-message': {
+      const reason = window.prompt(`Report this message from ${data.username}? Say briefly what is wrong with it.`, '');
+      if (!reason) return;
+      try {
+        await actions.reportPlayer(data.username, reason, +data.message);
+        toast('Report sent. Thank you.', 'ok');
+      } catch (error) {
+        toast(friendlyError(error), 'error');
+      }
+      return;
+    }
     case 'alliance-view':
       return ctx.update({ allianceView: data.view });
     case 'refresh-alliances':

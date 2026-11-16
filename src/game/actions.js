@@ -91,6 +91,9 @@ export function sync() {
   syncInFlight ??= (async () => {
     try {
       const { data, error } = await supabase.rpc('sync_player');
+      if (error?.message?.includes('ACCOUNT_SUSPENDED')) {
+        window.dispatchEvent(new CustomEvent('fc-suspended', { detail: error.message }));
+      }
       if (error) throw error;
       applySnapshot(data);
     } finally {
@@ -377,3 +380,77 @@ export async function resupplyBase(baseId) {
 export async function setAutoResupply(baseId, on) {
   applySnapshot(await call('set_auto_resupply', { p_base_id: baseId, p_on: on }));
 }
+
+// ------------------------------------------------------------ phase 9: profiles
+
+/** Open another player's public page (and show their bases on the map). */
+export async function openProfile(username) {
+  setState({ viewedProfile: null });
+  const profile = await call('get_player_profile', { p_username: username });
+  if (!profile) throw new Error('That commander could not be found.');
+  setState({ viewedProfile: profile, overlayBases: profile.id === state.profile?.id ? [] : profile.bases });
+  return profile;
+}
+
+export function closeProfile() {
+  setState({ viewedProfile: null, overlayBases: [] });
+}
+
+export async function reportPlayer(username, reason, messageId = null) {
+  await call('report_player', { p_username: username, p_reason: reason, p_message_id: messageId });
+}
+
+// ------------------------------------------------------------ phase 9: admin
+// Each of these is refused by the server unless we are an administrator.
+// Most answer with the managed player's full record, which we keep in
+// state.admin.player and also draw on the map.
+
+function setAdminPlayer(player) {
+  setState({ admin: { ...state.admin, player }, overlayBases: player?.bases ?? [] });
+}
+
+export async function adminLoadHome() {
+  const [players, overview] = await Promise.all([call('admin_search_players', { p_query: '' }), call('admin_overview')]);
+  setState({ admin: { ...state.admin, players, overview }, overlayBases: [] });
+}
+
+export async function adminSearch(query) {
+  setState({ admin: { ...state.admin, players: await call('admin_search_players', { p_query: query }) } });
+}
+
+export async function adminOpenPlayer(playerId) {
+  setAdminPlayer(null);
+  setAdminPlayer(await call('admin_get_player', { p_player_id: playerId }));
+}
+
+export async function adminAdjust(playerId, money, supplies, xp, reason) {
+  setAdminPlayer(await call('admin_adjust_player', {
+    p_player_id: playerId, p_money: money, p_supplies: supplies, p_xp: xp, p_reason: reason,
+  }));
+  if (playerId === state.profile?.id) sync().catch(() => {}); // we changed our own balance
+}
+
+export const adminSetBan = async (playerId, banned, reason) =>
+  setAdminPlayer(await call('admin_set_ban', { p_player_id: playerId, p_banned: banned, p_reason: reason ?? '' }));
+export const adminSetMute = async (playerId, minutes) =>
+  setAdminPlayer(await call('admin_set_mute', { p_player_id: playerId, p_minutes: minutes }));
+export const adminRename = async (playerId, username) =>
+  setAdminPlayer(await call('admin_rename_player', { p_player_id: playerId, p_username: username }));
+export const adminDeleteBase = async (baseId) => setAdminPlayer(await call('admin_delete_base', { p_base_id: baseId }));
+export const adminMoveBase = async (baseId, latlng) =>
+  setAdminPlayer(await call('admin_move_base', { p_base_id: baseId, p_lat: latlng.lat, p_lng: latlng.lng }));
+export const adminDeleteUnit = async (unitId) => setAdminPlayer(await call('admin_delete_unit', { p_unit_id: unitId }));
+export const adminMoveUnit = async (unitId, baseId) =>
+  setAdminPlayer(await call('admin_move_unit', { p_unit_id: unitId, p_base_id: baseId }));
+
+export async function adminDeleteMessage(messageId) {
+  await call('admin_delete_message', { p_message_id: messageId });
+  await adminLoadHome();
+}
+
+export async function adminResolveReport(reportId) {
+  await call('admin_resolve_report', { p_report_id: reportId });
+  await adminLoadHome();
+}
+
+export const adminDisbandAlliance = (allianceId) => call('admin_disband_alliance', { p_alliance_id: allianceId });

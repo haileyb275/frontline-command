@@ -59,6 +59,18 @@ After editing any JSON file in `src/data/`, regenerate the seed and run it again
 npm run seed
 ```
 
+## Administrators
+
+An administrator sees an **Admin** link in the top bar: search players, add or take
+away funds, supplies and XP, move or delete bases and units, mute, suspend, rename,
+delete chat messages, and read reports. Every action is written to an audit log.
+
+Admin rights can only be granted in the Supabase SQL Editor, never from the game:
+
+```sql
+update public.profiles set is_admin = true where username = 'their_name';
+```
+
 ## Adding or changing content
 
 All content is data in `src/data/`. No game logic needs to change.
@@ -98,3 +110,4 @@ npm run balance
 - [x] Phase 6 — Leaderboards and polish
 - [x] Phase 7 — Specialists, military police, fire service, factories, home front, convoys
 - [x] Phase 8 — Unit experience and repairs, base supply stocks, convoy escorts, 42 more units
+- [x] Phase 9 — Admin panel, moderation (reports, mutes, suspensions), public player profiles

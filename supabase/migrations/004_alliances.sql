@@ -220,6 +220,15 @@ begin
                   where n.nspname = 'public' and p.proname = 'fc_on_mission_complete') then
     execute 'create function public.fc_on_mission_complete(p_mission uuid, p_at timestamptz) returns void language sql as ''select''';
   end if;
+  -- Moderation hooks (suspensions and chat mutes), filled in by Phase 9.
+  if not exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+                  where n.nspname = 'public' and p.proname = 'fc_assert_active') then
+    execute 'create function public.fc_assert_active(p_me uuid) returns void language sql as ''select''';
+  end if;
+  if not exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+                  where n.nspname = 'public' and p.proname = 'fc_assert_can_chat') then
+    execute 'create function public.fc_assert_can_chat(p_me uuid) returns void language sql as ''select''';
+  end if;
 end $$;
 
 -- Spawn up to p_due new missions for a player (never above their cap).
@@ -946,6 +955,7 @@ begin
   if me is null then raise exception 'You must be logged in.'; end if;
   select alliance_id into my_alliance from public.alliance_members where player_id = me;
   if my_alliance is null then raise exception 'Join an alliance first.'; end if;
+  perform public.fc_assert_can_chat(me);     -- suspended or muted players cannot post
   if v_body = '' then raise exception 'Type a message first.'; end if;
   if char_length(v_body) > 500 then raise exception 'Messages can be up to 500 characters.'; end if;
   -- A simple brake on spam: one message per second per player.

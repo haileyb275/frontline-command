@@ -119,7 +119,7 @@ export function makeIcon(symbol, kind = 'base') {
  * @param {L.Map} map
  * @param {{ getIcon: (base) => string, onSelect: (base) => void }} options
  */
-export function createBaseLayer(map, { getIcon, onSelect }) {
+export function createBaseLayer(map, { getIcon, getKind, onSelect }) {
   const group = L.layerGroup().addTo(map);
   const markers = new Map(); // base id → Leaflet marker
   let ghost = null; // the "you are about to build here" marker
@@ -137,7 +137,7 @@ export function createBaseLayer(map, { getIcon, onSelect }) {
       }
 
       for (const base of bases) {
-        let kind = base.zone === 'home' ? 'base home' : 'base';
+        let kind = getKind?.(base) ?? (base.zone === 'home' ? 'base home' : 'base');
         if (base.id === selectedId) kind += ' is-selected';
         let marker = markers.get(base.id);
         if (!marker) {
@@ -145,6 +145,7 @@ export function createBaseLayer(map, { getIcon, onSelect }) {
           marker.on('click', () => onSelect(base));
           markers.set(base.id, marker);
         }
+        marker.setLatLng([base.lat, base.lng]); // a base can be re-sited by an administrator
         marker.setIcon(makeIcon(getIcon(base), kind));
         // bindTooltip with a text node: player-chosen names are never parsed as HTML.
         marker.unbindTooltip();

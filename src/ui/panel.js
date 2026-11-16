@@ -9,6 +9,10 @@ import * as unitsTab from './unitsTab.js';
 import * as missionsTab from './missionsTab.js';
 import * as allianceTab from './allianceTab.js';
 import * as ranksTab from './ranksTab.js';
+import * as adminTab from './adminTab.js';
+import { openProfile, closeProfile } from '../game/actions.js';
+import { friendlyError } from '../supabase.js';
+import { toast } from './toast.js';
 
 const TABS = {
   missions: missionsTab,
@@ -16,13 +20,14 @@ const TABS = {
   bases: basesTab,
   alliance: allianceTab,
   ranks: ranksTab,
+  admin: adminTab, // has no tab button: opened from the top bar, admins only
 };
 
 /**
  * @param {{ baseLayer: object, missionLayer: object, mapElement: HTMLElement }} deps
  *        the two map layers from map.js, and the map's <div>
  */
-export function initPanel({ baseLayer, missionLayer, mapElement }) {
+export function initPanel({ baseLayer, missionLayer, mapElement, flyTo, fitTo }) {
   const panel = document.getElementById('panel');
   const body = document.getElementById('panel-body');
   const toggle = document.getElementById('panel-toggle');
@@ -40,7 +45,9 @@ export function initPanel({ baseLayer, missionLayer, mapElement }) {
     missionId: null, // mission being viewed
     picked: [], // unit ids ticked in the mission's unit picker
     allianceView: 'overview', // which part of the Alliance tab is showing
-    ranksView: 'players', // 'players' or 'alliances' in the Ranks tab
+    ranksView: 'players', // 'players', 'alliances' or 'profile' in the Ranks tab
+    adminView: 'home', // 'home' or 'player' in the admin panel
+    adminMoveBase: null, // base the admin is about to re-site with a map click
     busy: false, // true while waiting for the server
   };
 
@@ -54,7 +61,7 @@ export function initPanel({ baseLayer, missionLayer, mapElement }) {
   }
 
   // Passed to the tabs so they can read state and change the view.
-  const ctx = { state, ui, update, baseLayer, missionLayer };
+  const ctx = { state, ui, update, baseLayer, missionLayer, flyTo, fitTo };
 
   function draw() {
     for (const btn of tabButtons) {
@@ -107,8 +114,10 @@ export function initPanel({ baseLayer, missionLayer, mapElement }) {
 
   function showTab(name) {
     if (!TABS[name]) return;
-    // Switching tabs cancels any half-finished placement or unit selection.
-    update({ tab: name, ...CLEAR });
+    // Switching tabs cancels any half-finished placement or unit selection,
+    // and puts away another player's page.
+    if (state.viewedProfile || state.overlayBases.length) closeProfile();
+    update({ tab: name, ...CLEAR, adminMoveBase: null, ranksView: ui.ranksView === 'profile' ? 'players' : ui.ranksView });
     TABS[name].onShow?.(ctx); // e.g. the Ranks tab fetches fresh rankings
   }
 
@@ -134,6 +143,16 @@ export function initPanel({ baseLayer, missionLayer, mapElement }) {
       const unit = state.units.find((u) => u.id === el.dataset.unit);
       return update({ tab: 'bases', ...CLEAR, view: 'unit', unitId: el.dataset.unit, baseId: unit?.base_id ?? null });
     }
+    if (action === 'open-profile') {
+      update({ tab: 'ranks', ...CLEAR, ranksView: 'profile' });
+      return openProfile(el.dataset.username).catch((error) => {
+        toast(friendlyError(error), 'error');
+        update({ ranksView: 'players' });
+      });
+    }
+    if (action === 'admin-open' && ui.tab !== 'admin') {
+      update({ tab: 'admin', ...CLEAR }); // then fall through so the admin tab opens the player
+    }
     if (action === 'open-mission') {
       return update({ tab: 'missions', ...CLEAR, view: 'mission', missionId: el.dataset.mission });
     }
@@ -146,6 +165,12 @@ export function initPanel({ baseLayer, missionLayer, mapElement }) {
     if (!form) return;
     event.preventDefault();
     TABS[ui.tab].handleSubmit?.(form.dataset.form, Object.fromEntries(new FormData(form)), ctx, form);
+  });
+
+  // Drop-down menus (<select data-change="…">) report through "change".
+  body.addEventListener('change', (event) => {
+    const el = event.target.closest('[data-change]');
+    if (el) TABS[ui.tab].handleChange?.(el.dataset.change, el, ctx);
   });
 
   // Once a second, let the current tab refresh its countdowns. This only
@@ -184,9 +209,15 @@ export function initPanel({ baseLayer, missionLayer, mapElement }) {
     },
     /** The map was clicked. Returns true if the panel used the click. */
     handleMapClick(latlng) {
-      return ui.tab === 'bases' && basesTab.handleMapClick(latlng, ctx);
+      return TABS[ui.tab].handleMapClick?.(latlng, ctx) ?? false;
     },
     /** Called on logout so the next player doesn't see the last one's view. */
+    /** Open a player's public page (used by the top bar for our own). */
+    openProfile(username) {
+      panel.classList.remove('is-collapsed');
+      update({ tab: 'ranks', ...CLEAR, ranksView: 'profile' });
+      openProfile(username).catch((error) => toast(friendlyError(error), 'error'));
+    },
     reset() {
       update({ tab: 'bases', ...CLEAR, busy: false });
     },

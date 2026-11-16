@@ -17,6 +17,9 @@ export const state = {
   dispatches: [], // units out on (or returning from) a mission — ours, and allies' on shared missions
   alliance: null, // our alliance: { info, my_role, members, buildings, messages, log } or null
   alliances: [], // the list to browse when not in an alliance
+  viewedProfile: null, // another player's public page, while it is open
+  overlayBases: [], // someone else's bases to show on the map (profile or admin view)
+  admin: { players: null, player: null, overview: null }, // admin panel data
   leaderboard: null, // { players, alliances, me, player_count } once loaded
   unread: 0, // chat messages that arrived while not looking at the chat
 };

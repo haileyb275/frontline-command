@@ -118,7 +118,43 @@ createTravelLayer(map, {
   getPosition: dispatchPosition,
 });
 
-const panel = initPanel({ baseLayer, missionLayer, mapElement: mapEl });
+// Another player's bases, shown while their profile (or the admin view of
+// their account) is open. Same layer type as our own bases, different style.
+const visitorLayer = createBaseLayer(map, {
+  getIcon: (base) => getBuilding(base.building_type)?.icon ?? '?',
+  getKind: () => 'base foreign',
+  onSelect: () => {},
+});
+subscribe((s) => visitorLayer.sync(s.overlayBases));
+
+const panel = initPanel({
+  baseLayer,
+  missionLayer,
+  mapElement: mapEl,
+  flyTo: (point) => map.flyTo([point.lat, point.lng], Math.max(map.getZoom(), 10), { duration: 0.6 }),
+  fitTo: (points) => points.length && map.fitBounds(points.map((x) => [x.lat, x.lng]), { padding: [60, 60], maxZoom: 11 }),
+});
+
+// Top bar: our own name opens our profile; "Admin" opens the admin panel.
+document.getElementById('player-name').addEventListener('click', () => state.profile && panel.openProfile(state.profile.username));
+document.getElementById('admin-link').addEventListener('click', () => panel.showTab('admin'));
+subscribe((s) => { document.getElementById('admin-link').hidden = !s.profile?.is_admin; });
+
+// A suspended account is told why and can do nothing but log out.
+function showSuspended(message) {
+  stopSyncLoop();
+  const reason = String(message).split('ACCOUNT_SUSPENDED:')[1]?.trim() || 'No reason was given.';
+  showOverlay(`
+    <div class="dialog">
+      <div class="dialog-head">
+        <h1>Account suspended</h1>
+        <p>${esc(reason)}</p>
+      </div>
+      <button class="btn btn--primary" id="suspended-logout">Log out</button>
+    </div>`);
+  document.getElementById('suspended-logout').addEventListener('click', () => supabase.auth.signOut());
+}
+window.addEventListener('fc-suspended', (event) => showSuspended(event.detail));
 initTopbar();
 
 // ---------- Deciding which screen to show ----------
@@ -131,7 +167,8 @@ async function route() {
   if (!state.session) {
     stopSyncLoop();
     stopRealtime();
-    setState({ profile: null, bases: [], units: [], missions: [], dispatches: [], shipments: [], alliance: null, alliances: [], unread: 0 });
+    setState({ profile: null, bases: [], units: [], missions: [], dispatches: [], shipments: [], alliance: null, alliances: [], unread: 0,
+      viewedProfile: null, overlayBases: [], admin: { players: null, player: null, overview: null } });
     panel.reset();
     showAuthScreen();
     return;
@@ -158,6 +195,7 @@ async function route() {
       showHelpFirstTime();
     }
   } catch (error) {
+    if (String(error?.message).includes('ACCOUNT_SUSPENDED')) return showSuspended(error.message);
     showOverlay(`
       <div class="dialog">
         <div class="dialog-head">

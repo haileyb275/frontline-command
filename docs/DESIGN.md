@@ -278,3 +278,6 @@ was revised in a later phase, the highest-numbered file holds the current versio
   `repairing`), a supply `stock` on every base that dispatches draw down (`resupply_base`,
   automatic resupply convoys), and escort missions for threatened sea convoys
   (`missions.shipment_id`).
+- **Phase 9** added administrators (`profiles.is_admin`, every `admin_*` function guarded by
+  `fc_require_admin()`, all changes written to `admin_log`), moderation (`reports`,
+  `muted_until`, `is_banned`) and public profiles (`get_player_profile`).
