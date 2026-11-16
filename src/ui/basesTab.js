@@ -23,7 +23,7 @@ import {
 } from '../game/content.js';
 import {
   placeBase, buyUnit, upgradeBase, dismissUnit, trainUnit, startProduction, transferUnit, setBaseZone,
-  resupplyBase, setAutoResupply, renameBase, renameUnit,
+  resupplyBase, setAutoResupply, renameBase, renameUnit, startResearch,
 } from '../game/actions.js';
 import { renderBase, renderUnit } from './baseViews.js';
 import { msUntil, formatDuration } from '../game/clock.js';
@@ -89,7 +89,7 @@ function renderList(profile, bases, units) {
       if (type.unit_capacity === 0) {
         side = base.production_id
           ? `<span class="js-countdown" data-until="${esc(base.production_done_at)}"></span>`
-          : type.training_slots > 0 ? 'courses' : 'idle';
+          : type.training_slots > 0 ? 'courses' : type.id === 'research_office' ? 'research' : 'idle';
       }
       return `
         <button class="row" data-action="open-base" data-base="${esc(base.id)}">
@@ -134,6 +134,7 @@ function renderBuildMenu(profile, bases) {
             ? `Stations ${b.unit_capacity} units: ${esc(categoryNames(b.unlocks_categories))}`
             : b.training_slots > 0
               ? `Runs ${b.training_slots} specialty courses at a time`
+              : b.id === 'research_office' ? 'Runs one research programme at a time'
               : 'Runs one production job at a time'}${b.requires_coast ? ' · coast only' : ''}</p>
           <div class="option-foot">
             <span class="price">${priceText(price)}</span>
@@ -220,6 +221,9 @@ export async function handleAction(action, data, ctx) {
       if (name === null) return; // cancelled
       return run(ctx, () => renameUnit(ui.unitId, name));
     }
+
+    case 'research':
+      return run(ctx, () => startResearch(), 'Research programme started.');
 
     case 'resupply':
       return run(ctx, () => resupplyBase(ui.baseId), 'Resupply convoy dispatched.');

@@ -1,0 +1,62 @@
+[
+  {
+    "id": "op_steady_advance",
+    "name": "Operation Steady Advance",
+    "description": "A sustained effort along the whole front.",
+    "goal_text": "Complete 40 missions together",
+    "counter": "missions",
+    "target": 40,
+    "hours": 24,
+    "cost": 10000,
+    "reward_money": 8000,
+    "reward_supplies": 300,
+    "reward_xp": 200,
+    "alliance_xp": 500,
+    "sort": 0
+  },
+  {
+    "id": "op_iron_fist",
+    "name": "Operation Iron Fist",
+    "description": "Concentrate on the hardest objectives.",
+    "goal_text": "Complete 20 missions of difficulty 3 or higher together",
+    "counter": "missions_hard",
+    "target": 20,
+    "hours": 24,
+    "cost": 20000,
+    "reward_money": 15000,
+    "reward_supplies": 500,
+    "reward_xp": 400,
+    "alliance_xp": 1000,
+    "sort": 1
+  },
+  {
+    "id": "op_safe_harbour",
+    "name": "Operation Safe Harbour",
+    "description": "Clear the sea lanes for the alliance's convoys.",
+    "goal_text": "Complete 15 missions at sea together",
+    "counter": "missions_water",
+    "target": 15,
+    "hours": 24,
+    "cost": 15000,
+    "reward_money": 12000,
+    "reward_supplies": 400,
+    "reward_xp": 300,
+    "alliance_xp": 800,
+    "sort": 2
+  },
+  {
+    "id": "op_open_roads",
+    "name": "Operation Open Roads",
+    "description": "Engineers of every member reopen the routes forward.",
+    "goal_text": "Complete 25 missions that need engineers together",
+    "counter": "missions_cat_engineers",
+    "target": 25,
+    "hours": 24,
+    "cost": 12000,
+    "reward_money": 10000,
+    "reward_supplies": 400,
+    "reward_xp": 250,
+    "alliance_xp": 600,
+    "sort": 3
+  }
+]

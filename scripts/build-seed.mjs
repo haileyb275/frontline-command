@@ -64,7 +64,7 @@ const parts = [
   upsert(
     'unit_types',
     ['id', 'nation_id', 'category_id', 'name', 'cost_money', 'cost_supplies', 'speed_kmh',
-     'power', 'min_level'],
+     'power', 'min_level', 'year'],
     readJson('units.json')
   ),
   upsert(
@@ -96,6 +96,13 @@ const parts = [
     'objectives',
     ['id', 'kind', 'name', 'description', 'steps', 'reward_money', 'reward_supplies', 'reward_xp', 'sort'],
     readJson('objectives.json')
+  ),
+  upsert('research_levels', ['year', 'cost_money', 'cost_supplies', 'seconds', 'min_level'], readJson('research.json')),
+  upsert(
+    'operation_types',
+    ['id', 'name', 'description', 'goal_text', 'counter', 'target', 'hours', 'cost', 'reward_money',
+     'reward_supplies', 'reward_xp', 'alliance_xp', 'sort'],
+    readJson('operations.json')
   ),
   // settings.json is one object; the table wants one row per setting.
   upsert(

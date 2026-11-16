@@ -47,8 +47,11 @@ function applySnapshot(snapshot) {
 /** Turn server events into pop-up messages. */
 function announce(events) {
   const done = events.filter((e) => e.type === 'mission_completed');
-  // Finished missions move daily orders and campaigns along: refresh them.
-  if (done.length > 0) refreshObjectivesSoon();
+  // Finished missions move daily orders, campaigns and alliance operations along.
+  if (done.length > 0) {
+    refreshObjectivesSoon();
+    if (state.alliance) refreshOperationSoon();
+  }
 
   if (done.length > 3) {
     // Came back after a while: one summary instead of a wall of pop-ups.
@@ -119,6 +122,7 @@ function scheduleNextSync() {
     ...state.units.map((u) => u.busy_until),
     ...state.bases.map((b) => b.production_done_at),
     ...state.shipments.map((s) => s.arrives_at),
+    state.profile?.research_until, // so the Research Office updates the moment a programme ends
     // Arrivals don't change anything on the server, but syncing then keeps
     // the status labels fresh. Only future ones, or we would loop forever.
     ...state.dispatches.map((d) => d.arrives_at).filter((t) => msUntil(t) > 0),
@@ -503,4 +507,30 @@ export async function renameBase(baseId, name) {
 
 export async function renameUnit(unitId, name) {
   applySnapshot(await call('rename_unit', { p_unit_id: unitId, p_name: name }));
+}
+
+// ------------------------------------------------------------ phase 11
+
+export async function startResearch() {
+  setState({ profile: await call('start_research') });
+  scheduleNextSync();
+}
+
+export async function loadOperation() {
+  setState({ operation: await call('get_alliance_operation') });
+}
+const refreshOperationSoon = debounce(() => loadOperation().catch(() => {}), 1500);
+
+export async function startOperation(operationId) {
+  await call('start_operation', { p_operation_id: operationId });
+  await Promise.all([loadOperation(), loadAlliance()]); // the treasury changed too
+}
+
+export async function claimOperationReward(operationUuid) {
+  await call('claim_operation_reward', { p_operation: operationUuid });
+  await Promise.all([loadOperation(), sync()]);
+}
+
+export async function loadSeasonBoard() {
+  setState({ season: await call('get_season_board') });
 }

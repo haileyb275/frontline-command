@@ -245,5 +245,22 @@
     "training_slots": 0,
     "default_zone": "home",
     "stock_capacity": 0
+  },
+  {
+    "id": "research_office",
+    "name": "Research Office",
+    "icon": "RO",
+    "description": "Evaluates new equipment. Each completed programme opens the next year's designs for recruiting.",
+    "cost_money": 15000,
+    "cost_supplies": 400,
+    "unit_capacity": 0,
+    "unlocks_categories": [],
+    "min_level": 2,
+    "is_hq": false,
+    "sort": 13,
+    "requires_coast": false,
+    "training_slots": 0,
+    "default_zone": "home",
+    "stock_capacity": 0
   }
 ]

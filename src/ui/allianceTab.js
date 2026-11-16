@@ -4,7 +4,8 @@
 // In an alliance      → four sub-views chosen by `ui.allianceView`:
 //                       'overview' | 'chat' | 'members' | 'buildings'
 
-import { allianceBuildings, getNation, getMissionType, settings } from '../game/content.js';
+import { allianceBuildings, getNation, getMissionType, getOperationType, operations, settings } from '../game/content.js';
+import { msUntil, formatDuration } from '../game/clock.js';
 import * as actions from '../game/actions.js';
 import { friendlyError } from '../supabase.js';
 import { esc, fmt } from './dom.js';
@@ -15,6 +16,7 @@ const VIEWS = [
   ['chat', 'Chat'],
   ['members', 'Members'],
   ['buildings', 'Buildings'],
+  ['ops', 'Ops'],
 ];
 
 function nationChip(nationId) {
@@ -41,7 +43,7 @@ export function render(state, ui) {
       </button>`
   ).join('');
 
-  const views = { overview: renderOverview, chat: renderChat, members: renderMembers, buildings: renderBuildings };
+  const views = { overview: renderOverview, chat: renderChat, members: renderMembers, buildings: renderBuildings, ops: renderOps };
 
   return `
     <div class="section-head">
@@ -267,6 +269,74 @@ function renderBuildings(state, ui) {
             Buildings give their bonus to every member.</p>${cards}`;
 }
 
+/** Joint operations: a shared target, a time limit, and a reward for all who take part. */
+function renderOps(state, ui) {
+  const { alliance, operation: op, profile } = state;
+  const canLaunch = alliance.my_role === 'leader' || alliance.my_role === 'officer';
+  const type = op && getOperationType(op.operation_id);
+  let current = '';
+
+  if (op && type) {
+    const mine = op.contributions.find((c) => c.player_id === profile.id);
+    const board = op.contributions.length
+      ? op.contributions.map((c, i) => `
+          <div class="log-line">
+            <span>${i + 1}. ${nationChip(c.nation_id)} ${esc(c.username)}</span>
+            <span>${fmt(c.amount)}${op.status === 'succeeded' ? (c.claimed ? ' · collected' : ' · reward waiting') : ''}</span>
+          </div>`).join('')
+      : '<p class="muted">Nobody has contributed yet.</p>';
+    const state_text = { active: `ends in <span class="js-countdown" data-until="${esc(op.ends_at)}"></span>`,
+                         succeeded: 'succeeded', failed: 'ran out of time' }[op.status];
+    current = `
+      <div class="card ${op.status === 'active' ? 'card--notice' : ''}">
+        <h2>${esc(type.name)}</h2>
+        <p>${esc(type.goal_text)} · ${state_text}</p>
+        <div class="progress"><span class="meter"><span style="width: ${Math.round((op.progress / op.target) * 100)}%"></span></span>
+          <span class="muted">${fmt(op.progress)} / ${fmt(op.target)}</span></div>
+        <p class="muted">Reward for every member who takes part:
+          ${fmt(type.reward_money)} funds · ${fmt(type.reward_supplies)} supplies · ${fmt(type.reward_xp)} XP</p>
+        ${op.status === 'succeeded' && mine && !mine.claimed
+          ? `<button class="btn btn--primary btn--block" data-action="claim-op" data-op="${esc(op.id)}" ${ui.busy ? 'disabled' : ''}>Collect your reward</button>` : ''}
+      </div>
+      <h3>Contributions</h3>${board}`;
+  }
+
+  const active = op?.status === 'active';
+  const launch = operations.map((o) => {
+    let label = `Launch · ${fmt(o.cost)}`;
+    let blocked = ui.busy;
+    if (active) { label = 'One at a time'; blocked = true; }
+    else if (!canLaunch) { label = `${fmt(o.cost)} · officers only`; blocked = true; }
+    else if (alliance.info.treasury < o.cost) { label = `Needs ${fmt(o.cost)}`; blocked = true; }
+    return `
+      <div class="card option">
+        <div class="option-head"><h2>${esc(o.name)}</h2></div>
+        <p>${esc(o.description)}</p>
+        <p class="muted">${esc(o.goal_text)} within ${o.hours} hours.</p>
+        <p class="price">Each participant: ${fmt(o.reward_money)} funds · ${fmt(o.reward_supplies)} supplies · ${fmt(o.reward_xp)} XP</p>
+        <div class="option-foot">
+          <span class="muted">Paid from the treasury</span>
+          <button class="btn btn--small" data-action="start-op" data-op="${esc(o.id)}" ${blocked ? 'disabled' : ''}
+                  data-confirm="Launch ${esc(o.name)} for ${fmt(o.cost)} funds from the treasury?">${label}</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  return `
+    ${current || '<p class="muted">No operation has been launched yet.</p>'}
+    <h3>Launch an operation</h3>
+    <p class="muted">Treasury: <strong>${fmt(alliance.info.treasury)} funds</strong>. Missions every member completes
+       count toward the target. Reach it in time and everyone who contributed can collect the reward.</p>
+    ${launch}`;
+}
+
+/** Called once a second by panel.js. */
+export function tick(root) {
+  for (const el of root.querySelectorAll('.js-countdown')) {
+    el.textContent = formatDuration(msUntil(el.dataset.until));
+  }
+}
+
 // ---------------------------------------------------------------- hooks
 
 /** Called by panel.js after each draw. Keeps the chat scrolled to the newest line. */
@@ -304,7 +374,12 @@ export async function handleAction(action, data, ctx) {
       return;
     }
     case 'alliance-view':
+      if (data.view === 'ops') actions.loadOperation().catch(() => {}); // fresh figures each time
       return ctx.update({ allianceView: data.view });
+    case 'start-op':
+      return run(ctx, () => actions.startOperation(data.op), 'Operation launched.');
+    case 'claim-op':
+      return run(ctx, () => actions.claimOperationReward(data.op), 'Reward collected.');
     case 'refresh-alliances':
       return run(ctx, () => actions.loadAllianceList());
     case 'join-alliance':

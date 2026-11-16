@@ -17,8 +17,10 @@ import products from '../data/products.json';
 import dailyOrders from '../data/daily_orders.json';
 import objectives from '../data/objectives.json';
 import ranks from '../data/ranks.json';
+import research from '../data/research.json';
+import operations from '../data/operations.json';
 
-export { nations, categories, buildings, units, missions, settings, allianceBuildings, specialties, products, dailyOrders, objectives, ranks };
+export { nations, categories, buildings, units, missions, settings, allianceBuildings, specialties, products, dailyOrders, objectives, ranks, research, operations };
 
 const index = (list) => new Map(list.map((item) => [item.id, item]));
 const nationById = index(nations);
@@ -205,3 +207,21 @@ export function unitTitle(unit) {
 }
 
 export const getObjective = (id) => objectives.find((o) => o.id === id) ?? null;
+
+// ------------------------------------------------------------ phase 11
+
+/**
+ * The equipment year a player has reached. A programme whose time is up
+ * counts at once, exactly as fc_research_year() does on the server.
+ * `nowMs` is the current server time in milliseconds.
+ */
+export function researchYear(profile, nowMs = Date.now()) {
+  if (!profile) return 1939;
+  const done = profile.research_target && new Date(profile.research_until).getTime() <= nowMs;
+  return done ? profile.research_target : profile.research_year ?? 1939;
+}
+
+/** The next research programme after `year`, or null at the end of the list. */
+export const nextResearch = (year) => research.find((r) => r.year === year + 1) ?? null;
+
+export const getOperationType = (id) => operations.find((o) => o.id === id) ?? null;

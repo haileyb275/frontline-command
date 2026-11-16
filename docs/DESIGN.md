@@ -284,3 +284,6 @@ was revised in a later phase, the highest-numbered file holds the current versio
 - **Phase 10** added running totals (`player_counters`, bumped in `fc_on_mission_complete`),
   optional daily orders (`daily_orders`, `claim_daily_order`), campaigns and achievements
   (`objectives`, `claim_objective`), saved task forces, and renaming of bases and units.
+- **Phase 11** added research (`unit_types.year`, `profiles.research_year`, enforced by a trigger
+  on `units`), alliance operations (`alliance_operations`, fed by `fc_bump`), and quarterly
+  seasons (`season_scores`, filled by a trigger on `profiles.xp`).

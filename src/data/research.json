@@ -1,0 +1,44 @@
+[
+  {
+    "year": 1940,
+    "cost_money": 8000,
+    "cost_supplies": 200,
+    "seconds": 600,
+    "min_level": 2
+  },
+  {
+    "year": 1941,
+    "cost_money": 15000,
+    "cost_supplies": 400,
+    "seconds": 1800,
+    "min_level": 3
+  },
+  {
+    "year": 1942,
+    "cost_money": 30000,
+    "cost_supplies": 800,
+    "seconds": 3600,
+    "min_level": 4
+  },
+  {
+    "year": 1943,
+    "cost_money": 50000,
+    "cost_supplies": 1200,
+    "seconds": 7200,
+    "min_level": 5
+  },
+  {
+    "year": 1944,
+    "cost_money": 80000,
+    "cost_supplies": 2000,
+    "seconds": 14400,
+    "min_level": 6
+  },
+  {
+    "year": 1945,
+    "cost_money": 120000,
+    "cost_supplies": 3000,
+    "seconds": 28800,
+    "min_level": 7
+  }
+]

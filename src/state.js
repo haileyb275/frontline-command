@@ -20,6 +20,8 @@ export const state = {
   viewedProfile: null, // another player's public page, while it is open
   overlayBases: [], // someone else's bases to show on the map (profile or admin view)
   admin: { players: null, player: null, overview: null }, // admin panel data
+  operation: null, // our alliance's current or latest joint operation
+  season: null, // the season leaderboard
   objectives: null, // daily orders, campaign and achievement progress
   taskForces: [], // saved groups of units
   leaderboard: null, // { players, alliances, me, player_count } once loaded

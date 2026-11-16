@@ -1,7 +1,8 @@
 // The "Ranks" tab: global leaderboards for players and alliances.
 
 import { getNation, rankTitle } from '../game/content.js';
-import { loadLeaderboard, openProfile, closeProfile, reportPlayer } from '../game/actions.js';
+import { loadLeaderboard, loadSeasonBoard, openProfile, closeProfile, reportPlayer } from '../game/actions.js';
+import { msUntil, formatDuration } from '../game/clock.js';
 import { renderProfile } from './profileView.js';
 import { friendlyError } from '../supabase.js';
 import { esc, fmt } from './dom.js';
@@ -20,7 +21,7 @@ export function render(state, ui) {
   const board = state.leaderboard;
   if (!board) return '<p class="muted">Loading rankings…</p>';
 
-  const nav = [['players', 'Commanders'], ['alliances', 'Alliances']]
+  const nav = [['players', 'Commanders'], ['season', 'Season'], ['alliances', 'Alliances']]
     .map(([id, label]) => `
       <button class="seg-btn ${ui.ranksView === id ? 'is-active' : ''}"
               data-action="ranks-view" data-view="${id}">${label}</button>`)
@@ -32,7 +33,8 @@ export function render(state, ui) {
       <button class="btn btn--small" data-action="refresh-ranks">Refresh</button>
     </div>
     <div class="seg seg--tabs">${nav}</div>
-    ${ui.ranksView === 'alliances' ? renderAlliances(state, board) : renderPlayers(state, board)}`;
+    ${ui.ranksView === 'alliances' ? renderAlliances(state, board)
+      : ui.ranksView === 'season' ? renderSeason(state) : renderPlayers(state, board)}`;
 }
 
 function renderPlayers(state, board) {
@@ -67,6 +69,30 @@ function renderPlayers(state, board) {
     <div class="rows">${rows}</div>${mine}`;
 }
 
+function renderSeason(state) {
+  const s = state.season;
+  if (!s) return '<p class="muted">Loading season…</p>';
+  const myName = state.profile?.username;
+  const days = Math.max(0, Math.ceil(msUntil(s.season.ends_at) / 86400000));
+  const rows = s.players.map((p) => `
+    <button class="row ${p.username === myName ? 'is-me' : ''}" data-action="open-profile" data-username="${esc(p.username)}">
+      <span class="rank-no">${p.position}</span>
+      ${nationChip(p.nation_id)}
+      <span class="row-main">
+        <span class="row-title">${p.alliance_tag ? `<span class="tag">${esc(p.alliance_tag)}</span> ` : ''}${esc(p.username)}</span>
+        <span class="row-sub">${esc(rankTitle(p.level))}</span>
+      </span>
+      <span class="row-side">${fmt(p.xp)} XP</span>
+    </button>`).join('') || '<p class="muted">Nobody has scored this season yet. The first mission puts you on the board.</p>';
+  return `
+    <p class="muted"><strong>${esc(s.season.name)}</strong> · ${days} day${days === 1 ? '' : 's'} left.
+       Only XP earned this season counts here. When it ends, the top ten keep a permanent award on their profile
+       and everyone starts again from zero. Your level, funds and bases are never reset.</p>
+    <div class="rows">${rows}</div>
+    ${s.me && s.me.position > s.players.length
+      ? `<h3>Your position</h3><p>#${s.me.position} with ${fmt(s.me.xp)} XP</p>` : ''}`;
+}
+
 function renderAlliances(state, board) {
   if (board.alliances.length === 0) {
     return '<p class="muted">No alliances yet. Found one in the Alliance tab.</p>';
@@ -89,6 +115,7 @@ function renderAlliances(state, board) {
 
 /** Called by panel.js each time this tab is opened. */
 export function onShow() {
+  loadSeasonBoard().catch(() => {});
   loadLeaderboard().catch((error) => toast(friendlyError(error), 'error'));
 }
 

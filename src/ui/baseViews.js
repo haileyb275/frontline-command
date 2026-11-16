@@ -20,9 +20,11 @@ import {
   veterancy,
   stockCapacity,
   unitTitle,
+  researchYear,
+  nextResearch,
   settings,
 } from '../game/content.js';
-import { liveUnitStatus, formatDuration } from '../game/clock.js';
+import { liveUnitStatus, formatDuration, now, msUntil } from '../game/clock.js';
 import { formatLatLng } from '../map.js';
 import { esc, fmt, statusPillHtml } from './dom.js';
 import { priceText } from './basesTab.js';
@@ -69,6 +71,9 @@ export function renderBase(state, ui) {
   const products = productsFor(type.id);
   if (products.length > 0) sections += renderProduction(state, ui, base, products);
 
+  // ---- Research Office
+  if (type.id === 'research_office') sections += renderResearch(profile, ui);
+
   // ---- Training Center
   if (type.training_slots > 0) {
     const places = trainingPlaces(state);
@@ -109,6 +114,7 @@ export function renderBase(state, ui) {
       const price = unitPrice(ut, profile.nation_id);
       let blocked = '';
       if (full) blocked = 'Base full';
+      else if (ut.year > researchYear(profile, now())) blocked = `Research ${ut.year}`;
       else if (profile.level < ut.min_level) blocked = `Level ${ut.min_level}`;
       else if (!canAfford(profile, price)) blocked = 'Too costly';
       return `
@@ -116,7 +122,8 @@ export function renderBase(state, ui) {
           <span class="row-icon row-icon--unit">${esc(getCategory(ut.category_id).icon)}</span>
           <span class="row-main">
             <span class="row-title">${esc(ut.name)}</span>
-            <span class="row-sub">${esc(getCategory(ut.category_id).name)} · ${ut.speed_kmh} km/h · power ${ut.power}</span>
+            <span class="row-sub">${esc(getCategory(ut.category_id).name)} · ${ut.speed_kmh} km/h · power ${ut.power}${
+              ut.year > 1939 ? ` · ${ut.year}` : ''}</span>
             <span class="row-sub price">${priceText(price)}</span>
           </span>
           <button class="btn btn--small" data-action="buy" data-unit="${esc(ut.id)}"
@@ -171,6 +178,38 @@ function renderStock(state, base, ui) {
     </div>`;
 }
 
+/** The Research Office: which year you have reached, and the next programme. */
+function renderResearch(profile, ui) {
+  const year = researchYear(profile, now());
+  const running = profile.research_target && msUntil(profile.research_until) > 0;
+  const next = nextResearch(year);
+
+  let body;
+  if (running) {
+    body = `<div class="card card--notice"><p>Evaluating <strong>${profile.research_target}</strong> designs:
+              ${countdown(profile.research_until)} left.</p></div>`;
+  } else if (!next) {
+    body = '<p class="muted">Every year has been researched.</p>';
+  } else {
+    const price = { money: next.cost_money, supplies: next.cost_supplies };
+    let blocked = '';
+    if (profile.level < next.min_level) blocked = `Level ${next.min_level}`;
+    else if (!canAfford(profile, price)) blocked = 'Too costly';
+    body = `
+      <div class="rows"><div class="row row--static">
+        <span class="row-main">
+          <span class="row-title">Research ${next.year}</span>
+          <span class="row-sub">${formatDuration(next.seconds * 1000)} · opens ${next.year} equipment for recruiting</span>
+          <span class="row-sub price">${priceText(price)}</span>
+        </span>
+        <button class="btn btn--small" data-action="research" ${blocked || ui.busy ? 'disabled' : ''}>${blocked || 'Start'}</button>
+      </div></div>`;
+  }
+  return `<h3>Research <span class="count">reached ${year}</span></h3>
+          <p class="muted">Later equipment appears in each base's Recruit list marked with its year.</p>
+          ${body}`;
+}
+
 function renderZone(base, ui) {
   const home = base.zone === 'home';
   return `
@@ -199,6 +238,7 @@ function renderUpgrade(profile, base, type, ui) {
     ? `adds room for ${type.unit_capacity} more units`
     : type.training_slots > 0
       ? `adds ${type.training_slots} more training places`
+      : type.id === 'research_office' ? 'has no further effect yet'
       : 'increases what each production run makes';
   return `
     <div class="upgrade">

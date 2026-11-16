@@ -67,6 +67,7 @@ export function renderProfile(state) {
       <div><span>Level</span>${p.level} · ${fmt(p.xp)} XP</div>
       <div><span>Missions completed</span>${fmt(p.missions_completed)}</div>
       <div><span>Bases / units</span>${p.bases.length} / ${p.units.length}</div>
+      <div><span>Equipment year</span>${p.research_year ?? 1939}</div>
       <div><span>Enlisted</span>${new Date(p.joined_at).toLocaleDateString()}</div>
     </div>
 
@@ -81,6 +82,9 @@ export function renderProfile(state) {
       ? `<div class="chips">${p.honours.map((id) => getObjective(id)).filter(Boolean).map((o) =>
           `<span class="chip chip--honour" title="${esc(o.description)}">${o.kind === 'campaign' ? '★' : '●'} ${esc(o.name)}</span>`).join('')}</div>`
       : '<p class="muted">None yet.</p>'}
+    ${(p.season_awards ?? []).length
+      ? `<div class="chips">${p.season_awards.map((a) =>
+          `<span class="chip chip--honour">🏅 ${esc(a.season)}: #${a.position}</span>`).join('')}</div>` : ''}
 
     <h3>Bases <span class="count">${p.bases.length}</span></h3>
     <div class="rows">${baseRows}</div>

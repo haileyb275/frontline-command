@@ -87,6 +87,8 @@ All content is data in `src/data/`. No game logic needs to change.
 | a daily order | `daily_orders.json` | `counter` is the running total it watches (e.g. `missions`, `missions_cat_fire`) |
 | a campaign or achievement | `objectives.json` | each step is a `counter` and a `target` |
 | a rank title | `ranks.json` | the level at which the title is reached |
+| a research step | `research.json` | cost and time to open each year; a unit's `year` is in `units.json` |
+| an alliance operation | `operations.json` | a shared `counter` target, time limit, cost and per-member reward |
 | a tuning number | `settings.json` | spawn interval, travel speed-up, caps, costs |
 
 Then:
@@ -115,3 +117,4 @@ npm run balance
 - [x] Phase 8 — Unit experience and repairs, base supply stocks, convoy escorts, 42 more units
 - [x] Phase 9 — Admin panel, moderation (reports, mutes, suspensions), public player profiles
 - [x] Phase 10 — Optional daily orders, campaigns, achievements, rank titles, task forces, renaming
+- [x] Phase 11 — Research by year (1939–1945), alliance operations, seasons
