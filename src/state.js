@@ -23,6 +23,7 @@ export const state = {
   operation: null, // our alliance's current or latest joint operation
   season: null, // the season leaderboard
   objectives: null, // daily orders, campaign and achievement progress
+  divisions: [], // our divisions (units carry a division_id)
   taskForces: [], // saved groups of units
   leaderboard: null, // { players, alliances, me, player_count } once loaded
   unread: 0, // chat messages that arrived while not looking at the chat

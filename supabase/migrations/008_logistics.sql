@@ -44,7 +44,16 @@ alter table public.shipments
   add column if not exists threatened boolean not null default false;
 
 alter table public.missions
-  add column if not exists shipment_id uuid;           -- the convoy an escort mission protects
+  add column if not exists shipment_id uuid;
+
+create table if not exists public.player_notices (
+  id         bigint generated always as identity primary key,
+  player_id  uuid not null references public.profiles (id) on delete cascade,
+  kind       text not null default 'info',
+  body       text not null,
+  created_at timestamptz not null default now()
+);
+alter table public.player_notices enable row level security;   -- functions only           -- the convoy an escort mission protects
 
 -- ---------------------------------------------------------------------
 -- 2. Helpers
@@ -355,6 +364,12 @@ begin
       events := events || jsonb_build_object('type', 'shipment_arrived', 'name', r.label,
                  'money', cargo_money, 'supplies', cargo_supplies, 'outcome', outcome);
     end if;
+  end loop;
+
+  -- Notes left for this player by other parts of the game (Phase 15): for
+  -- example "your troops captured a vehicle". Delivered once, then deleted.
+  for r in delete from public.player_notices where player_id = p_me returning * loop
+    events := events || jsonb_build_object('type', 'notice', 'kind', r.kind, 'text', r.body);
   end loop;
 
   -- (f) Automatic resupply: any base running low orders a top-up.

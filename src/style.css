@@ -1815,3 +1815,36 @@ button.player-name:hover {
   background: rgba(181, 82, 59, 0.16);
   border-left-color: var(--danger);
 }
+
+/* ==========================================================================
+   Phase 15: divisions, refits, unit notes
+   ========================================================================== */
+
+.row-note {
+  font-style: italic;
+  white-space: normal;
+}
+
+.unit-note {
+  padding: 8px 10px;
+  background: var(--olive-600);
+  border-left: 3px solid var(--khaki-300);
+  border-radius: 4px;
+  font-size: 13px;
+  font-style: italic;
+}
+
+.select--wide {
+  width: 100%;
+  max-width: none;
+  padding: 9px 8px;
+  font-size: 14px;
+}
+
+.section-head--sub {
+  margin-top: 16px;
+}
+
+.section-head--sub h3 {
+  margin: 0;
+}

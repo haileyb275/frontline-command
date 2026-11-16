@@ -95,6 +95,10 @@ function announce(events) {
     }
     if (e.type === 'convoy_threat') toast(`Raiders are shadowing your ${e.name} convoy. Send warships to escort it.`, 'error');
     if (e.type === 'repairs_done') toast(`${e.count} unit${e.count === 1 ? ' is' : 's are'} fit for duty again.`, 'ok');
+    if (e.type === 'notice') {
+      toast(e.text, 'ok');
+      playSound('complete');
+    }
     if (e.type === 'level_up') toast(`Promoted to level ${e.level}. New options may be unlocked.`, 'ok');
     if (e.type === 'followup' && done.length <= 3) toast(`New intelligence: ${e.name}`, 'info');
   }
@@ -185,6 +189,7 @@ export async function loadGame() {
   // Not needed to start playing, so these load in the background.
   loadObjectives().catch(() => {});
   loadTaskForces().catch(() => {});
+  loadDivisions().catch(() => {});
 }
 
 /** Build a base. Throws an Error with a readable message if the server says no. */
@@ -559,4 +564,38 @@ export async function loadSeasonBoard() {
 /** Send a recon unit or aircraft to look at an unconfirmed report. */
 export async function scoutMission(missionId, unitId) {
   applySnapshot(await call('scout_mission', { p_mission_id: missionId, p_unit_id: unitId }));
+}
+
+// ------------------------------------------------------------ phase 15
+
+export async function loadDivisions() {
+  const { data, error } = await supabase.from('divisions').select('*').order('created_at');
+  if (error) throw error;
+  setState({ divisions: data });
+}
+
+export async function createDivision(name) {
+  await call('create_division', { p_name: name });
+  await loadDivisions();
+}
+
+export async function renameDivision(id, name) {
+  await call('rename_division', { p_division_id: id, p_name: name });
+  await loadDivisions();
+}
+
+export async function disbandDivision(id) {
+  await call('disband_division', { p_division_id: id });
+  await Promise.all([loadDivisions(), sync()]); // its units are free again
+}
+
+/** Put a unit in a division, or (with null) take it out. */
+export async function assignDivision(unitId, divisionId) {
+  await call('assign_division', { p_unit_id: unitId, p_division_id: divisionId });
+  // Update our copy at once; the next check-in will agree.
+  setState({ units: state.units.map((u) => (u.id === unitId ? { ...u, division_id: divisionId } : u)) });
+}
+
+export async function refitUnit(unitId, unitTypeId) {
+  applySnapshot(await call('refit_unit', { p_unit_id: unitId, p_unit_type: unitTypeId }));
 }

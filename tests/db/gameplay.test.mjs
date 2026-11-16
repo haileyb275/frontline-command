@@ -134,3 +134,40 @@ test('the front moves out when contact is won and back when it is ignored', { sk
   assert.equal(Number(after.front_km), 8, 'the front cannot fall below its minimum');
   assert.ok(new Date(after.disabled_until) > new Date(), 'the base is out of action for a while');
 });
+
+test('divisions fight harder together, and a refit keeps a unit\'s experience', { skip }, async () => {
+  const p = await createPlayer({ nation: 'germany' });
+  const hq = (await p.must('place_base', { p_building_type: 'hq', p_lat: LAND.lat, p_lng: LAND.lng })).base;
+  const buy = async (unit) => (await p.must('buy_unit', { p_base_id: hq.id, p_unit_type: unit })).unit.id;
+  const a = await buy('germany_infantry');
+  const b = await buy('germany_infantry');
+
+  const division = await p.must('create_division', { p_name: 'Test Division' });
+  assert.match((await p.rpc('create_division', { p_name: 'Another' })).error, /can command 1 division/);
+  await p.must('assign_division', { p_unit_id: a, p_division_id: division });
+  await p.must('assign_division', { p_unit_id: b, p_division_id: division });
+
+  const freshMission = async () => {
+    await sql(`delete from public.dispatches where player_id = '${p.id}'; delete from public.missions where owner_id = '${p.id}';
+      update public.units set status = 'idle' where owner_id = '${p.id}';
+      insert into public.missions (mission_type, owner_id, lat, lng, expires_at)
+      values ('patrol_contact', '${p.id}', ${LAND.lat - 0.15}, ${LAND.lng}, now() + interval '3 hours');`);
+    return (await p.sync()).missions[0].id;
+  };
+  const powers = async () =>
+    (await p.must('dispatch_units', { p_mission_id: await freshMission(), p_unit_ids: [a, b] }))
+      .dispatches.map((d) => Number(d.power));
+
+  assert.deepEqual(await powers(), [10, 10], 'no command unit attached: no bonus');
+  await p.must('assign_division', { p_unit_id: await buy('germany_command'), p_division_id: division });
+  assert.deepEqual(await powers(), [10.5, 10.5], 'with a command unit: +5% each');
+
+  // Refit: only own nation, same branch; experience survives.
+  await sql(`delete from public.dispatches where player_id = '${p.id}'; delete from public.missions where owner_id = '${p.id}';
+    update public.units set status = 'idle', missions_done = 12 where id = '${a}';`);
+  assert.match((await p.rpc('refit_unit', { p_unit_id: a, p_unit_type: 'usa_infantry' })).error, /own nation/);
+  assert.match((await p.rpc('refit_unit', { p_unit_id: a, p_unit_type: 'germany_recon' })).error, /same branch/);
+  const refitted = (await p.must('refit_unit', { p_unit_id: a, p_unit_type: 'germany_infantry_2' })).units.find((u) => u.id === a);
+  assert.deepEqual([refitted.unit_type, refitted.missions_done, refitted.status, refitted.division_id],
+    ['germany_infantry_2', 12, 'repairing', division]);
+});

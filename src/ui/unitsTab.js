@@ -1,7 +1,7 @@
 // The "Units" tab: every unit you own, grouped by category.
 
-import { categories, getUnitType, unitTitle } from '../game/content.js';
-import { deleteTaskForce } from '../game/actions.js';
+import { categories, getUnitType, unitTitle, divisionTier, divisionSlots, settings } from '../game/content.js';
+import { deleteTaskForce, createDivision, renameDivision, disbandDivision } from '../game/actions.js';
 import { friendlyError } from '../supabase.js';
 import { toast } from './toast.js';
 import { liveUnitStatus } from '../game/clock.js';
@@ -38,6 +38,7 @@ export function render(state) {
             <span class="row-main">
               <span class="row-title">${esc(unitTitle(unit))}</span>
               <span class="row-sub">${esc(baseName.get(unit.base_id) ?? 'Unknown base')}
+                ${unit.captured ? '<span class="tag tag--bad">Captured</span>' : ''}
                 ${veterancyLabel(unit)} ${specialtyTag(unit, profile.nation_id)}</span>
             </span>
             ${statusPill(unit, dispatches)}
@@ -58,7 +59,44 @@ export function render(state) {
       <span class="muted">${idle} ready</span>
     </div>
     ${sections}
+    ${renderDivisions(state)}
     ${renderTaskForces(state)}`;
+}
+
+function renderDivisions({ divisions, units, profile }) {
+  const slots = divisionSlots(profile.level);
+  const cards = divisions.map((d) => {
+    const members = units.filter((u) => u.division_id === d.id);
+    const hasStaff = members.some((u) => getUnitType(u.unit_type)?.category_id === 'command');
+    const tier = divisionTier(d.missions_done);
+    return `
+      <div class="card option">
+        <div class="option-head">
+          <h2>${esc(d.name)}</h2>
+          <span class="count">${tier.name}</span>
+        </div>
+        <p class="muted">${members.length} / ${settings.division_max_units} units · ${d.missions_done} missions together${
+          tier.next ? ` (next standing at ${tier.next})` : ''}</p>
+        <p class="${hasStaff ? 'price' : 'muted'}">${hasStaff
+          ? `Fighting as a formation: +${Math.round(tier.bonus * 100)}% power when two or more of its units go on the same mission.`
+          : 'No command unit attached, so no formation bonus yet. Add a command unit from your Headquarters.'}</p>
+        <p class="muted">${esc(members.slice(0, 6).map(unitTitle).join(', '))}${members.length > 6 ? '…' : ''}${
+          members.length === 0 ? 'No units yet. Open a unit and choose this division.' : ''}</p>
+        <div class="option-foot">
+          <button class="btn btn--small" data-action="rename-division" data-division="${esc(d.id)}">Rename</button>
+          <button class="btn btn--small" data-action="disband-division" data-division="${esc(d.id)}"
+                  data-confirm="Disband ${esc(d.name)}? Its units stay; its experience is lost.">Disband</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="section-head section-head--sub">
+      <h3>Divisions <span class="count">${divisions.length} / ${slots}</span></h3>
+      <button class="btn btn--small" data-action="create-division" ${divisions.length >= slots ? 'disabled' : ''}>
+        ${divisions.length >= slots ? `Next at level ${(Math.floor(profile.level / settings.division_level_step) + 1) * settings.division_level_step}` : '+ Form a division'}</button>
+    </div>
+    ${cards || '<p class="muted">A division is a named group of up to ' + settings.division_max_units + ' units that gains experience by fighting together.</p>'}`;
 }
 
 function renderTaskForces({ taskForces, units }) {
@@ -84,11 +122,25 @@ function renderTaskForces({ taskForces, units }) {
   return `<h3>Task forces <span class="count">${taskForces.length}</span></h3><div class="rows">${rows}</div>`;
 }
 
-export async function handleAction(action, data) {
-  if (action !== 'delete-force') return;
+export async function handleAction(action, data, ctx) {
   try {
-    await deleteTaskForce(data.force);
-    toast('Task force deleted.', 'info');
+    if (action === 'delete-force') {
+      await deleteTaskForce(data.force);
+      toast('Task force deleted.', 'info');
+    } else if (action === 'create-division') {
+      const name = window.prompt('Name for the division (for example "1st Infantry Division"):', '');
+      if (!name) return;
+      await createDivision(name);
+      toast('Division formed. Open a unit to assign it.', 'ok');
+    } else if (action === 'rename-division') {
+      const current = ctx.state.divisions.find((d) => d.id === data.division);
+      const name = window.prompt('New name for the division:', current?.name ?? '');
+      if (!name) return;
+      await renameDivision(data.division, name);
+    } else if (action === 'disband-division') {
+      await disbandDivision(data.division);
+      toast('Division disbanded.', 'info');
+    }
   } catch (error) {
     toast(friendlyError(error), 'error');
   }

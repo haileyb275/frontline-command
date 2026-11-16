@@ -22,6 +22,9 @@ import {
   unitTitle,
   researchYear,
   nextResearch,
+  refitOptions,
+  refitPrice,
+  divisionTier,
   settings,
 } from '../game/content.js';
 import { liveUnitStatus, formatDuration, now, msUntil } from '../game/clock.js';
@@ -103,7 +106,7 @@ export function renderBase(state, ui) {
               <span class="row-icon row-icon--unit">${esc(getCategory(ut.category_id).icon)}</span>
               <span class="row-main">
                 <span class="row-title">${esc(unitTitle(unit))}</span>
-                <span class="row-sub">${unit.name ? `${esc(ut.name)} ` : ''}${veterancyLabel(unit)} ${specialtyTag(unit, profile.nation_id)}</span>
+                <span class="row-sub">${unit.name ? `${esc(ut.name)} ` : ''}${unit.captured ? '<span class="tag tag--bad">Captured</span> ' : ''}${veterancyLabel(unit)} ${specialtyTag(unit, profile.nation_id)}</span>
               </span>
               ${statusPillHtml(liveUnitStatus(unit, dispatches))}
             </button>`;
@@ -124,6 +127,7 @@ export function renderBase(state, ui) {
             <span class="row-title">${esc(ut.name)}</span>
             <span class="row-sub">${esc(getCategory(ut.category_id).name)} · ${ut.speed_kmh} km/h · power ${ut.power}${
               ut.year > 1939 ? ` · ${ut.year}` : ''}</span>
+            ${ut.note ? `<span class="row-sub row-note">${esc(ut.note)}</span>` : ''}
             <span class="row-sub price">${priceText(price)}</span>
           </span>
           <button class="btn btn--small" data-action="buy" data-unit="${esc(ut.id)}"
@@ -298,6 +302,51 @@ function renderProduction(state, ui, base, products) {
           <div class="rows">${rows}</div>${afloat}`;
 }
 
+/** Which division the unit belongs to, as a drop-down. */
+function renderDivisionChoice(state, unit) {
+  if (state.divisions.length === 0) {
+    return '<p class="muted">You have no divisions yet. Form one in the Units tab.</p>';
+  }
+  const options = state.divisions.map((d) =>
+    `<option value="${esc(d.id)}" ${unit.division_id === d.id ? 'selected' : ''}>${esc(d.name)}</option>`).join('');
+  return `
+    <select class="select select--wide" data-change="assign-division" data-unit="${esc(unit.id)}" aria-label="Division">
+      <option value="">Not in a division</option>${options}
+    </select>`;
+}
+
+/** Later (or earlier) models of the same branch this unit could be re-equipped with. */
+function renderRefit(state, ui, unit, ut, idle) {
+  const { profile } = state;
+  if (unit.captured) {
+    return '<p class="muted">Captured equipment cannot be refitted: there are no spares for it.</p>';
+  }
+  const options = refitOptions(unit.unit_type, profile.nation_id);
+  if (options.length === 0) return '<p class="muted">There is no other equipment for this branch.</p>';
+  const year = researchYear(profile, now());
+  const rows = options.map((to) => {
+    const price = refitPrice(ut, to, profile.nation_id);
+    let blocked = '';
+    if (!idle) blocked = 'Unit busy';
+    else if (to.year > year) blocked = `Research ${to.year}`;
+    else if (profile.level < to.min_level) blocked = `Level ${to.min_level}`;
+    else if (!canAfford(profile, price)) blocked = 'Too costly';
+    return `
+      <div class="row row--static">
+        <span class="row-main">
+          <span class="row-title">${esc(to.name)}</span>
+          <span class="row-sub">${to.speed_kmh} km/h · power ${to.power}${to.year > 1939 ? ` · ${to.year}` : ''}</span>
+          <span class="row-sub price">${priceText(price)} · ${formatDuration(settings.refit_seconds * 1000)}</span>
+        </span>
+        <button class="btn btn--small" data-action="refit" data-type="${esc(to.id)}"
+                data-confirm="Refit this unit with ${esc(to.name)}? It keeps its experience and specialty."
+                ${blocked || ui.busy ? 'disabled' : ''}>${blocked || 'Refit'}</button>
+      </div>`;
+  }).join('');
+  return `<p class="muted">The unit keeps its experience, specialty and call sign. The old equipment is handed in for
+            ${Math.round(settings.refit_credit * 100)}% of its value.</p><div class="rows">${rows}</div>`;
+}
+
 // ------------------------------------------------------------------ unit
 
 export function renderUnit(state, ui) {
@@ -393,6 +442,7 @@ export function renderUnit(state, ui) {
     </div>
     <p class="muted">${unit.name ? `${esc(ut.name)} · ` : ''}${esc(cat.name)} · stationed at ${esc(home?.name ?? '?')} ${statusPillHtml(status)}
       ${status === 'repairing' ? `· fit again in ${countdown(unit.busy_until)}` : ''}</p>
+    ${ut.note ? `<p class="unit-note">${esc(ut.note)}${unit.captured ? ' <strong>Captured from the enemy.</strong>' : ''}</p>` : ''}
     <p><button class="link-btn" data-action="rename-unit">${unit.name ? 'Change call sign' : 'Give this unit a call sign'}</button></p>
     <div class="facts">
       <div><span>Speed</span>${Math.round(ut.speed_kmh * (spec?.speed_mult ?? 1))} km/h</div>
@@ -404,6 +454,12 @@ export function renderUnit(state, ui) {
 
     <h3>Specialty training <span class="count">${places.used} / ${places.total} places</span></h3>
     ${training}
+
+    <h3>Division</h3>
+    ${renderDivisionChoice(state, unit)}
+
+    <h3>Refit with other equipment</h3>
+    ${renderRefit(state, ui, unit, ut, idle)}
 
     <h3>Transfer to another base</h3>
     ${transfer}

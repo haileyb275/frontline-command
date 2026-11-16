@@ -394,10 +394,12 @@ function renderPicker(state, ui, mission, type, counts) {
   if (!sections) return ''; // everything already committed
 
   // Saved task forces: one click ticks every member that is free and fits.
-  const forces = state.taskForces.length
-    ? `<h3>Task forces</h3>
-       <div class="chips chips--buttons">${state.taskForces.map((f) =>
-         `<button class="btn btn--small" data-action="pick-force" data-force="${esc(f.id)}">${esc(f.name)}</button>`).join('')}</div>`
+  const groups = [
+    ...state.divisions.map((d) => `<button class="btn btn--small" data-action="pick-division" data-division="${esc(d.id)}">${esc(d.name)}</button>`),
+    ...state.taskForces.map((f) => `<button class="btn btn--small" data-action="pick-force" data-force="${esc(f.id)}">${esc(f.name)}</button>`),
+  ];
+  const forces = groups.length
+    ? `<h3>Divisions and task forces</h3><div class="chips chips--buttons">${groups.join('')}</div>`
     : '';
 
   // A line about what the conditions mean for this mission, if anything.
@@ -477,9 +479,12 @@ export async function handleAction(action, data, ctx) {
       }
       return update({ busy: false });
 
+    case 'pick-division':
     case 'pick-force': {
       // Add each member in turn if it is idle, supplied, and the mission has a place for it.
-      const force = state.taskForces.find((f) => f.id === data.force);
+      const force = action === 'pick-division'
+        ? { unit_ids: state.units.filter((u) => u.division_id === data.division).map((u) => u.id) }
+        : state.taskForces.find((f) => f.id === data.force);
       if (!force) return;
       const baseById = new Map(state.bases.map((b) => [b.id, b]));
       const picked = [...ui.picked];
@@ -489,7 +494,7 @@ export async function handleAction(action, data, ctx) {
         if ((baseById.get(unit.base_id)?.stock ?? Infinity) < supplyUse(unit)) continue;
         if (unitsFit([...picked, id], mission, state)) picked.push(id);
       }
-      if (picked.length === ui.picked.length) toast('No free member of that task force fits this mission.', 'info');
+      if (picked.length === ui.picked.length) toast('No free member of that group fits this mission.', 'info');
       return update({ picked });
     }
 

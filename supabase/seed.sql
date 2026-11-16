@@ -369,7 +369,17 @@ insert into public.game_config (key, value) values
   ('offensive_disable_seconds', 1800),
   ('offensive_front_gain', 3),
   ('offensive_front_loss', 5),
-  ('unconfirmed_chance', 0.5)
+  ('unconfirmed_chance', 0.5),
+  ('division_base_slots', 1),
+  ('division_level_step', 3),
+  ('division_max_units', 12),
+  ('division_power_step', 0.05),
+  ('division_missions_1', 5),
+  ('division_missions_2', 20),
+  ('division_missions_3', 50),
+  ('refit_credit', 0.5),
+  ('refit_seconds', 300),
+  ('capture_chance', 0.06)
 on conflict (key) do update set value = excluded.value;
 
 insert into public.alliance_building_types (id, name, description, cost, max_level, bonus, sort) values

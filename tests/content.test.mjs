@@ -41,6 +41,7 @@ test('units point at a real nation and category, with sensible numbers', () => {
     if (!categoryIds.has(u.category_id)) problems.push(`${u.id}: unknown category ${u.category_id}`);
     if (!(u.cost_money > 0 && u.speed_kmh > 0 && u.power > 0)) problems.push(`${u.id}: cost, speed and power must be above zero`);
     if (!(u.year >= 1939 && u.year <= 1945)) problems.push(`${u.id}: year ${u.year} is outside 1939–1945`);
+    if (!u.note || u.note.length < 15) problems.push(`${u.id}: needs a historical note`);
   }
   expectNone(problems, 'unit problems');
 });

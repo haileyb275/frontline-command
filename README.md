@@ -131,3 +131,4 @@ npm run balance
 - [x] Phase 12 — Missions at real places, weather and night, sounds, notifications, tutorial
 - [x] Phase 13 — Automated tests, rate limits, housekeeping, usage report, operations guide
 - [x] Phase 14 — A moving front line, enemy offensives, unconfirmed reports and scouting
+- [x] Phase 15 — Divisions, refits, captured equipment, historical notes for every unit

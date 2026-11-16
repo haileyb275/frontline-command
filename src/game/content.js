@@ -228,3 +228,37 @@ export function researchYear(profile, nowMs = Date.now()) {
 export const nextResearch = (year) => research.find((r) => r.year === year + 1) ?? null;
 
 export const getOperationType = (id) => operations.find((o) => o.id === id) ?? null;
+
+// ------------------------------------------------------------ phase 15
+
+const DIVISION_TIERS = ['Raw', 'Trained', 'Seasoned', 'Crack'];
+
+/**
+ * A division's standing from the missions it has fought together.
+ * Mirrors fc_division_tier(). `bonus` is the extra power its units get when
+ * two or more of them go on the same mission (and it has a command unit).
+ */
+export function divisionTier(missionsDone = 0) {
+  const steps = [settings.division_missions_1, settings.division_missions_2, settings.division_missions_3];
+  const tier = steps.filter((n) => missionsDone >= n).length;
+  return { tier, name: DIVISION_TIERS[tier], bonus: settings.division_power_step * (1 + tier), next: steps[tier] ?? null };
+}
+
+/** How many divisions a commander of this level may form. */
+export const divisionSlots = (level) => settings.division_base_slots + Math.floor(level / settings.division_level_step);
+
+/** Other equipment of the same nation and branch that a unit could be refitted with. */
+export function refitOptions(unitTypeId, nationId) {
+  const current = getUnitType(unitTypeId);
+  if (!current) return [];
+  return units.filter((u) => u.nation_id === nationId && u.category_id === current.category_id && u.id !== current.id);
+}
+
+/** What a refit costs: the new equipment, less part of the old one's value. */
+export function refitPrice(fromType, toType, nationId) {
+  const mult = nationBonus(nationId, 'cost_mult', toType.category_id);
+  return {
+    money: Math.max(0, Math.round(toType.cost_money * mult - fromType.cost_money * mult * settings.refit_credit)),
+    supplies: Math.max(0, Math.round(toType.cost_supplies * mult - fromType.cost_supplies * mult * settings.refit_credit)),
+  };
+}

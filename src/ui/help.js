@@ -40,6 +40,10 @@ export function showHelp() {
             them and it falls back. Some reports arrive unconfirmed (marked ?) and need a recon unit
             or aircraft to look first. An enemy offensive (marked ⚠) against a base must be stopped
             in time, or the base is out of action for a while.</li>
+        <li><strong>Divisions, refits and captures.</strong> Form a division in the Units tab; with a
+            command unit attached, its units fight harder together and the division gains its own
+            experience. Open a unit to refit it with later equipment while keeping its experience.
+            Hard-won contact occasionally yields a captured enemy vehicle.</li>
         <li><strong>Weather and night.</strong> Rain and storms slow ground and sea units, storms
             ground aircraft, and scouts and commandos fight harder after dark. Conditions are shown
             on the map and on each mission.</li>

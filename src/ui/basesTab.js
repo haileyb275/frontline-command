@@ -23,7 +23,7 @@ import {
 } from '../game/content.js';
 import {
   placeBase, buyUnit, upgradeBase, dismissUnit, trainUnit, startProduction, transferUnit, setBaseZone,
-  resupplyBase, setAutoResupply, renameBase, renameUnit, startResearch,
+  resupplyBase, setAutoResupply, renameBase, renameUnit, startResearch, refitUnit, assignDivision,
 } from '../game/actions.js';
 import { renderBase, renderUnit } from './baseViews.js';
 import { msUntil, formatDuration } from '../game/clock.js';
@@ -222,6 +222,9 @@ export async function handleAction(action, data, ctx) {
       return run(ctx, () => renameUnit(ui.unitId, name));
     }
 
+    case 'refit':
+      return run(ctx, () => refitUnit(ui.unitId, data.type), 'Refit under way.');
+
     case 'research':
       return run(ctx, () => startResearch(), 'Research programme started.');
 
@@ -303,6 +306,14 @@ async function run(ctx, fn, successMessage) {
     toast(friendlyError(error), 'error');
   }
   ctx.update({ busy: false });
+}
+
+/** Drop-down menus (<select data-change="…">). */
+export function handleChange(name, el, ctx) {
+  if (name === 'assign-division') {
+    return run(ctx, () => assignDivision(el.dataset.unit, el.value || null),
+      el.value ? 'Unit assigned to the division.' : 'Unit removed from its division.');
+  }
 }
 
 /** Called once a second by panel.js: refresh countdowns without re-drawing. */

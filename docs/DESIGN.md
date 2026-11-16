@@ -296,3 +296,6 @@ was revised in a later phase, the highest-numbered file holds the current versio
   and `fc_on_mission_expired`), offensives (`missions.target_base_id`, `bases.disabled_until`), and
   unconfirmed reports (`missions.confirmed`, `scout_mission`, masked in `fc_snapshot` and by the
   missions read policy).
+- **Phase 15** added divisions (`divisions`, `units.division_id`, a formation bonus applied by a
+  trigger on `dispatches`), refits (`refit_unit`), captured equipment (a trigger on `missions`,
+  announced through `player_notices`), and a `note` on every unit in `units.json`.
