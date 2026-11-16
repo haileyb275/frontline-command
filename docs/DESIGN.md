@@ -269,3 +269,8 @@ The game followed this design, with a few changes made along the way:
 
 Migrations `001`–`006` in `supabase/migrations/` are the authoritative schema. Where a function
 was revised in a later phase, the highest-numbered file holds the current version.
+- **Phase 7** added specialties (`specialties`, `train_unit`), factories (`products`,
+  `start_production`, `shipments`), unit transfers (`transfer_unit`), and a `zone` on every base
+  (`front` or `home`, `set_base_zone`). Mission requirement keys may now be a category or a
+  specialty; `dispatches.category_id` records which place a unit filled. Mission types carry a
+  `zone_rule` (`contact`, `front` or `any`) that decides where they may spawn.

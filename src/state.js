@@ -13,6 +13,7 @@ export const state = {
   bases: [], // the player's rows from the `bases` table
   units: [], // the player's rows from the `units` table
   missions: [], // open and in-progress missions
+  shipments: [], // factory output on its way to the Headquarters
   dispatches: [], // units out on (or returning from) a mission — ours, and allies' on shared missions
   alliance: null, // our alliance: { info, my_role, members, buildings, messages, log } or null
   alliances: [], // the list to browse when not in an alliance

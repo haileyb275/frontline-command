@@ -53,6 +53,10 @@ export function dispatchPosition(dispatch) {
 
 /** A unit's status right now, without waiting for the next server sync. */
 export function liveUnitStatus(unit, dispatches) {
+  // Training and transfers are tracked on the unit itself, with an end time.
+  if ((unit.status === 'training' || unit.status === 'transferring') && unit.busy_until) {
+    return msUntil(unit.busy_until) > 0 ? unit.status : 'idle';
+  }
   const dispatch = dispatches.find((d) => d.unit_id === unit.id);
   if (!dispatch) return 'idle';
   const { phase } = dispatchPosition(dispatch);

@@ -1,0 +1,74 @@
+[
+  {
+    "id": "small_arms_ammo",
+    "name": "Small-Arms Ammunition",
+    "building_type": "munitions_factory",
+    "duration_seconds": 1200,
+    "cost_money": 300,
+    "cost_supplies": 0,
+    "output_money": 0,
+    "output_supplies": 250,
+    "min_level": 2,
+    "sort": 0
+  },
+  {
+    "id": "artillery_shells",
+    "name": "Artillery Shells",
+    "building_type": "munitions_factory",
+    "duration_seconds": 7200,
+    "cost_money": 1500,
+    "cost_supplies": 0,
+    "output_money": 0,
+    "output_supplies": 1400,
+    "min_level": 2,
+    "sort": 1
+  },
+  {
+    "id": "bulk_munitions",
+    "name": "Bulk Munitions Order",
+    "building_type": "munitions_factory",
+    "duration_seconds": 28800,
+    "cost_money": 5000,
+    "cost_supplies": 0,
+    "output_money": 0,
+    "output_supplies": 5200,
+    "min_level": 3,
+    "sort": 2
+  },
+  {
+    "id": "spare_parts",
+    "name": "Spare Parts Run",
+    "building_type": "vehicle_works",
+    "duration_seconds": 1800,
+    "cost_money": 0,
+    "cost_supplies": 100,
+    "output_money": 2500,
+    "output_supplies": 0,
+    "min_level": 3,
+    "sort": 3
+  },
+  {
+    "id": "truck_assembly",
+    "name": "Truck Assembly",
+    "building_type": "vehicle_works",
+    "duration_seconds": 7200,
+    "cost_money": 0,
+    "cost_supplies": 400,
+    "output_money": 11000,
+    "output_supplies": 0,
+    "min_level": 3,
+    "sort": 4
+  },
+  {
+    "id": "tank_overhaul",
+    "name": "Tank Overhaul Programme",
+    "building_type": "vehicle_works",
+    "duration_seconds": 28800,
+    "cost_money": 0,
+    "cost_supplies": 1200,
+    "output_money": 40000,
+    "output_supplies": 0,
+    "min_level": 4,
+    "sort": 5
+  }
+]

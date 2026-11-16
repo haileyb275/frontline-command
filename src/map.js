@@ -137,7 +137,8 @@ export function createBaseLayer(map, { getIcon, onSelect }) {
       }
 
       for (const base of bases) {
-        const kind = base.id === selectedId ? 'base is-selected' : 'base';
+        let kind = base.zone === 'home' ? 'base home' : 'base';
+        if (base.id === selectedId) kind += ' is-selected';
         let marker = markers.get(base.id);
         if (!marker) {
           marker = L.marker([base.lat, base.lng]).addTo(group);

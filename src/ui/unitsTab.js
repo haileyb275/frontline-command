@@ -3,6 +3,7 @@
 import { categories, getUnitType } from '../game/content.js';
 import { liveUnitStatus } from '../game/clock.js';
 import { esc, statusPillHtml } from './dom.js';
+import { specialtyTag } from './baseViews.js';
 
 const statusPill = (unit, dispatches) => statusPillHtml(liveUnitStatus(unit, dispatches));
 
@@ -29,11 +30,12 @@ export function render(state) {
       const rows = mine
         .map(
           (unit) => `
-          <button class="row" data-action="open-base" data-base="${esc(unit.base_id)}">
+          <button class="row" data-action="open-unit" data-unit="${esc(unit.id)}">
             <span class="row-icon row-icon--unit">${esc(cat.icon)}</span>
             <span class="row-main">
               <span class="row-title">${esc(getUnitType(unit.unit_type).name)}</span>
-              <span class="row-sub">${esc(baseName.get(unit.base_id) ?? 'Unknown base')}</span>
+              <span class="row-sub">${esc(baseName.get(unit.base_id) ?? 'Unknown base')}
+                ${specialtyTag(unit, profile.nation_id)}</span>
             </span>
             ${statusPill(unit, dispatches)}
           </button>`

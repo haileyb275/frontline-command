@@ -19,6 +19,8 @@ function applySnapshot(snapshot) {
   announce(snapshot.events ?? []);
   setState({
     profile: snapshot.profile,
+    bases: snapshot.bases ?? state.bases,
+    shipments: snapshot.shipments ?? [],
     units: snapshot.units,
     missions: snapshot.missions,
     dispatches: snapshot.dispatches,
@@ -52,6 +54,13 @@ function announce(events) {
 
   for (const e of events) {
     if (e.type === 'finder_bonus') toast(`Finder's bonus for sharing ${e.name}: +${fmt(e.money)} funds`, 'ok');
+    if (e.type === 'training_done') toast(`${e.unit} qualified: ${e.specialty}`, 'ok');
+    if (e.type === 'transfer_done') toast(`${e.unit} has arrived at ${e.base}.`, 'ok');
+    if (e.type === 'production_done') toast(`${e.name} finished. A convoy is taking it to your Headquarters.`, 'info');
+    if (e.type === 'shipment_arrived') {
+      const parts = [e.money && `+${fmt(e.money)} funds`, e.supplies && `+${fmt(e.supplies)} supplies`].filter(Boolean);
+      toast(`Convoy arrived (${e.name}): ${parts.join(', ')}`, 'ok');
+    }
     if (e.type === 'level_up') toast(`Promoted to level ${e.level}. New options may be unlocked.`, 'ok');
     if (e.type === 'followup' && done.length <= 3) toast(`New intelligence: ${e.name}`, 'info');
   }
@@ -88,6 +97,10 @@ function scheduleNextSync() {
   const times = [
     ...state.missions.map((m) => m.completes_at),
     ...state.dispatches.map((d) => d.returns_at),
+    // Training courses, transfers, factory runs and convoys all end at a known time too.
+    ...state.units.map((u) => u.busy_until),
+    ...state.bases.map((b) => b.production_done_at),
+    ...state.shipments.map((s) => s.arrives_at),
     // Arrivals don't change anything on the server, but syncing then keeps
     // the status labels fresh. Only future ones, or we would loop forever.
     ...state.dispatches.map((d) => d.arrives_at).filter((t) => msUntil(t) > 0),
@@ -321,4 +334,23 @@ export async function dismissUnit(unitId) {
   const data = await call('dismiss_unit', { p_unit_id: unitId });
   setState({ profile: data.profile, units: state.units.filter((u) => u.id !== data.unit_id) });
   return data;
+}
+
+// ------------------------------------------------------------ phase 7
+// These four all answer with a full snapshot, like dispatching does.
+
+export async function trainUnit(unitId, specialtyId) {
+  applySnapshot(await call('train_unit', { p_unit_id: unitId, p_specialty: specialtyId }));
+}
+
+export async function startProduction(baseId, productId) {
+  applySnapshot(await call('start_production', { p_base_id: baseId, p_product: productId }));
+}
+
+export async function transferUnit(unitId, baseId) {
+  applySnapshot(await call('transfer_unit', { p_unit_id: unitId, p_base_id: baseId }));
+}
+
+export async function setBaseZone(baseId, zone) {
+  applySnapshot(await call('set_base_zone', { p_base_id: baseId, p_zone: zone }));
 }

@@ -11,6 +11,10 @@ import {
   missionReward,
   travelSeconds,
   distanceKm,
+  getSlot,
+  getSpecialty,
+  specialtyName,
+  unitFitsSlot,
 } from '../game/content.js';
 import { dispatchUnits, recallUnits, shareMission } from '../game/actions.js';
 import { msUntil, formatDuration, liveUnitStatus } from '../game/clock.js';
@@ -48,7 +52,7 @@ function requirementChips(type, counts = {}) {
   return Object.entries(type.requirements)
     .map(([categoryId, needed]) => {
       const have = Math.min(counts[categoryId] ?? 0, needed);
-      const cat = getCategory(categoryId);
+      const cat = getSlot(categoryId); // a category or a specialty
       return `<span class="chip ${have >= needed ? 'is-met' : ''}" title="${esc(cat.name)}">
                 ${esc(cat.icon)} ${have}/${needed}</span>`;
     })
@@ -148,7 +152,7 @@ function renderMission(state, ui, mission) {
         const ally = d.player_id !== profile.id;
         return `
           <div class="row row--static">
-            <span class="row-icon row-icon--unit ${ally ? 'row-icon--ally' : ''}">${esc(getCategory(d.category_id).icon)}</span>
+            <span class="row-icon row-icon--unit ${ally ? 'row-icon--ally' : ''}">${esc(getSlot(d.category_id).icon)}</span>
             <span class="row-main">
               <span class="row-title">${esc(d.unit_name)}</span>
               ${mission.alliance_id ? `<span class="row-sub">${ally ? esc(d.player_name) : 'You'}</span>` : ''}
@@ -205,6 +209,45 @@ function renderSharing(state, ui, mission, type) {
             Share with ${esc(state.alliance.info.name)}</button>`;
 }
 
+/**
+ * Mission places are keyed by category ("infantry") or specialty ("airborne").
+ * Specialty places are listed first, so specialists are offered where only
+ * they can go before being spent on ordinary places.
+ */
+function slotKeys(type) {
+  const keys = Object.keys(type.requirements);
+  return [...keys.filter((k) => !getCategory(k)), ...keys.filter((k) => getCategory(k))];
+}
+
+/** Idle units that could fill the place `key`. */
+function idleUnitsFor(key, units, dispatches) {
+  return units.filter((u) => unitFitsSlot(u, key) && liveUnitStatus(u, dispatches) === 'idle');
+}
+
+/**
+ * Would the server accept these units, in this order? It gives each unit its
+ * specialty's place if one is free, otherwise a place of its category
+ * (see dispatch_units in the SQL). Returns false if any unit has no place.
+ */
+function unitsFit(unitIds, mission, state) {
+  const type = getMissionType(mission.mission_type);
+  const counts = committedCounts(mission, state.dispatches);
+  const left = Object.fromEntries(Object.entries(type.requirements).map(([k, n]) => [k, n - (counts[k] ?? 0)]));
+  for (const id of unitIds) {
+    const unit = state.units.find((u) => u.id === id);
+    if (!unit) return false;
+    const category = getUnitType(unit.unit_type).category_id;
+    if (unit.specialty && left[unit.specialty] > 0) left[unit.specialty] -= 1;
+    else if (left[category] > 0) left[category] -= 1;
+    else return false;
+  }
+  return true;
+}
+
+const etaFor = (unit, mission, state, baseById) =>
+  travelSeconds(getUnitType(unit.unit_type), baseById.get(unit.base_id), mission,
+    state.profile.nation_id, state.alliance, unit.specialty);
+
 /** The list of idle units you can tick and send. */
 function renderPicker(state, ui, mission, type, counts) {
   const { profile, bases, units, dispatches } = state;
@@ -213,40 +256,42 @@ function renderPicker(state, ui, mission, type, counts) {
   let sections = '';
   let anyChoice = false;
 
-  // One section per category the mission still needs, in the usual order.
-  for (const cat of categories) {
-    const needed = type.requirements[cat.id];
-    if (!needed) continue;
-    const remaining = needed - (counts[cat.id] ?? 0);
+  // One section per place the mission still needs.
+  for (const key of slotKeys(type)) {
+    const slot = getSlot(key);
+    const remaining = type.requirements[key] - (counts[key] ?? 0);
     if (remaining <= 0) continue;
+    const isSpecialty = !getCategory(key);
+    const label = isSpecialty ? specialtyName(slot, profile.nation_id) : slot.name;
 
-    const candidates = idleUnitsOf(cat.id, units, dispatches)
-      .map((unit) => ({
-        unit,
-        eta: travelSeconds(getUnitType(unit.unit_type), baseById.get(unit.base_id), mission, profile.nation_id, state.alliance),
-      }))
+    const candidates = idleUnitsFor(key, units, dispatches)
+      .map((unit) => ({ unit, eta: etaFor(unit, mission, state, baseById) }))
       .sort((a, b) => a.eta - b.eta); // fastest first
 
     const rows = candidates.length
       ? candidates
           .map(({ unit, eta }) => {
             const on = picked.has(unit.id);
+            const spec = getSpecialty(unit.specialty);
             return `
               <button class="row row--pick ${on ? 'is-picked' : ''}" data-action="toggle-unit"
-                      data-unit="${esc(unit.id)}" data-category="${esc(cat.id)}" aria-pressed="${on}">
+                      data-unit="${esc(unit.id)}" aria-pressed="${on}">
                 <span class="check">${on ? '✓' : ''}</span>
                 <span class="row-main">
                   <span class="row-title">${esc(getUnitType(unit.unit_type).name)}</span>
-                  <span class="row-sub">${esc(baseById.get(unit.base_id)?.name ?? '')}</span>
+                  <span class="row-sub">${esc(baseById.get(unit.base_id)?.name ?? '')}
+                    ${spec ? `<span class="tag tag--spec">${esc(specialtyName(spec, profile.nation_id))}</span>` : ''}</span>
                 </span>
                 <span class="row-side">${formatDuration(eta * 1000)}</span>
               </button>`;
           })
           .join('')
-      : `<p class="muted">No ${esc(cat.name)} units ready. Recruit some at a base that stations them.</p>`;
+      : isSpecialty
+        ? `<p class="muted">No ${esc(label)} ready. Train units in this specialty at a Training Center.</p>`
+        : `<p class="muted">No ${esc(label)} units ready. Recruit some at a base that stations them.</p>`;
 
     if (candidates.length) anyChoice = true;
-    sections += `<h3>${esc(cat.name)} <span class="count">need ${remaining}</span></h3>
+    sections += `<h3>${esc(label)} <span class="count">need ${remaining}</span></h3>
                  <div class="rows">${rows}</div>`;
   }
 
@@ -261,14 +306,6 @@ function renderPicker(state, ui, mission, type, counts) {
         ${ui.busy ? 'Sending…' : `Dispatch ${picked.size || ''}`}
       </button>
     </div>`;
-}
-
-function idleUnitsOf(categoryId, units, dispatches) {
-  return units.filter(
-    (u) =>
-      getUnitType(u.unit_type)?.category_id === categoryId &&
-      liveUnitStatus(u, dispatches) === 'idle'
-  );
 }
 
 // ---------------------------------------------------------------- ticking
@@ -301,41 +338,30 @@ export async function handleAction(action, data, ctx) {
       return;
 
     case 'toggle-unit': {
-      const picked = new Set(ui.picked);
-      if (picked.has(data.unit)) {
-        picked.delete(data.unit);
-      } else {
-        // Don't let the player tick more units of a category than are needed.
-        const type = getMissionType(mission.mission_type);
-        const remaining =
-          type.requirements[data.category] -
-          (committedCounts(mission, state.dispatches)[data.category] ?? 0);
-        const already = [...picked].filter((id) => {
-          const unit = state.units.find((u) => u.id === id);
-          return unit && getUnitType(unit.unit_type).category_id === data.category;
-        }).length;
-        if (already >= remaining) {
-          return toast(`This mission only needs ${remaining} more ${getCategory(data.category).name}.`, 'info');
+      const picked = ui.picked.filter((id) => id !== data.unit);
+      if (picked.length === ui.picked.length) {
+        // Ticking a new unit: check the mission still has a place for it.
+        if (!unitsFit([...picked, data.unit], mission, state)) {
+          return toast('This mission has no free place for that unit.', 'info');
         }
-        picked.add(data.unit);
+        picked.push(data.unit);
       }
-      return update({ picked: [...picked] });
+      return update({ picked });
     }
 
     case 'auto-pick': {
-      // For each category still needed, take the units with the shortest trip.
+      // For each place still needed, take the units with the shortest trip.
       const type = getMissionType(mission.mission_type);
       const counts = committedCounts(mission, state.dispatches);
       const baseById = new Map(state.bases.map((b) => [b.id, b]));
       const picked = [];
-      for (const [categoryId, needed] of Object.entries(type.requirements)) {
-        const remaining = needed - (counts[categoryId] ?? 0);
-        idleUnitsOf(categoryId, state.units, state.dispatches)
-          .map((unit) => ({
-            id: unit.id,
-            eta: travelSeconds(getUnitType(unit.unit_type), baseById.get(unit.base_id), mission, state.profile.nation_id, state.alliance),
-          }))
-          .sort((a, b) => a.eta - b.eta)
+      for (const key of slotKeys(type)) {
+        const remaining = type.requirements[key] - (counts[key] ?? 0);
+        idleUnitsFor(key, state.units, state.dispatches)
+          .filter((unit) => !picked.includes(unit.id))
+          // For ordinary places, send ordinary units before specialists.
+          .map((unit) => ({ id: unit.id, eta: etaFor(unit, mission, state, baseById), special: unit.specialty ? 1 : 0 }))
+          .sort((a, b) => (getCategory(key) ? a.special - b.special : 0) || a.eta - b.eta)
           .slice(0, Math.max(0, remaining))
           .forEach((x) => picked.push(x.id));
       }

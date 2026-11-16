@@ -6,7 +6,9 @@ import { createMap, createBaseLayer, createMissionLayer, createTravelLayer, form
 import { supabase, friendlyError } from './supabase.js';
 import { state, setState, subscribe, loadProfile } from './state.js';
 import { loadGame, startSyncLoop, stopSyncLoop, stopRealtime } from './game/actions.js';
-import { getBuilding, getCategory, getMissionType } from './game/content.js';
+import {
+  getBuilding, getCategory, getMissionType, getSlot, getUnitType, convoySeconds, distanceKm,
+} from './game/content.js';
 import { dispatchPosition } from './game/clock.js';
 import { getRoute, pointAlong } from './game/routes.js';
 import { missionMarkerLabel } from './ui/missionsTab.js';
@@ -63,16 +65,57 @@ subscribe((s) => {
 createTravelLayer(map, {
   getDispatches: () => state.dispatches,
   getTarget: (d) => state.missions.find((m) => m.id === d.mission_id) ?? missionTargets.get(d.mission_id) ?? null,
-  getLabel: (d) => getCategory(d.category_id)?.icon ?? '',
+  getLabel: (d) => getSlot(d.category_id).icon,
   // Allied units on shared missions are drawn in a different colour.
   getKind: (d) => (d.player_id === state.profile?.id ? 'unit' : 'unit ally'),
   getPosition: dispatchPosition,
   // Only ground units use roads; aircraft and ships travel in straight lines.
   getRoute: (d, target) =>
-    getCategory(d.category_id)?.domain === 'ground'
+    // …and only for trips within one region. A unit sent from a base an
+    // ocean away has no sensible road route, so it is drawn as a straight line.
+    getCategory(d.unit_category ?? d.category_id)?.domain === 'ground' &&
+    distanceKm({ lat: d.from_lat, lng: d.from_lng }, target) <= 400
       ? getRoute({ lat: d.from_lat, lng: d.from_lng }, target)
       : null,
   pointAlong,
+});
+
+// Convoys and transferring units use the same moving-marker layer. We
+// describe each one in the shape the layer expects (start point, arrival
+// time, journey length) and it does the rest.
+createTravelLayer(map, {
+  getDispatches: () => [
+    ...state.shipments.map((s) => ({
+      id: `ship-${s.id}`,
+      from_lat: s.from_lat,
+      from_lng: s.from_lng,
+      to: { lat: s.to_lat, lng: s.to_lng },
+      arrives_at: s.arrives_at,
+      travel_seconds: (new Date(s.arrives_at) - new Date(s.departed_at)) / 1000,
+      label: s.by_sea ? '⚓' : 'SUP',
+    })),
+    ...state.units
+      .filter((u) => u.status === 'transferring' && u.busy_until)
+      .map((u) => {
+        const from = state.bases.find((b) => b.id === u.base_id);
+        const to = state.bases.find((b) => b.id === u.transfer_base_id);
+        if (!from || !to) return null;
+        return {
+          id: `move-${u.id}`,
+          from_lat: from.lat,
+          from_lng: from.lng,
+          to: { lat: to.lat, lng: to.lng },
+          arrives_at: u.busy_until,
+          travel_seconds: convoySeconds(from, to),
+          label: getCategory(getUnitType(u.unit_type)?.category_id)?.icon ?? '',
+        };
+      })
+      .filter(Boolean),
+  ],
+  getTarget: (d) => d.to,
+  getLabel: (d) => d.label,
+  getKind: () => 'unit convoy',
+  getPosition: dispatchPosition,
 });
 
 const panel = initPanel({ baseLayer, missionLayer, mapElement: mapEl });
@@ -88,7 +131,7 @@ async function route() {
   if (!state.session) {
     stopSyncLoop();
     stopRealtime();
-    setState({ profile: null, bases: [], units: [], missions: [], dispatches: [], alliance: null, alliances: [], unread: 0 });
+    setState({ profile: null, bases: [], units: [], missions: [], dispatches: [], shipments: [], alliance: null, alliances: [], unread: 0 });
     panel.reset();
     showAuthScreen();
     return;

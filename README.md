@@ -46,7 +46,9 @@ npm run preview
 In the Supabase dashboard open **SQL Editor → New query**, then paste and run,
 in this order:
 
-1. every file in `supabase/migrations/`, lowest number first
+1. every file in `supabase/migrations/`, lowest number first (if you ever re-run an
+   earlier file, re-run every later one after it: later files hold the current
+   version of functions that were revised)
 2. `supabase/seed.sql`
 3. once per database, the coastline data: run `npm run land`, then every file in
    `supabase/land/` in order (this is what tells the server where the sea is)
@@ -68,6 +70,8 @@ All content is data in `src/data/`. No game logic needs to change.
 | a mission | `missions.json` | `requirements` are category → count; `terrain` is `land`, `water` or `any`; `min_km`/`max_km` set how far from your bases it appears |
 | a nation | `nations.json` + its rows in `units.json` | bonuses are data: `cost_mult`, `speed_mult`, `power_mult`, `reward_mult`, `building_cost_mult` |
 | an alliance building | `alliance_buildings.json` | bonus types: `member_cap`, `reward_money`, `reward_xp`, `speed` |
+| a specialty | `specialties.json` | `category_ids` lists who can train in it; `names` gives per-nation names; use its id as a mission requirement |
+| a factory product | `products.json` | `building_type` is the factory that makes it |
 | a tuning number | `settings.json` | spawn interval, travel speed-up, caps, costs |
 
 Then:
@@ -92,3 +96,4 @@ npm run balance
 - [x] Phase 5 — Alliances
 - [x] Phase 5b — Terrain-aware missions, naval units, road-following movement
 - [x] Phase 6 — Leaderboards and polish
+- [x] Phase 7 — Specialists, military police, fire service, factories, home front, convoys

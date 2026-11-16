@@ -36,6 +36,7 @@ export function initPanel({ baseLayer, missionLayer, mapElement }) {
     buildingType: null, // building being placed
     latlng: null, // chosen site
     baseId: null, // base being viewed
+    unitId: null, // unit being viewed
     missionId: null, // mission being viewed
     picked: [], // unit ids ticked in the mission's unit picker
     allianceView: 'overview', // which part of the Alliance tab is showing
@@ -44,7 +45,7 @@ export function initPanel({ baseLayer, missionLayer, mapElement }) {
   };
 
   // The values that mean "nothing selected", used when switching tabs.
-  const CLEAR = { view: 'list', buildingType: null, latlng: null, baseId: null, missionId: null, picked: [] };
+  const CLEAR = { view: 'list', buildingType: null, latlng: null, baseId: null, unitId: null, missionId: null, picked: [] };
 
   /** Change the UI state and re-draw. */
   function update(patch) {
@@ -92,7 +93,7 @@ export function initPanel({ baseLayer, missionLayer, mapElement }) {
       placing ? ui.latlng : null,
       placing ? getBuilding(ui.buildingType)?.icon : ''
     );
-    baseLayer.sync(state.bases, ui.tab === 'bases' && ui.view === 'base' ? ui.baseId : null);
+    baseLayer.sync(state.bases, ui.tab === 'bases' && (ui.view === 'base' || ui.view === 'unit') ? ui.baseId : null);
     missionLayer.sync(state.missions, ui.tab === 'missions' && ui.view === 'mission' ? ui.missionId : null);
 
     // If the mission being viewed has finished, drop back to the list.
@@ -128,6 +129,10 @@ export function initPanel({ baseLayer, missionLayer, mapElement }) {
     // A few actions switch tabs, so they are handled here…
     if (action === 'open-base') {
       return update({ tab: 'bases', ...CLEAR, view: 'base', baseId: el.dataset.base });
+    }
+    if (action === 'open-unit') {
+      const unit = state.units.find((u) => u.id === el.dataset.unit);
+      return update({ tab: 'bases', ...CLEAR, view: 'unit', unitId: el.dataset.unit, baseId: unit?.base_id ?? null });
     }
     if (action === 'open-mission') {
       return update({ tab: 'missions', ...CLEAR, view: 'mission', missionId: el.dataset.mission });

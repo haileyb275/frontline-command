@@ -9,5 +9,9 @@
   "alliance_treasury_cut": 0.05,
   "alliance_owner_bonus": 0.1,
   "max_base_level": 3,
-  "dismiss_refund": 0.5
+  "dismiss_refund": 0.5,
+  "home_safe_km": 15,
+  "convoy_speed_kmh": 25,
+  "convoy_time_scale": 200,
+  "min_convoy_seconds": 30
 }

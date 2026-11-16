@@ -205,6 +205,17 @@ begin
 end;
 $$;
 
+-- Placeholder for the hook fc_sync calls first. Phase 7 replaces it with the
+-- real thing; we only create it here if nothing better exists yet, so that
+-- re-running this file never undoes a later phase.
+do $$
+begin
+  if not exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+                  where n.nspname = 'public' and p.proname = 'fc_sync_extras') then
+    execute 'create function public.fc_sync_extras(p_me uuid) returns jsonb language sql as ''select ''''[]''''::jsonb''';
+  end if;
+end $$;
+
 -- Spawn up to p_due new missions for a player (never above their cap).
 -- Split out of fc_sync so later phases can change HOW missions are chosen
 -- and placed without touching the rest of the settling logic.
@@ -273,6 +284,10 @@ declare
   n_bases    int;
   due        int;
 begin
+  -- A hook for later phases (training, factories, convoys). It runs first and
+  -- does its own bookkeeping; whatever it reports is added to our events.
+  events := public.fc_sync_extras(p_me);
+
   select * into prof from public.profiles where id = p_me for update;
   if not found or prof.nation_id is null then return events; end if;
   select alliance_id into my_alliance from public.alliance_members where player_id = p_me;

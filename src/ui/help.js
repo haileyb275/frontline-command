@@ -16,11 +16,14 @@ export function showHelp() {
         <li><strong>Build your Headquarters.</strong> Open the Bases tab, choose a site on land,
             and confirm. Missions will start appearing around it.</li>
         <li><strong>Recruit units.</strong> Open a base to recruit. Each building houses certain
-            categories: infantry and recon at the HQ, tanks at a Tank Depot, ships at a Naval Base.</li>
+            categories: infantry, recon and command staff at the HQ, tanks at a Tank Depot, ships at a Naval Base.</li>
         <li><strong>Answer missions.</strong> Red markers are on land, blue are at sea, purple are
             for aircraft. Open one, press <em>Select fastest</em>, then <em>Dispatch</em>.</li>
         <li><strong>Collect and grow.</strong> When the timer ends you earn funds, supplies and XP.
             Higher levels unlock new buildings, units and larger operations.</li>
+        <li><strong>Front line and home front.</strong> Each base is one or the other. Enemy
+            contact only happens around front-line bases. Put factories and Training Centers on
+            the home front, then ship their output and trained units forward by convoy.</li>
         <li><strong>Join an alliance.</strong> Any nation can join any alliance. Share large
             missions, chat, and fund alliance buildings that help every member.</li>
       </ol>

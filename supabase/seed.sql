@@ -21,19 +21,27 @@ insert into public.unit_categories (id, name, icon, sort, base_power) values
   ('medical', 'Medical', 'MED', 6, 6),
   ('engineers', 'Engineers', 'ENG', 7, 10),
   ('logistics', 'Logistics', 'LOG', 8, 6),
-  ('naval', 'Naval', 'NAV', 9, 25)
+  ('naval', 'Naval', 'NAV', 9, 25),
+  ('military_police', 'Military Police', 'MP', 10, 8),
+  ('fire', 'Fire Service', 'FIRE', 11, 8),
+  ('command', 'Command', 'CMD', 12, 6)
 on conflict (id) do update set name = excluded.name, icon = excluded.icon, sort = excluded.sort, base_power = excluded.base_power;
 
-insert into public.building_types (id, name, icon, description, cost_money, cost_supplies, unit_capacity, unlocks_categories, min_level, is_hq, sort, requires_coast) values
-  ('hq', 'Headquarters', 'HQ', 'Your command post. Every commander needs exactly one, and it must be built first.', 5000, 0, 6, '["infantry","recon"]'::jsonb, 1, true, 0, false),
-  ('barracks', 'Barracks', 'BK', 'Houses and trains foot soldiers, scouts and anti-tank crews.', 6000, 100, 8, '["infantry","recon","anti_tank"]'::jsonb, 1, false, 1, false),
-  ('supply_depot', 'Supply Depot', 'SD', 'Truck parks and workshops for logistics and engineer units.', 7000, 150, 6, '["logistics","engineers"]'::jsonb, 1, false, 2, false),
-  ('field_hospital', 'Field Hospital', 'FH', 'Medical teams that recover and treat the wounded.', 8000, 200, 4, '["medical"]'::jsonb, 2, false, 3, false),
-  ('artillery_park', 'Artillery Park', 'AP', 'Gun lines for artillery batteries and anti-tank guns.', 12000, 300, 6, '["artillery","anti_tank"]'::jsonb, 2, false, 4, false),
-  ('tank_depot', 'Tank Depot', 'TD', 'Maintenance sheds and fuel for armored vehicles.', 18000, 500, 6, '["armor"]'::jsonb, 3, false, 5, false),
-  ('airfield', 'Airfield', 'AF', 'A runway and hangars for aircraft flights.', 30000, 800, 4, '["air"]'::jsonb, 5, false, 6, false),
-  ('naval_base', 'Naval Base', 'NB', 'A harbor with moorings and fuel for warships. Must be built on the coast.', 20000, 500, 4, '["naval"]'::jsonb, 3, false, 7, true)
-on conflict (id) do update set name = excluded.name, icon = excluded.icon, description = excluded.description, cost_money = excluded.cost_money, cost_supplies = excluded.cost_supplies, unit_capacity = excluded.unit_capacity, unlocks_categories = excluded.unlocks_categories, min_level = excluded.min_level, is_hq = excluded.is_hq, sort = excluded.sort, requires_coast = excluded.requires_coast;
+insert into public.building_types (id, name, icon, description, cost_money, cost_supplies, unit_capacity, unlocks_categories, min_level, is_hq, sort, requires_coast, training_slots, default_zone) values
+  ('hq', 'Headquarters', 'HQ', 'Your command post. Every commander needs exactly one, and it must be built first.', 5000, 0, 6, '["infantry","recon","command"]'::jsonb, 1, true, 0, false, 0, 'front'),
+  ('barracks', 'Barracks', 'BK', 'Houses and trains foot soldiers, scouts and anti-tank crews.', 6000, 100, 8, '["infantry","recon","anti_tank"]'::jsonb, 1, false, 1, false, 0, 'front'),
+  ('supply_depot', 'Supply Depot', 'SD', 'Truck parks and workshops for logistics and engineer units.', 7000, 150, 6, '["logistics","engineers"]'::jsonb, 1, false, 2, false, 0, 'front'),
+  ('field_hospital', 'Field Hospital', 'FH', 'Medical teams that recover and treat the wounded.', 8000, 200, 4, '["medical"]'::jsonb, 2, false, 3, false, 0, 'front'),
+  ('artillery_park', 'Artillery Park', 'AP', 'Gun lines for artillery batteries and anti-tank guns.', 12000, 300, 6, '["artillery","anti_tank"]'::jsonb, 2, false, 4, false, 0, 'front'),
+  ('tank_depot', 'Tank Depot', 'TD', 'Maintenance sheds and fuel for armored vehicles.', 18000, 500, 6, '["armor"]'::jsonb, 3, false, 5, false, 0, 'front'),
+  ('airfield', 'Airfield', 'AF', 'A runway and hangars for aircraft flights.', 30000, 800, 4, '["air"]'::jsonb, 5, false, 6, false, 0, 'front'),
+  ('naval_base', 'Naval Base', 'NB', 'A harbor with moorings and fuel for warships. Must be built on the coast.', 20000, 500, 4, '["naval"]'::jsonb, 3, false, 7, true, 0, 'front'),
+  ('mp_post', 'Military Police Post', 'MPP', 'Provost troops who keep roads moving and rear areas in order.', 9000, 200, 4, '["military_police"]'::jsonb, 2, false, 8, false, 0, 'front'),
+  ('fire_station', 'Fire Station', 'FS', 'A military fire service for depots, airfields and installations.', 9000, 200, 4, '["fire"]'::jsonb, 2, false, 9, false, 0, 'front'),
+  ('training_center', 'Training Center', 'TC', 'Instructors and ranges where units qualify in a specialty. Stations no units itself.', 15000, 400, 0, '[]'::jsonb, 3, false, 10, false, 2, 'home'),
+  ('munitions_factory', 'Munitions Factory', 'MF', 'Produces ammunition, shipped to your Headquarters as supplies.', 12000, 200, 0, '[]'::jsonb, 2, false, 11, false, 0, 'home'),
+  ('vehicle_works', 'Vehicle Works', 'VW', 'Overhauls and assembles vehicles, shipped to your Headquarters as funds.', 20000, 500, 0, '[]'::jsonb, 3, false, 12, false, 0, 'home')
+on conflict (id) do update set name = excluded.name, icon = excluded.icon, description = excluded.description, cost_money = excluded.cost_money, cost_supplies = excluded.cost_supplies, unit_capacity = excluded.unit_capacity, unlocks_categories = excluded.unlocks_categories, min_level = excluded.min_level, is_hq = excluded.is_hq, sort = excluded.sort, requires_coast = excluded.requires_coast, training_slots = excluded.training_slots, default_zone = excluded.default_zone;
 
 insert into public.unit_types (id, nation_id, category_id, name, cost_money, cost_supplies, speed_kmh, power, min_level) values
   ('usa_infantry', 'usa', 'infantry', 'M1 Garand Rifle Squad', 800, 20, 30, 10, 1),
@@ -88,7 +96,7 @@ insert into public.unit_types (id, nation_id, category_id, name, cost_money, cos
   ('italy_air', 'italy', 'air', 'Macchi C.202 Flight', 6000, 200, 400, 35, 5),
   ('italy_recon', 'italy', 'recon', 'AB 41 Armored Car', 1200, 30, 70, 8, 1),
   ('italy_medical', 'italy', 'medical', 'Sanità Ambulance Team', 1000, 40, 55, 6, 2),
-  ('italy_engineers', 'italy', 'engineers', 'Guastatori Platoon', 1400, 50, 40, 10, 1),
+  ('italy_engineers', 'italy', 'engineers', 'Genio Pioneer Platoon', 1400, 50, 40, 10, 1),
   ('italy_logistics', 'italy', 'logistics', 'Fiat 626 Truck Section', 1200, 30, 50, 6, 1),
   ('japan_infantry', 'japan', 'infantry', 'Rifle Section', 800, 20, 30, 10, 1),
   ('japan_armor', 'japan', 'armor', 'Type 97 Chi-Ha', 3600, 120, 40, 27, 3),
@@ -105,42 +113,112 @@ insert into public.unit_types (id, nation_id, category_id, name, cost_money, cos
   ('germany_naval', 'germany', 'naval', 'S-boat Flotilla', 4500, 150, 80, 20, 3),
   ('france_naval', 'france', 'naval', 'Le Fantasque-class Destroyer', 5000, 150, 80, 24, 3),
   ('italy_naval', 'italy', 'naval', 'MAS Torpedo Boat Flight', 4200, 150, 85, 18, 3),
-  ('japan_naval', 'japan', 'naval', 'Fubuki-class Destroyer', 5000, 150, 65, 25, 3)
+  ('japan_naval', 'japan', 'naval', 'Fubuki-class Destroyer', 5000, 150, 65, 25, 3),
+  ('usa_military_police', 'usa', 'military_police', 'Military Police Jeep Patrol', 1100, 30, 60, 8, 2),
+  ('usa_fire', 'usa', 'fire', 'Engineer Fire Fighting Platoon', 1500, 50, 50, 8, 2),
+  ('usa_command', 'usa', 'command', 'Dodge WC Command Car Section', 2000, 50, 60, 6, 2),
+  ('usa_armor_2', 'usa', 'armor', 'M26 Pershing', 7000, 220, 32, 50, 5),
+  ('usa_anti_tank_2', 'usa', 'anti_tank', 'M10 Tank Destroyer', 3200, 90, 42, 26, 4),
+  ('uk_military_police', 'uk', 'military_police', 'Royal Military Police Section', 1100, 30, 60, 8, 2),
+  ('uk_fire', 'uk', 'fire', 'Army Fire Service Section', 1500, 50, 50, 8, 2),
+  ('uk_command', 'uk', 'command', 'AEC Dorchester Command Vehicle', 2000, 50, 60, 6, 2),
+  ('uk_armor_2', 'uk', 'armor', 'Churchill Mk VII', 6800, 220, 24, 52, 5),
+  ('uk_anti_tank_2', 'uk', 'anti_tank', 'Achilles 17-pounder', 3200, 90, 42, 26, 4),
+  ('ussr_military_police', 'ussr', 'military_police', 'Commandant''s Service Patrol', 1100, 30, 60, 8, 2),
+  ('ussr_fire', 'ussr', 'fire', 'Fire Protection Detachment', 1500, 50, 50, 8, 2),
+  ('ussr_command', 'ussr', 'command', 'GAZ-61 Staff Car Section', 2000, 50, 60, 6, 2),
+  ('ussr_armor_2', 'ussr', 'armor', 'IS-2', 7000, 220, 30, 52, 5),
+  ('ussr_anti_tank_2', 'ussr', 'anti_tank', 'SU-85', 3200, 90, 42, 26, 4),
+  ('germany_military_police', 'germany', 'military_police', 'Feldgendarmerie Troop', 1100, 30, 60, 8, 2),
+  ('germany_fire', 'germany', 'fire', 'Feuerschutz Detachment', 1500, 50, 50, 8, 2),
+  ('germany_command', 'germany', 'command', 'Sd.Kfz. 251/6 Command Vehicle', 2000, 50, 60, 6, 2),
+  ('germany_armor_2', 'germany', 'armor', 'Tiger I', 7400, 240, 30, 54, 5),
+  ('germany_anti_tank_2', 'germany', 'anti_tank', 'StuG III', 3200, 90, 42, 26, 4),
+  ('france_military_police', 'france', 'military_police', 'Prévôté Gendarmerie Section', 1100, 30, 60, 8, 2),
+  ('france_fire', 'france', 'fire', 'Sapeurs-Pompiers Section', 1500, 50, 50, 8, 2),
+  ('france_command', 'france', 'command', 'Laffly V15R Command Car', 2000, 50, 60, 6, 2),
+  ('france_armor_2', 'france', 'armor', 'SOMUA S35', 3700, 110, 40, 28, 3),
+  ('france_anti_tank_2', 'france', 'anti_tank', 'Laffly W15 TCC', 3200, 90, 42, 26, 4),
+  ('italy_military_police', 'italy', 'military_police', 'Carabinieri Reali Section', 1100, 30, 60, 8, 2),
+  ('italy_fire', 'italy', 'fire', 'Vigili del Fuoco Detachment', 1500, 50, 50, 8, 2),
+  ('italy_command', 'italy', 'command', 'Fiat 508 CM Staff Car', 2000, 50, 60, 6, 2),
+  ('italy_armor_2', 'italy', 'armor', 'P26/40', 5200, 170, 34, 40, 4),
+  ('italy_anti_tank_2', 'italy', 'anti_tank', 'Semovente 90/53', 3200, 90, 42, 26, 4),
+  ('japan_military_police', 'japan', 'military_police', 'Military Police Section', 1100, 30, 60, 8, 2),
+  ('japan_fire', 'japan', 'fire', 'Fire Defense Detachment', 1500, 50, 50, 8, 2),
+  ('japan_command', 'japan', 'command', 'Type 95 Kurogane Staff Car', 2000, 50, 60, 6, 2),
+  ('japan_armor_2', 'japan', 'armor', 'Type 3 Chi-Nu', 5200, 170, 36, 40, 4),
+  ('japan_anti_tank_2', 'japan', 'anti_tank', 'Type 1 Ho-Ni I', 3200, 90, 42, 26, 4)
 on conflict (id) do update set nation_id = excluded.nation_id, category_id = excluded.category_id, name = excluded.name, cost_money = excluded.cost_money, cost_supplies = excluded.cost_supplies, speed_kmh = excluded.speed_kmh, power = excluded.power, min_level = excluded.min_level;
 
-insert into public.mission_types (id, name, description, requirements, duration_seconds, reward_money, reward_supplies, reward_xp, difficulty, min_level, spawn_weight, shareable, followups, expires_seconds, terrain, min_km, max_km) values
-  ('sniper_sighting', 'Sniper Sighting', 'A marksman is harassing a supply road. Locate the position and flush it out.', '{"infantry":1,"recon":1}'::jsonb, 60, 700, 20, 20, 1, 1, 10, false, '[{"mission":"patrol_contact","chance":0.3}]'::jsonb, 10800, 'land', 10, 25),
-  ('patrol_contact', 'Enemy Patrol Contact', 'A forward picket reports an enemy patrol probing the line. Drive it back.', '{"infantry":2}'::jsonb, 90, 700, 20, 20, 1, 1, 10, false, '[]'::jsonb, 10800, 'land', 12, 30),
-  ('recon_sweep', 'Reconnaissance Sweep', 'Headquarters needs eyes on a crossroads before the next advance.', '{"recon":2}'::jsonb, 90, 700, 20, 20, 1, 1, 8, false, '[{"mission":"armored_car_probe","chance":0.3}]'::jsonb, 10800, 'land', 15, 35),
-  ('forward_supply_run', 'Forward Supply Run', 'A forward company is running low on rations and ammunition.', '{"logistics":1}'::jsonb, 90, 400, 150, 15, 1, 1, 8, false, '[]'::jsonb, 10800, 'land', 4, 15),
-  ('roadblock_clearance', 'Roadblock Clearance', 'Felled trees and wire block a key road. Secure the area and clear it.', '{"infantry":1,"engineers":1}'::jsonb, 120, 800, 20, 25, 1, 1, 8, false, '[]'::jsonb, 10800, 'land', 6, 20),
-  ('minefield_clearance', 'Minefield Clearance', 'A mined field is holding up traffic. Mark and lift the mines.', '{"engineers":2}'::jsonb, 180, 1000, 20, 30, 2, 1, 6, false, '[]'::jsonb, 10800, 'land', 6, 20),
-  ('bridge_demolition', 'Bridge Demolition', 'Deny the enemy a river crossing by preparing a bridge for demolition.', '{"engineers":1,"infantry":1}'::jsonb, 150, 900, 20, 25, 2, 1, 6, false, '[]'::jsonb, 10800, 'land', 10, 25),
-  ('armored_car_probe', 'Armored Car Probe', 'Enemy armored cars are testing the flank. Set up a gun line and stop them.', '{"anti_tank":1,"infantry":1}'::jsonb, 120, 1000, 20, 30, 2, 1, 7, false, '[]'::jsonb, 10800, 'land', 12, 30),
-  ('convoy_escort', 'Convoy Escort', 'A supply convoy must pass through contested country. Scout ahead and guard it.', '{"logistics":1,"recon":1,"infantry":1}'::jsonb, 180, 1400, 220, 40, 2, 1, 6, false, '[]'::jsonb, 10800, 'land', 8, 25),
-  ('downed_pilot_rescue', 'Downed Pilot Rescue', 'A pilot has bailed out behind the forward line. Find and recover the airman.', '{"recon":1,"medical":1}'::jsonb, 120, 800, 20, 25, 2, 2, 7, false, '[]'::jsonb, 10800, 'land', 15, 40),
-  ('casualty_evacuation', 'Casualty Evacuation', 'An aid post is overwhelmed. Move the wounded back to the field hospital.', '{"medical":2,"logistics":1}'::jsonb, 180, 1000, 20, 30, 2, 2, 6, false, '[]'::jsonb, 10800, 'land', 4, 15),
-  ('machine_gun_nest', 'Enemy Machine-Gun Nest', 'A dug-in machine gun covers the approach. Suppress it with indirect fire and assault.', '{"infantry":2,"artillery":1}'::jsonb, 150, 1900, 50, 55, 2, 2, 8, false, '[{"mission":"fortified_strongpoint","chance":0.25}]'::jsonb, 10800, 'land', 12, 30),
-  ('counter_battery', 'Counter-Battery Fire', 'Enemy guns are shelling the line. Spot their flashes and return fire.', '{"artillery":2,"recon":1}'::jsonb, 180, 3000, 80, 85, 3, 2, 6, false, '[]'::jsonb, 10800, 'land', 15, 35),
-  ('bridge_repair', 'Bridge Repair', 'A damaged bridge must carry vehicles again before the advance can continue.', '{"engineers":2,"logistics":1}'::jsonb, 240, 1700, 40, 50, 2, 2, 5, false, '[]'::jsonb, 10800, 'land', 5, 20),
-  ('fortified_strongpoint', 'Fortified Strongpoint', 'A cluster of bunkers anchors the enemy line. Reduce it step by step.', '{"infantry":3,"artillery":1,"engineers":1}'::jsonb, 300, 3900, 100, 110, 3, 2, 5, false, '[]'::jsonb, 10800, 'land', 18, 40),
-  ('supply_dump_seizure', 'Supply Dump Seizure', 'Scouts have found a lightly held supply dump. Seize it and haul the stores back.', '{"infantry":2,"recon":1,"logistics":2}'::jsonb, 240, 3000, 500, 85, 3, 3, 5, false, '[]'::jsonb, 10800, 'land', 18, 40),
-  ('armored_counterattack', 'Armored Counterattack', 'Enemy tanks are massing for a counterattack. Meet them with armor and guns.', '{"armor":3,"anti_tank":1}'::jsonb, 300, 7900, 200, 225, 4, 3, 5, false, '[{"mission":"armor_recovery","chance":0.4}]'::jsonb, 10800, 'land', 20, 45),
-  ('armor_recovery', 'Armor Recovery', 'Disabled vehicles lie on the field. Recover them under an armored guard.', '{"engineers":1,"logistics":1,"armor":1}'::jsonb, 240, 2900, 250, 85, 3, 3, 4, false, '[]'::jsonb, 10800, 'land', 8, 25),
-  ('river_crossing', 'River Crossing', 'Force a crossing: engineers bridge the river while infantry and armor hold the far bank.', '{"engineers":2,"infantry":3,"armor":1}'::jsonb, 420, 6600, 160, 190, 4, 3, 3, true, '[]'::jsonb, 10800, 'land', 20, 45),
-  ('defensive_line', 'Hold the Defensive Line', 'A major attack is expected on this sector. Dig in and hold.', '{"infantry":4,"anti_tank":2,"artillery":2}'::jsonb, 600, 8600, 220, 245, 4, 4, 3, true, '[]'::jsonb, 10800, 'land', 15, 35),
-  ('close_air_support', 'Close Air Support', 'An infantry attack has stalled. Call in aircraft to break the deadlock.', '{"air":1,"infantry":2}'::jsonb, 180, 4900, 120, 140, 3, 5, 4, false, '[]'::jsonb, 10800, 'land', 25, 60),
-  ('airfield_strike', 'Airfield Strike', 'Reconnaissance has located an enemy forward airstrip. Strike the runway and hangars.', '{"air":2,"recon":1}'::jsonb, 240, 8200, 200, 235, 4, 5, 3, false, '[]'::jsonb, 10800, 'land', 40, 120),
-  ('beach_landing', 'Beach Landing', 'An amphibious assault needs every arm: secure the beach and push inland.', '{"infantry":6,"armor":3,"engineers":2,"medical":2,"air":2}'::jsonb, 900, 36800, 920, 1050, 5, 6, 2, true, '[{"mission":"defensive_line","chance":0.5}]'::jsonb, 10800, 'land', 30, 80),
-  ('city_siege', 'City Siege', 'An enemy garrison holds a fortified city district. Surround it and reduce the defenses.', '{"infantry":6,"armor":4,"artillery":4,"medical":2,"logistics":2}'::jsonb, 1200, 43200, 1080, 1235, 5, 7, 2, true, '[]'::jsonb, 10800, 'land', 30, 80),
-  ('coastal_patrol', 'Coastal Patrol', 'Unidentified vessels have been sighted offshore. Investigate and report.', '{"naval":1}'::jsonb, 180, 1700, 40, 50, 2, 3, 7, false, '[{"mission":"torpedo_boat_raid","chance":0.25}]'::jsonb, 10800, 'water', 6, 30),
-  ('air_sea_rescue', 'Air-Sea Rescue', 'An aircrew has ditched at sea. Reach the dinghy before nightfall.', '{"naval":1}'::jsonb, 150, 1800, 40, 50, 2, 3, 6, false, '[]'::jsonb, 10800, 'water', 8, 40),
-  ('minesweeping', 'Minesweeping', 'Mines have been reported in the shipping channel. Sweep a safe lane.', '{"naval":2}'::jsonb, 300, 4400, 110, 125, 3, 3, 5, false, '[]'::jsonb, 10800, 'water', 5, 25),
-  ('sea_convoy_escort', 'Sea Convoy Escort', 'A coastal convoy needs an escort through waters where raiders operate.', '{"naval":2}'::jsonb, 360, 5300, 350, 150, 3, 3, 5, false, '[]'::jsonb, 10800, 'water', 10, 45),
-  ('torpedo_boat_raid', 'Torpedo Boat Raid', 'Fast attack craft are closing on the anchorage. Intercept them at sea.', '{"naval":3}'::jsonb, 300, 7000, 180, 200, 4, 4, 4, false, '[]'::jsonb, 10800, 'water', 8, 35),
-  ('maritime_strike', 'Maritime Strike', 'Enemy shipping has been located. Coordinate aircraft and warships against it.', '{"air":2,"naval":1}'::jsonb, 300, 10400, 260, 295, 4, 5, 3, false, '[]'::jsonb, 10800, 'water', 30, 90),
-  ('reconnaissance_flight', 'Reconnaissance Flight', 'Photograph a sector the ground scouts cannot reach.', '{"air":1}'::jsonb, 180, 2000, 50, 55, 2, 5, 5, false, '[]'::jsonb, 10800, 'any', 50, 150)
-on conflict (id) do update set name = excluded.name, description = excluded.description, requirements = excluded.requirements, duration_seconds = excluded.duration_seconds, reward_money = excluded.reward_money, reward_supplies = excluded.reward_supplies, reward_xp = excluded.reward_xp, difficulty = excluded.difficulty, min_level = excluded.min_level, spawn_weight = excluded.spawn_weight, shareable = excluded.shareable, followups = excluded.followups, expires_seconds = excluded.expires_seconds, terrain = excluded.terrain, min_km = excluded.min_km, max_km = excluded.max_km;
+insert into public.mission_types (id, name, description, requirements, duration_seconds, reward_money, reward_supplies, reward_xp, difficulty, min_level, spawn_weight, shareable, followups, expires_seconds, terrain, min_km, max_km, zone_rule) values
+  ('sniper_sighting', 'Sniper Sighting', 'A marksman is harassing a supply road. Locate the position and flush it out.', '{"infantry":1,"recon":1}'::jsonb, 60, 700, 20, 20, 1, 1, 10, false, '[{"mission":"patrol_contact","chance":0.3}]'::jsonb, 10800, 'land', 10, 25, 'contact'),
+  ('patrol_contact', 'Enemy Patrol Contact', 'A forward picket reports an enemy patrol probing the line. Drive it back.', '{"infantry":2}'::jsonb, 90, 700, 20, 20, 1, 1, 10, false, '[]'::jsonb, 10800, 'land', 12, 30, 'contact'),
+  ('recon_sweep', 'Reconnaissance Sweep', 'Headquarters needs eyes on a crossroads before the next advance.', '{"recon":2}'::jsonb, 90, 700, 20, 20, 1, 1, 8, false, '[{"mission":"armored_car_probe","chance":0.3}]'::jsonb, 10800, 'land', 15, 35, 'contact'),
+  ('forward_supply_run', 'Forward Supply Run', 'A forward company is running low on rations and ammunition.', '{"logistics":1}'::jsonb, 90, 400, 150, 15, 1, 1, 8, false, '[]'::jsonb, 10800, 'land', 4, 15, 'any'),
+  ('roadblock_clearance', 'Roadblock Clearance', 'Felled trees and wire block a key road. Secure the area and clear it.', '{"infantry":1,"engineers":1}'::jsonb, 120, 800, 20, 25, 1, 1, 8, false, '[]'::jsonb, 10800, 'land', 6, 20, 'front'),
+  ('minefield_clearance', 'Minefield Clearance', 'A mined field is holding up traffic. Mark and lift the mines.', '{"engineers":2}'::jsonb, 180, 1000, 20, 30, 2, 1, 6, false, '[]'::jsonb, 10800, 'land', 6, 20, 'front'),
+  ('bridge_demolition', 'Bridge Demolition', 'Deny the enemy a river crossing by preparing a bridge for demolition.', '{"engineers":1,"infantry":1}'::jsonb, 150, 900, 20, 25, 2, 1, 6, false, '[]'::jsonb, 10800, 'land', 10, 25, 'contact'),
+  ('armored_car_probe', 'Armored Car Probe', 'Enemy armored cars are testing the flank. Set up a gun line and stop them.', '{"anti_tank":1,"infantry":1}'::jsonb, 120, 1000, 20, 30, 2, 1, 7, false, '[]'::jsonb, 10800, 'land', 12, 30, 'contact'),
+  ('convoy_escort', 'Convoy Escort', 'A supply convoy must pass through contested country. Scout ahead and guard it.', '{"logistics":1,"recon":1,"infantry":1}'::jsonb, 180, 1400, 220, 40, 2, 1, 6, false, '[]'::jsonb, 10800, 'land', 8, 25, 'front'),
+  ('downed_pilot_rescue', 'Downed Pilot Rescue', 'A pilot has bailed out behind the forward line. Find and recover the airman.', '{"recon":1,"medical":1}'::jsonb, 120, 800, 20, 25, 2, 2, 7, false, '[]'::jsonb, 10800, 'land', 15, 40, 'contact'),
+  ('casualty_evacuation', 'Casualty Evacuation', 'An aid post is overwhelmed. Move the wounded back to the field hospital.', '{"medical":2,"logistics":1}'::jsonb, 180, 1000, 20, 30, 2, 2, 6, false, '[]'::jsonb, 10800, 'land', 4, 15, 'front'),
+  ('machine_gun_nest', 'Enemy Machine-Gun Nest', 'A dug-in machine gun covers the approach. Suppress it with indirect fire and assault.', '{"infantry":2,"artillery":1}'::jsonb, 150, 1900, 50, 55, 2, 2, 8, false, '[{"mission":"fortified_strongpoint","chance":0.25}]'::jsonb, 10800, 'land', 12, 30, 'contact'),
+  ('counter_battery', 'Counter-Battery Fire', 'Enemy guns are shelling the line. Spot their flashes and return fire.', '{"artillery":2,"recon":1}'::jsonb, 180, 3000, 80, 85, 3, 2, 6, false, '[]'::jsonb, 10800, 'land', 15, 35, 'contact'),
+  ('bridge_repair', 'Bridge Repair', 'A damaged bridge must carry vehicles again before the advance can continue.', '{"engineers":2,"logistics":1}'::jsonb, 240, 1700, 40, 50, 2, 2, 5, false, '[]'::jsonb, 10800, 'land', 5, 20, 'front'),
+  ('fortified_strongpoint', 'Fortified Strongpoint', 'A cluster of bunkers anchors the enemy line. Reduce it step by step.', '{"infantry":3,"artillery":1,"engineers":1}'::jsonb, 300, 3900, 100, 110, 3, 2, 5, false, '[]'::jsonb, 10800, 'land', 18, 40, 'contact'),
+  ('supply_dump_seizure', 'Supply Dump Seizure', 'Scouts have found a lightly held supply dump. Seize it and haul the stores back.', '{"infantry":2,"recon":1,"logistics":2}'::jsonb, 240, 3000, 500, 85, 3, 3, 5, false, '[]'::jsonb, 10800, 'land', 18, 40, 'contact'),
+  ('armored_counterattack', 'Armored Counterattack', 'Enemy tanks are massing for a counterattack. Meet them with armor and guns.', '{"armor":3,"anti_tank":1}'::jsonb, 300, 7900, 200, 225, 4, 3, 5, false, '[{"mission":"armor_recovery","chance":0.4}]'::jsonb, 10800, 'land', 20, 45, 'contact'),
+  ('armor_recovery', 'Armor Recovery', 'Disabled vehicles lie on the field. Recover them under an armored guard.', '{"engineers":1,"logistics":1,"armor":1}'::jsonb, 240, 2900, 250, 85, 3, 3, 4, false, '[]'::jsonb, 10800, 'land', 8, 25, 'front'),
+  ('river_crossing', 'River Crossing', 'Force a crossing: engineers bridge the river while infantry and armor hold the far bank.', '{"engineers":2,"infantry":3,"armor":1}'::jsonb, 420, 6600, 160, 190, 4, 3, 3, true, '[]'::jsonb, 10800, 'land', 20, 45, 'contact'),
+  ('defensive_line', 'Hold the Defensive Line', 'A major attack is expected on this sector. Dig in and hold.', '{"infantry":4,"anti_tank":2,"artillery":2,"command":1}'::jsonb, 600, 8600, 220, 245, 4, 4, 3, true, '[]'::jsonb, 10800, 'land', 15, 35, 'contact'),
+  ('close_air_support', 'Close Air Support', 'An infantry attack has stalled. Call in aircraft to break the deadlock.', '{"air":1,"infantry":2}'::jsonb, 180, 4900, 120, 140, 3, 5, 4, false, '[]'::jsonb, 10800, 'land', 25, 60, 'contact'),
+  ('airfield_strike', 'Airfield Strike', 'Reconnaissance has located an enemy forward airstrip. Strike the runway and hangars.', '{"air":2,"recon":1}'::jsonb, 240, 8200, 200, 235, 4, 5, 3, false, '[]'::jsonb, 10800, 'land', 40, 120, 'contact'),
+  ('beach_landing', 'Beach Landing', 'An amphibious assault needs every arm: secure the beach and push inland.', '{"infantry":6,"armor":3,"engineers":2,"medical":2,"air":2,"command":1}'::jsonb, 900, 36800, 920, 1050, 5, 6, 2, true, '[{"mission":"defensive_line","chance":0.5}]'::jsonb, 10800, 'land', 30, 80, 'contact'),
+  ('city_siege', 'City Siege', 'An enemy garrison holds a fortified city district. Surround it and reduce the defenses.', '{"infantry":6,"armor":4,"artillery":4,"medical":2,"logistics":2,"command":1}'::jsonb, 1200, 43200, 1080, 1235, 5, 7, 2, true, '[]'::jsonb, 10800, 'land', 30, 80, 'contact'),
+  ('coastal_patrol', 'Coastal Patrol', 'Unidentified vessels have been sighted offshore. Investigate and report.', '{"naval":1}'::jsonb, 180, 1700, 40, 50, 2, 3, 7, false, '[{"mission":"torpedo_boat_raid","chance":0.25}]'::jsonb, 10800, 'water', 6, 30, 'contact'),
+  ('air_sea_rescue', 'Air-Sea Rescue', 'An aircrew has ditched at sea. Reach the dinghy before nightfall.', '{"naval":1}'::jsonb, 150, 1800, 40, 50, 2, 3, 6, false, '[]'::jsonb, 10800, 'water', 8, 40, 'front'),
+  ('minesweeping', 'Minesweeping', 'Mines have been reported in the shipping channel. Sweep a safe lane.', '{"naval":2}'::jsonb, 300, 4400, 110, 125, 3, 3, 5, false, '[]'::jsonb, 10800, 'water', 5, 25, 'front'),
+  ('sea_convoy_escort', 'Sea Convoy Escort', 'A coastal convoy needs an escort through waters where raiders operate.', '{"naval":2}'::jsonb, 360, 5300, 350, 150, 3, 3, 5, false, '[]'::jsonb, 10800, 'water', 10, 45, 'front'),
+  ('torpedo_boat_raid', 'Torpedo Boat Raid', 'Fast attack craft are closing on the anchorage. Intercept them at sea.', '{"naval":3}'::jsonb, 300, 7000, 180, 200, 4, 4, 4, false, '[]'::jsonb, 10800, 'water', 8, 35, 'contact'),
+  ('maritime_strike', 'Maritime Strike', 'Enemy shipping has been located. Coordinate aircraft and warships against it.', '{"air":2,"naval":1}'::jsonb, 300, 10400, 260, 295, 4, 5, 3, false, '[]'::jsonb, 10800, 'water', 30, 90, 'contact'),
+  ('reconnaissance_flight', 'Reconnaissance Flight', 'Photograph a sector the ground scouts cannot reach.', '{"air":1}'::jsonb, 180, 2000, 50, 55, 2, 5, 5, false, '[]'::jsonb, 10800, 'any', 50, 150, 'contact'),
+  ('traffic_control', 'Traffic Control Point', 'Columns are jamming a road junction. Set up a control point and get them moving.', '{"military_police":1}'::jsonb, 120, 500, 20, 15, 1, 2, 8, false, '[]'::jsonb, 10800, 'land', 3, 15, 'any'),
+  ('straggler_collection', 'Straggler Collection', 'Men separated from their units need collecting and returning to the line.', '{"military_police":2}'::jsonb, 180, 900, 20, 25, 1, 2, 6, false, '[]'::jsonb, 10800, 'land', 4, 20, 'any'),
+  ('depot_security', 'Depot Security Sweep', 'Stores have gone missing from a depot. Check the perimeter and the paperwork.', '{"military_police":1,"infantry":1}'::jsonb, 180, 900, 20, 25, 2, 2, 6, false, '[]'::jsonb, 10800, 'land', 3, 15, 'any'),
+  ('prisoner_escort', 'Prisoner Escort', 'Prisoners of war must be moved safely to a holding camp behind the lines.', '{"military_police":2,"logistics":1}'::jsonb, 240, 1500, 40, 45, 2, 2, 5, false, '[]'::jsonb, 10800, 'land', 6, 25, 'front'),
+  ('vehicle_fire', 'Vehicle Fire', 'A truck is burning on the roadside. Put it out before the load goes up.', '{"fire":1}'::jsonb, 120, 600, 20, 15, 1, 2, 8, false, '[]'::jsonb, 10800, 'land', 3, 15, 'any'),
+  ('barracks_fire', 'Barracks Block Fire', 'Smoke is coming from an accommodation block. Search it and fight the fire.', '{"fire":2}'::jsonb, 180, 1100, 30, 30, 2, 2, 6, false, '[{"mission":"training_accident","chance":0.2}]'::jsonb, 10800, 'land', 3, 12, 'any'),
+  ('fuel_dump_fire', 'Fuel Dump Fire', 'Fuel drums are alight. Contain the fire and cut a break around the dump.', '{"fire":2,"engineers":1}'::jsonb, 240, 1900, 50, 55, 3, 2, 5, false, '[]'::jsonb, 10800, 'land', 4, 18, 'any'),
+  ('aircraft_crash', 'Aircraft Crash on Landing', 'A damaged aircraft has come down short of the runway. Rescue the crew.', '{"fire":2,"medical":1}'::jsonb, 180, 1700, 40, 50, 3, 2, 5, false, '[]'::jsonb, 10800, 'land', 4, 25, 'any'),
+  ('ammunition_depot_fire', 'Ammunition Depot Fire', 'Fire has reached an ammunition store. Clear the area and fight it from cover.', '{"fire":3,"military_police":1,"medical":1}'::jsonb, 360, 3400, 90, 95, 4, 3, 4, false, '[]'::jsonb, 10800, 'land', 5, 20, 'any'),
+  ('training_accident', 'Training Accident', 'Men have been hurt on an exercise. Get medical help to the range.', '{"medical":1}'::jsonb, 120, 500, 20, 15, 1, 2, 5, false, '[]'::jsonb, 10800, 'land', 3, 15, 'any'),
+  ('rail_yard_loading', 'Rail Yard Loading', 'A stores train must be loaded and away before the next one arrives.', '{"logistics":2}'::jsonb, 180, 900, 120, 25, 1, 1, 5, false, '[]'::jsonb, 10800, 'land', 3, 15, 'any'),
+  ('mountain_pass', 'Mountain Pass', 'A high pass must be taken before the weather closes it.', '{"mountain":2,"artillery":1}'::jsonb, 300, 4200, 100, 120, 3, 3, 4, false, '[]'::jsonb, 10800, 'land', 20, 50, 'contact'),
+  ('bunker_assault', 'Bunker Assault', 'Concrete emplacements block the advance. Breach them at close quarters.', '{"assault_engineer":2,"infantry":2,"artillery":1}'::jsonb, 300, 5200, 130, 150, 4, 3, 4, false, '[]'::jsonb, 10800, 'land', 18, 40, 'contact'),
+  ('amphibious_raid', 'Amphibious Raid', 'Put a raiding party ashore from the sea, strike, and bring it off again.', '{"marines":2,"naval":1}'::jsonb, 300, 6200, 150, 175, 4, 3, 4, false, '[]'::jsonb, 10800, 'water', 8, 35, 'contact'),
+  ('airborne_drop', 'Airborne Drop', 'Seize a crossroads behind the line and hold it until the ground forces arrive.', '{"airborne":3,"air":1}'::jsonb, 420, 9000, 220, 255, 4, 5, 3, true, '[]'::jsonb, 10800, 'land', 40, 100, 'contact'),
+  ('commando_raid', 'Commando Raid', 'A small party is to destroy a coastal installation and withdraw before dawn.', '{"commando":2,"recon":1}'::jsonb, 360, 7500, 190, 215, 5, 5, 3, false, '[]'::jsonb, 10800, 'land', 30, 70, 'contact')
+on conflict (id) do update set name = excluded.name, description = excluded.description, requirements = excluded.requirements, duration_seconds = excluded.duration_seconds, reward_money = excluded.reward_money, reward_supplies = excluded.reward_supplies, reward_xp = excluded.reward_xp, difficulty = excluded.difficulty, min_level = excluded.min_level, spawn_weight = excluded.spawn_weight, shareable = excluded.shareable, followups = excluded.followups, expires_seconds = excluded.expires_seconds, terrain = excluded.terrain, min_km = excluded.min_km, max_km = excluded.max_km, zone_rule = excluded.zone_rule;
+
+insert into public.specialties (id, name, icon, category_ids, description, cost_money, cost_supplies, training_seconds, power_mult, speed_mult, base_power, min_level, names, sort) values
+  ('airborne', 'Airborne', 'ABN', '["infantry"]'::jsonb, 'Parachute-qualified infantry who can open an operation from the air.', 2500, 60, 600, 1.15, 1, 11.5, 4, '{"usa":"Airborne Infantry","uk":"Parachute Regiment","ussr":"Guards Airborne","germany":"Fallschirmjäger","france":"Chasseurs Parachutistes","italy":"Paracadutisti Folgore","japan":"Teishin Raiding Troops"}'::jsonb, 0),
+  ('mountain', 'Mountain Troops', 'MTN', '["infantry"]'::jsonb, 'Infantry trained and equipped to move fast over hard ground.', 1800, 40, 480, 1, 1.2, 10, 3, '{"usa":"Mountain Infantry","uk":"Mountain Infantry","ussr":"Mountain Rifles","germany":"Gebirgsjäger","france":"Chasseurs Alpins","italy":"Alpini","japan":"Mountain Infantry"}'::jsonb, 1),
+  ('marines', 'Marines', 'MAR', '["infantry"]'::jsonb, 'Infantry trained for landings from the sea.', 2200, 50, 600, 1.1, 1, 11, 3, '{"usa":"Marines","uk":"Royal Marines","ussr":"Naval Infantry","germany":"Marine-Infanterie","france":"Fusiliers Marins","italy":"San Marco Marines","japan":"Special Naval Landing Force"}'::jsonb, 2),
+  ('commando', 'Commandos', 'CDO', '["infantry","recon"]'::jsonb, 'Hand-picked raiders for small, difficult operations.', 4000, 80, 900, 1.3, 1, 13, 5, '{"usa":"Rangers","uk":"Commandos","ussr":"Razvedchiki Scouts","germany":"Assault Detachment","france":"Commandos Kieffer","italy":"Arditi","japan":"Raiding Detachment"}'::jsonb, 3),
+  ('assault_engineer', 'Assault Engineers', 'AEN', '["engineers"]'::jsonb, 'Engineers trained to breach obstacles and fortifications under fire.', 2000, 60, 480, 1.25, 1, 12.5, 3, '{"usa":"Assault Engineers","uk":"Assault Engineers","ussr":"Assault Engineer-Sappers","germany":"Sturmpioniere","france":"Sapeurs d''Assaut","italy":"Guastatori","japan":"Assault Engineers"}'::jsonb, 4),
+  ('veteran_crew', 'Veteran Crew', 'VET', '["armor"]'::jsonb, 'A seasoned tank crew that gets more out of the same machine.', 3000, 80, 900, 1.15, 1.05, 34.5, 4, '{"ussr":"Guards Tank Crew"}'::jsonb, 5),
+  ('ace_pilots', 'Veteran Aircrew', 'ACE', '["air"]'::jsonb, 'Experienced aircrew who find the target and get home.', 5000, 100, 1200, 1.15, 1.1, 40.2, 6, '{}'::jsonb, 6)
+on conflict (id) do update set name = excluded.name, icon = excluded.icon, category_ids = excluded.category_ids, description = excluded.description, cost_money = excluded.cost_money, cost_supplies = excluded.cost_supplies, training_seconds = excluded.training_seconds, power_mult = excluded.power_mult, speed_mult = excluded.speed_mult, base_power = excluded.base_power, min_level = excluded.min_level, names = excluded.names, sort = excluded.sort;
+
+insert into public.products (id, name, building_type, duration_seconds, cost_money, cost_supplies, output_money, output_supplies, min_level, sort) values
+  ('small_arms_ammo', 'Small-Arms Ammunition', 'munitions_factory', 1200, 300, 0, 0, 250, 2, 0),
+  ('artillery_shells', 'Artillery Shells', 'munitions_factory', 7200, 1500, 0, 0, 1400, 2, 1),
+  ('bulk_munitions', 'Bulk Munitions Order', 'munitions_factory', 28800, 5000, 0, 0, 5200, 3, 2),
+  ('spare_parts', 'Spare Parts Run', 'vehicle_works', 1800, 0, 100, 2500, 0, 3, 3),
+  ('truck_assembly', 'Truck Assembly', 'vehicle_works', 7200, 0, 400, 11000, 0, 3, 4),
+  ('tank_overhaul', 'Tank Overhaul Programme', 'vehicle_works', 28800, 0, 1200, 40000, 0, 4, 5)
+on conflict (id) do update set name = excluded.name, building_type = excluded.building_type, duration_seconds = excluded.duration_seconds, cost_money = excluded.cost_money, cost_supplies = excluded.cost_supplies, output_money = excluded.output_money, output_supplies = excluded.output_supplies, min_level = excluded.min_level, sort = excluded.sort;
 
 insert into public.game_config (key, value) values
   ('travel_time_scale', 20),
@@ -153,7 +231,11 @@ insert into public.game_config (key, value) values
   ('alliance_treasury_cut', 0.05),
   ('alliance_owner_bonus', 0.1),
   ('max_base_level', 3),
-  ('dismiss_refund', 0.5)
+  ('dismiss_refund', 0.5),
+  ('home_safe_km', 15),
+  ('convoy_speed_kmh', 25),
+  ('convoy_time_scale', 200),
+  ('min_convoy_seconds', 30)
 on conflict (key) do update set value = excluded.value;
 
 insert into public.alliance_building_types (id, name, description, cost, max_level, bonus, sort) values

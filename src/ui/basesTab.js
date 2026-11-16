@@ -20,7 +20,11 @@ import {
   recruitableUnits,
   settings,
 } from '../game/content.js';
-import { placeBase, buyUnit, upgradeBase, dismissUnit } from '../game/actions.js';
+import {
+  placeBase, buyUnit, upgradeBase, dismissUnit, trainUnit, startProduction, transferUnit, setBaseZone,
+} from '../game/actions.js';
+import { renderBase, renderUnit } from './baseViews.js';
+import { msUntil, formatDuration } from '../game/clock.js';
 import { friendlyError } from '../supabase.js';
 import { formatLatLng } from '../map.js';
 import { liveUnitStatus } from '../game/clock.js';
@@ -51,7 +55,9 @@ export function render(state, ui) {
     case 'confirm':
       return renderConfirm(profile, ui);
     case 'base':
-      return renderBase(profile, bases, units, ui, state.dispatches);
+      return renderBase(state, ui) ?? renderList(profile, bases, units);
+    case 'unit':
+      return renderUnit(state, ui) ?? renderList(profile, bases, units);
     default:
       return renderList(profile, bases, units);
   }
@@ -76,14 +82,21 @@ function renderList(profile, bases, units) {
     .map((base) => {
       const type = getBuilding(base.building_type);
       const stationed = units.filter((u) => u.base_id === base.id).length;
+      // The right-hand figure depends on what the building is for.
+      let side = `${stationed} / ${type.unit_capacity * base.level}`;
+      if (type.unit_capacity === 0) {
+        side = base.production_id
+          ? `<span class="js-countdown" data-until="${esc(base.production_done_at)}"></span>`
+          : type.training_slots > 0 ? 'courses' : 'idle';
+      }
       return `
         <button class="row" data-action="open-base" data-base="${esc(base.id)}">
-          <span class="row-icon">${esc(type.icon)}</span>
+          <span class="row-icon ${base.zone === 'home' ? 'row-icon--home' : ''}">${esc(type.icon)}</span>
           <span class="row-main">
             <span class="row-title">${esc(base.name)}</span>
-            <span class="row-sub">${esc(type.name)}</span>
+            <span class="row-sub">${esc(type.name)} · ${base.zone === 'home' ? 'home front' : 'front line'}</span>
           </span>
-          <span class="row-side">${stationed} / ${type.unit_capacity * base.level}</span>
+          <span class="row-side">${side}</span>
         </button>`;
     })
     .join('');
@@ -115,7 +128,11 @@ function renderBuildMenu(profile, bases) {
             <h2>${esc(b.name)}</h2>
           </div>
           <p>${esc(b.description)}</p>
-          <p class="muted">Stations ${b.unit_capacity} units: ${esc(categoryNames(b.unlocks_categories))}</p>
+          <p class="muted">${b.unit_capacity > 0
+            ? `Stations ${b.unit_capacity} units: ${esc(categoryNames(b.unlocks_categories))}`
+            : b.training_slots > 0
+              ? `Runs ${b.training_slots} specialty courses at a time`
+              : 'Runs one production job at a time'}${b.requires_coast ? ' · coast only' : ''}</p>
           <div class="option-foot">
             <span class="price">${priceText(price)}</span>
             <button class="btn btn--small" data-action="build" data-type="${esc(b.id)}"
@@ -161,93 +178,6 @@ function renderConfirm(profile, ui) {
     </form>`;
 }
 
-function renderBase(profile, bases, units, ui, dispatches) {
-  const base = bases.find((b) => b.id === ui.baseId);
-  if (!base) return renderList(profile, bases, units);
-
-  const type = getBuilding(base.building_type);
-  const stationed = units.filter((u) => u.base_id === base.id);
-  const capacity = type.unit_capacity * base.level;
-  const full = stationed.length >= capacity;
-
-  const stationedRows = stationed.length
-    ? stationed
-        .map((unit) => {
-          const ut = getUnitType(unit.unit_type);
-          return `
-            <div class="row row--static">
-              <span class="row-icon row-icon--unit">${esc(getCategory(ut.category_id).icon)}</span>
-              <span class="row-main"><span class="row-title">${esc(ut.name)}</span></span>
-              ${statusPill(unit, dispatches)}
-              ${liveUnitStatus(unit, dispatches) === 'idle'
-                ? `<button class="btn btn--small btn--quiet" data-action="dismiss" data-unit="${esc(unit.id)}"
-                           title="Dismiss for a ${Math.round(settings.dismiss_refund * 100)}% refund"
-                           data-confirm="Dismiss this ${esc(ut.name)}? You get ${Math.round(settings.dismiss_refund * 100)}% of its cost back."
-                           aria-label="Dismiss ${esc(ut.name)}">✕</button>`
-                : ''}
-            </div>`;
-        })
-        .join('')
-    : '<p class="muted">No units stationed here yet.</p>';
-
-  const recruitRows = recruitableUnits(base.building_type, profile.nation_id)
-    .map((ut) => {
-      const price = unitPrice(ut, profile.nation_id);
-      let blocked = '';
-      if (full) blocked = 'Base full';
-      else if (profile.level < ut.min_level) blocked = `Level ${ut.min_level}`;
-      else if (!canAfford(profile, price)) blocked = 'Too costly';
-
-      return `
-        <div class="row row--static">
-          <span class="row-icon row-icon--unit">${esc(getCategory(ut.category_id).icon)}</span>
-          <span class="row-main">
-            <span class="row-title">${esc(ut.name)}</span>
-            <span class="row-sub">${esc(getCategory(ut.category_id).name)} · ${ut.speed_kmh} km/h · power ${ut.power}</span>
-            <span class="row-sub price">${priceText(price)}</span>
-          </span>
-          <button class="btn btn--small" data-action="buy" data-unit="${esc(ut.id)}"
-                  ${blocked || ui.busy ? 'disabled' : ''}>${blocked || 'Recruit'}</button>
-        </div>`;
-    })
-    .join('');
-
-  return `
-    <div class="section-head">
-      <h2>${esc(base.name)}</h2>
-      <button class="btn btn--small" data-action="back">Back</button>
-    </div>
-    <p class="muted">${esc(type.name)} · ${esc(formatLatLng(base))}
-      · <button class="link-btn" data-action="focus-base">Show on map</button></p>
-
-    ${renderUpgrade(profile, base, type, ui)}
-
-    <h3>Stationed <span class="count">${stationed.length} / ${capacity}</span></h3>
-    <div class="rows">${stationedRows}</div>
-
-    <h3>Recruit</h3>
-    <div class="rows">${recruitRows}</div>`;
-}
-
-/** The "upgrade this base" line. */
-function renderUpgrade(profile, base, type, ui) {
-  if (base.level >= settings.max_base_level) {
-    return `<p class="muted">Level ${base.level} (maximum).</p>`;
-  }
-  // Going from level N to N+1 costs N times the building's price.
-  const price = buildingPrice(type, profile.nation_id);
-  price.money *= base.level;
-  price.supplies *= base.level;
-  const affordable = canAfford(profile, price);
-  return `
-    <div class="upgrade">
-      <span class="muted">Level ${base.level} of ${settings.max_base_level}.
-        Upgrading adds room for ${type.unit_capacity} more units.</span>
-      <button class="btn btn--small" data-action="upgrade-base" ${!affordable || ui.busy ? 'disabled' : ''}>
-        ${affordable ? 'Upgrade' : 'Needs'} · ${priceText(price)}</button>
-    </div>`;
-}
-
 // ---------------------------------------------------------------- actions
 
 /**
@@ -266,7 +196,23 @@ export async function handleAction(action, data, ctx) {
       return update({ view: 'placing', buildingType: data.type, latlng: null });
 
     case 'open-base':
-      return update({ view: 'base', baseId: data.base });
+      return update({ view: 'base', baseId: data.base, unitId: null });
+
+    case 'open-unit':
+      return update({ view: 'unit', unitId: data.unit });
+
+    case 'set-zone':
+      return run(ctx, () => setBaseZone(ui.baseId, data.zone),
+        data.zone === 'home' ? 'Base moved to the home front.' : 'Base moved to the front line.');
+
+    case 'produce':
+      return run(ctx, () => startProduction(ui.baseId, data.product), 'Production started.');
+
+    case 'train':
+      return run(ctx, () => trainUnit(ui.unitId, data.specialty), 'Training course started.');
+
+    case 'transfer':
+      return run(ctx, () => transferUnit(ui.unitId, data.base), 'Unit is on its way.');
 
     case 'focus-base': {
       const base = state.bases.find((b) => b.id === ui.baseId);
@@ -292,6 +238,7 @@ export async function handleAction(action, data, ctx) {
       try {
         const result = await dismissUnit(data.unit);
         toast(`Unit dismissed: +${fmt(result.refund_money)} funds returned.`, 'info');
+        if (ui.view === 'unit') update({ view: 'base', unitId: null });
       } catch (error) {
         toast(friendlyError(error), 'error');
       }
@@ -308,6 +255,25 @@ export async function handleAction(action, data, ctx) {
       }
       return update({ busy: false });
     }
+  }
+}
+
+/** Run a server action with the usual busy / message handling. */
+async function run(ctx, fn, successMessage) {
+  ctx.update({ busy: true });
+  try {
+    await fn();
+    if (successMessage) toast(successMessage, 'ok');
+  } catch (error) {
+    toast(friendlyError(error), 'error');
+  }
+  ctx.update({ busy: false });
+}
+
+/** Called once a second by panel.js: refresh countdowns without re-drawing. */
+export function tick(root) {
+  for (const el of root.querySelectorAll('.js-countdown')) {
+    el.textContent = formatDuration(msUntil(el.dataset.until));
   }
 }
 

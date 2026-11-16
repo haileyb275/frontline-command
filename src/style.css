@@ -1454,3 +1454,53 @@ button.row:hover {
 #map .leaflet-bar {
   border-color: var(--olive-500);
 }
+
+/* ==========================================================================
+   Phase 7: specialists, factories, home front
+   ========================================================================== */
+
+.tag--spec {
+  border-color: #c9a55a;
+  color: #e3c783;
+  font-family: var(--font);
+  font-size: 10px;
+  letter-spacing: 0.02em;
+}
+
+.status--training,
+.status--transferring {
+  color: #a9c6e3;
+}
+
+/* Home-front bases: a cooler colour, so the two zones read apart at a glance */
+.marker--home,
+.row-icon--home {
+  background: #9fb3b0;
+}
+
+.zone {
+  margin-bottom: 6px;
+}
+
+.zone--home {
+  border-left: 4px solid #9fb3b0;
+}
+
+.zone--front {
+  border-left: 4px solid var(--danger);
+}
+
+.zone > span {
+  font-size: 13px;
+}
+
+/* Convoys and transferring units */
+.marker--convoy {
+  background: #e6dcb4;
+  border-style: dashed;
+  font-size: 11px;
+}
+
+.js-countdown {
+  font-family: var(--font-mono);
+}

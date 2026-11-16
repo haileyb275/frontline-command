@@ -78,5 +78,29 @@
     "sort": 9,
     "base_power": 25,
     "domain": "sea"
+  },
+  {
+    "id": "military_police",
+    "name": "Military Police",
+    "icon": "MP",
+    "sort": 10,
+    "base_power": 8,
+    "domain": "ground"
+  },
+  {
+    "id": "fire",
+    "name": "Fire Service",
+    "icon": "FIRE",
+    "sort": 11,
+    "base_power": 8,
+    "domain": "ground"
+  },
+  {
+    "id": "command",
+    "name": "Command",
+    "icon": "CMD",
+    "sort": 12,
+    "base_power": 6,
+    "domain": "ground"
   }
 ]

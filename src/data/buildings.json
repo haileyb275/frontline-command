@@ -9,12 +9,15 @@
     "unit_capacity": 6,
     "unlocks_categories": [
       "infantry",
-      "recon"
+      "recon",
+      "command"
     ],
     "min_level": 1,
     "is_hq": true,
     "sort": 0,
-    "requires_coast": false
+    "requires_coast": false,
+    "training_slots": 0,
+    "default_zone": "front"
   },
   {
     "id": "barracks",
@@ -32,7 +35,9 @@
     "min_level": 1,
     "is_hq": false,
     "sort": 1,
-    "requires_coast": false
+    "requires_coast": false,
+    "training_slots": 0,
+    "default_zone": "front"
   },
   {
     "id": "supply_depot",
@@ -49,7 +54,9 @@
     "min_level": 1,
     "is_hq": false,
     "sort": 2,
-    "requires_coast": false
+    "requires_coast": false,
+    "training_slots": 0,
+    "default_zone": "front"
   },
   {
     "id": "field_hospital",
@@ -65,7 +72,9 @@
     "min_level": 2,
     "is_hq": false,
     "sort": 3,
-    "requires_coast": false
+    "requires_coast": false,
+    "training_slots": 0,
+    "default_zone": "front"
   },
   {
     "id": "artillery_park",
@@ -82,7 +91,9 @@
     "min_level": 2,
     "is_hq": false,
     "sort": 4,
-    "requires_coast": false
+    "requires_coast": false,
+    "training_slots": 0,
+    "default_zone": "front"
   },
   {
     "id": "tank_depot",
@@ -98,7 +109,9 @@
     "min_level": 3,
     "is_hq": false,
     "sort": 5,
-    "requires_coast": false
+    "requires_coast": false,
+    "training_slots": 0,
+    "default_zone": "front"
   },
   {
     "id": "airfield",
@@ -114,7 +127,9 @@
     "min_level": 5,
     "is_hq": false,
     "sort": 6,
-    "requires_coast": false
+    "requires_coast": false,
+    "training_slots": 0,
+    "default_zone": "front"
   },
   {
     "id": "naval_base",
@@ -130,6 +145,92 @@
     "min_level": 3,
     "is_hq": false,
     "sort": 7,
-    "requires_coast": true
+    "requires_coast": true,
+    "training_slots": 0,
+    "default_zone": "front"
+  },
+  {
+    "id": "mp_post",
+    "name": "Military Police Post",
+    "icon": "MPP",
+    "description": "Provost troops who keep roads moving and rear areas in order.",
+    "cost_money": 9000,
+    "cost_supplies": 200,
+    "unit_capacity": 4,
+    "unlocks_categories": [
+      "military_police"
+    ],
+    "min_level": 2,
+    "is_hq": false,
+    "sort": 8,
+    "requires_coast": false,
+    "training_slots": 0,
+    "default_zone": "front"
+  },
+  {
+    "id": "fire_station",
+    "name": "Fire Station",
+    "icon": "FS",
+    "description": "A military fire service for depots, airfields and installations.",
+    "cost_money": 9000,
+    "cost_supplies": 200,
+    "unit_capacity": 4,
+    "unlocks_categories": [
+      "fire"
+    ],
+    "min_level": 2,
+    "is_hq": false,
+    "sort": 9,
+    "requires_coast": false,
+    "training_slots": 0,
+    "default_zone": "front"
+  },
+  {
+    "id": "training_center",
+    "name": "Training Center",
+    "icon": "TC",
+    "description": "Instructors and ranges where units qualify in a specialty. Stations no units itself.",
+    "cost_money": 15000,
+    "cost_supplies": 400,
+    "unit_capacity": 0,
+    "unlocks_categories": [],
+    "min_level": 3,
+    "is_hq": false,
+    "sort": 10,
+    "requires_coast": false,
+    "training_slots": 2,
+    "default_zone": "home"
+  },
+  {
+    "id": "munitions_factory",
+    "name": "Munitions Factory",
+    "icon": "MF",
+    "description": "Produces ammunition, shipped to your Headquarters as supplies.",
+    "cost_money": 12000,
+    "cost_supplies": 200,
+    "unit_capacity": 0,
+    "unlocks_categories": [],
+    "min_level": 2,
+    "is_hq": false,
+    "sort": 11,
+    "requires_coast": false,
+    "training_slots": 0,
+    "default_zone": "home"
+  },
+  {
+    "id": "vehicle_works",
+    "name": "Vehicle Works",
+    "icon": "VW",
+    "description": "Overhauls and assembles vehicles, shipped to your Headquarters as funds.",
+    "cost_money": 20000,
+    "cost_supplies": 500,
+    "unit_capacity": 0,
+    "unlocks_categories": [],
+    "min_level": 3,
+    "is_hq": false,
+    "sort": 12,
+    "requires_coast": false,
+    "training_slots": 0,
+    "default_zone": "home"
   }
 ]
