@@ -20,6 +20,8 @@ export const state = {
   viewedProfile: null, // another player's public page, while it is open
   overlayBases: [], // someone else's bases to show on the map (profile or admin view)
   admin: { players: null, player: null, overview: null }, // admin panel data
+  objectives: null, // daily orders, campaign and achievement progress
+  taskForces: [], // saved groups of units
   leaderboard: null, // { players, alliances, me, player_count } once loaded
   unread: 0, // chat messages that arrived while not looking at the chat
 };

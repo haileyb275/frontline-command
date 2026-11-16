@@ -1,6 +1,9 @@
 // The "Units" tab: every unit you own, grouped by category.
 
-import { categories, getUnitType } from '../game/content.js';
+import { categories, getUnitType, unitTitle } from '../game/content.js';
+import { deleteTaskForce } from '../game/actions.js';
+import { friendlyError } from '../supabase.js';
+import { toast } from './toast.js';
 import { liveUnitStatus } from '../game/clock.js';
 import { esc, statusPillHtml } from './dom.js';
 import { specialtyTag, veterancyLabel } from './baseViews.js';
@@ -33,7 +36,7 @@ export function render(state) {
           <button class="row" data-action="open-unit" data-unit="${esc(unit.id)}">
             <span class="row-icon row-icon--unit">${esc(cat.icon)}</span>
             <span class="row-main">
-              <span class="row-title">${esc(getUnitType(unit.unit_type).name)}</span>
+              <span class="row-title">${esc(unitTitle(unit))}</span>
               <span class="row-sub">${esc(baseName.get(unit.base_id) ?? 'Unknown base')}
                 ${veterancyLabel(unit)} ${specialtyTag(unit, profile.nation_id)}</span>
             </span>
@@ -54,5 +57,39 @@ export function render(state) {
       <h2>Your units <span class="count">${units.length}</span></h2>
       <span class="muted">${idle} ready</span>
     </div>
-    ${sections}`;
+    ${sections}
+    ${renderTaskForces(state)}`;
+}
+
+function renderTaskForces({ taskForces, units }) {
+  if (taskForces.length === 0) {
+    return `<h3>Task forces</h3>
+            <p class="muted">None saved. When choosing units for a mission, use
+              “Save this selection as a task force” to pick the same group again with one click.</p>`;
+  }
+  const rows = taskForces.map((f) => {
+    const members = f.unit_ids.map((id) => units.find((u) => u.id === id)).filter(Boolean);
+    return `
+      <div class="row row--static">
+        <span class="row-main">
+          <span class="row-title">${esc(f.name)}</span>
+          <span class="row-sub">${members.length} unit${members.length === 1 ? '' : 's'}:
+            ${esc(members.slice(0, 4).map(unitTitle).join(', '))}${members.length > 4 ? '…' : ''}</span>
+        </span>
+        <button class="btn btn--small btn--quiet" data-action="delete-force" data-force="${esc(f.id)}"
+                data-confirm="Delete the task force ${esc(f.name)}? The units themselves are not affected."
+                aria-label="Delete task force">✕</button>
+      </div>`;
+  }).join('');
+  return `<h3>Task forces <span class="count">${taskForces.length}</span></h3><div class="rows">${rows}</div>`;
+}
+
+export async function handleAction(action, data) {
+  if (action !== 'delete-force') return;
+  try {
+    await deleteTaskForce(data.force);
+    toast('Task force deleted.', 'info');
+  } catch (error) {
+    toast(friendlyError(error), 'error');
+  }
 }

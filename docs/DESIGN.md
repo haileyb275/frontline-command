@@ -281,3 +281,6 @@ was revised in a later phase, the highest-numbered file holds the current versio
 - **Phase 9** added administrators (`profiles.is_admin`, every `admin_*` function guarded by
   `fc_require_admin()`, all changes written to `admin_log`), moderation (`reports`,
   `muted_until`, `is_banned`) and public profiles (`get_player_profile`).
+- **Phase 10** added running totals (`player_counters`, bumped in `fc_on_mission_complete`),
+  optional daily orders (`daily_orders`, `claim_daily_order`), campaigns and achievements
+  (`objectives`, `claim_objective`), saved task forces, and renaming of bases and units.

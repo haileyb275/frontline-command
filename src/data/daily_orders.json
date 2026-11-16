@@ -1,0 +1,167 @@
+[
+  {
+    "id": "d_missions_5",
+    "text": "Complete 5 missions",
+    "counter": "missions",
+    "target": 5,
+    "reward_money": 2500,
+    "reward_supplies": 100,
+    "reward_xp": 60,
+    "min_level": 1,
+    "requires_category": null
+  },
+  {
+    "id": "d_missions_10",
+    "text": "Complete 10 missions",
+    "counter": "missions",
+    "target": 10,
+    "reward_money": 5000,
+    "reward_supplies": 200,
+    "reward_xp": 120,
+    "min_level": 2,
+    "requires_category": null
+  },
+  {
+    "id": "d_units_15",
+    "text": "Send 15 units into action",
+    "counter": "units_sent",
+    "target": 15,
+    "reward_money": 2000,
+    "reward_supplies": 120,
+    "reward_xp": 50,
+    "min_level": 1,
+    "requires_category": null
+  },
+  {
+    "id": "d_hard_2",
+    "text": "Complete 2 missions of difficulty 3 or higher",
+    "counter": "missions_hard",
+    "target": 2,
+    "reward_money": 3500,
+    "reward_supplies": 150,
+    "reward_xp": 90,
+    "min_level": 2,
+    "requires_category": null
+  },
+  {
+    "id": "d_fire_3",
+    "text": "Answer 3 fire calls",
+    "counter": "missions_cat_fire",
+    "target": 3,
+    "reward_money": 2500,
+    "reward_supplies": 120,
+    "reward_xp": 60,
+    "min_level": 2,
+    "requires_category": "fire"
+  },
+  {
+    "id": "d_mp_3",
+    "text": "Complete 3 military police tasks",
+    "counter": "missions_cat_military_police",
+    "target": 3,
+    "reward_money": 2500,
+    "reward_supplies": 120,
+    "reward_xp": 60,
+    "min_level": 2,
+    "requires_category": "military_police"
+  },
+  {
+    "id": "d_medical_2",
+    "text": "Complete 2 missions that need medical units",
+    "counter": "missions_cat_medical",
+    "target": 2,
+    "reward_money": 2500,
+    "reward_supplies": 120,
+    "reward_xp": 60,
+    "min_level": 2,
+    "requires_category": "medical"
+  },
+  {
+    "id": "d_engineers_3",
+    "text": "Complete 3 missions that need engineers",
+    "counter": "missions_cat_engineers",
+    "target": 3,
+    "reward_money": 2500,
+    "reward_supplies": 120,
+    "reward_xp": 60,
+    "min_level": 1,
+    "requires_category": "engineers"
+  },
+  {
+    "id": "d_armor_2",
+    "text": "Complete 2 missions that need armor",
+    "counter": "missions_cat_armor",
+    "target": 2,
+    "reward_money": 4000,
+    "reward_supplies": 150,
+    "reward_xp": 100,
+    "min_level": 3,
+    "requires_category": "armor"
+  },
+  {
+    "id": "d_naval_2",
+    "text": "Complete 2 missions at sea",
+    "counter": "missions_water",
+    "target": 2,
+    "reward_money": 4000,
+    "reward_supplies": 150,
+    "reward_xp": 100,
+    "min_level": 3,
+    "requires_category": "naval"
+  },
+  {
+    "id": "d_air_2",
+    "text": "Complete 2 missions that need aircraft",
+    "counter": "missions_cat_air",
+    "target": 2,
+    "reward_money": 5000,
+    "reward_supplies": 200,
+    "reward_xp": 120,
+    "min_level": 5,
+    "requires_category": "air"
+  },
+  {
+    "id": "d_shared_1",
+    "text": "Complete a mission shared with your alliance",
+    "counter": "missions_shared",
+    "target": 1,
+    "reward_money": 4000,
+    "reward_supplies": 200,
+    "reward_xp": 100,
+    "min_level": 3,
+    "requires_category": null
+  },
+  {
+    "id": "d_missions_3",
+    "text": "Complete 3 missions",
+    "counter": "missions",
+    "target": 3,
+    "reward_money": 1500,
+    "reward_supplies": 60,
+    "reward_xp": 35,
+    "min_level": 1,
+    "requires_category": null
+  },
+  {
+    "id": "d_infantry_3",
+    "text": "Complete 3 missions that need infantry",
+    "counter": "missions_cat_infantry",
+    "target": 3,
+    "reward_money": 1800,
+    "reward_supplies": 80,
+    "reward_xp": 45,
+    "min_level": 1,
+    "requires_category": "infantry"
+  },
+  {
+    "id": "d_recon_2",
+    "text": "Complete 2 missions that need recon units",
+    "counter": "missions_cat_recon",
+    "target": 2,
+    "reward_money": 1800,
+    "reward_supplies": 80,
+    "reward_xp": 45,
+    "min_level": 1,
+    "requires_category": "recon"
+  }
+]

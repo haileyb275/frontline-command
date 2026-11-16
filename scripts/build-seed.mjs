@@ -86,6 +86,17 @@ const parts = [
      'output_money', 'output_supplies', 'min_level', 'sort'],
     readJson('products.json')
   ),
+  upsert(
+    'daily_order_types',
+    ['id', 'text', 'counter', 'target', 'reward_money', 'reward_supplies', 'reward_xp', 'min_level',
+     'requires_category'],
+    readJson('daily_orders.json')
+  ),
+  upsert(
+    'objectives',
+    ['id', 'kind', 'name', 'description', 'steps', 'reward_money', 'reward_supplies', 'reward_xp', 'sort'],
+    readJson('objectives.json')
+  ),
   // settings.json is one object; the table wants one row per setting.
   upsert(
     'game_config',

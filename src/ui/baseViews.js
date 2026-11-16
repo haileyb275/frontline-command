@@ -19,6 +19,7 @@ import {
   convoySeconds,
   veterancy,
   stockCapacity,
+  unitTitle,
   settings,
 } from '../game/content.js';
 import { liveUnitStatus, formatDuration } from '../game/clock.js';
@@ -96,8 +97,8 @@ export function renderBase(state, ui) {
             <button class="row" data-action="open-unit" data-unit="${esc(unit.id)}">
               <span class="row-icon row-icon--unit">${esc(getCategory(ut.category_id).icon)}</span>
               <span class="row-main">
-                <span class="row-title">${esc(ut.name)}</span>
-                <span class="row-sub">${veterancyLabel(unit)} ${specialtyTag(unit, profile.nation_id)}</span>
+                <span class="row-title">${esc(unitTitle(unit))}</span>
+                <span class="row-sub">${unit.name ? `${esc(ut.name)} ` : ''}${veterancyLabel(unit)} ${specialtyTag(unit, profile.nation_id)}</span>
               </span>
               ${statusPillHtml(liveUnitStatus(unit, dispatches))}
             </button>`;
@@ -136,7 +137,8 @@ export function renderBase(state, ui) {
       <button class="btn btn--small" data-action="back">Back</button>
     </div>
     <p class="muted">${esc(type.name)} · ${esc(formatLatLng(base))}
-      · <button class="link-btn" data-action="focus-base">Show on map</button></p>
+      · <button class="link-btn" data-action="focus-base">Show on map</button>
+      · <button class="link-btn" data-action="rename-base">Rename</button></p>
 
     ${renderZone(base, ui)}
     ${renderUpgrade(profile, base, type, ui)}
@@ -342,11 +344,12 @@ export function renderUnit(state, ui) {
   const refund = Math.round(settings.dismiss_refund * 100);
   return `
     <div class="section-head">
-      <h2>${esc(ut.name)}</h2>
+      <h2>${esc(unitTitle(unit))}</h2>
       <button class="btn btn--small" data-action="open-base" data-base="${esc(unit.base_id)}">Back</button>
     </div>
-    <p class="muted">${esc(cat.name)} · stationed at ${esc(home?.name ?? '?')} ${statusPillHtml(status)}
+    <p class="muted">${unit.name ? `${esc(ut.name)} · ` : ''}${esc(cat.name)} · stationed at ${esc(home?.name ?? '?')} ${statusPillHtml(status)}
       ${status === 'repairing' ? `· fit again in ${countdown(unit.busy_until)}` : ''}</p>
+    <p><button class="link-btn" data-action="rename-unit">${unit.name ? 'Change call sign' : 'Give this unit a call sign'}</button></p>
     <div class="facts">
       <div><span>Speed</span>${Math.round(ut.speed_kmh * (spec?.speed_mult ?? 1))} km/h</div>
       <div><span>Power</span>${Math.round(ut.power * (spec?.power_mult ?? 1) * vet.powerMult * 10) / 10}</div>

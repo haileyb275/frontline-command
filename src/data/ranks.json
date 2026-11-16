@@ -1,0 +1,46 @@
+[
+  {
+    "level": 1,
+    "title": "Second Lieutenant"
+  },
+  {
+    "level": 2,
+    "title": "Lieutenant"
+  },
+  {
+    "level": 3,
+    "title": "Captain"
+  },
+  {
+    "level": 5,
+    "title": "Major"
+  },
+  {
+    "level": 7,
+    "title": "Lieutenant Colonel"
+  },
+  {
+    "level": 9,
+    "title": "Colonel"
+  },
+  {
+    "level": 12,
+    "title": "Brigadier"
+  },
+  {
+    "level": 15,
+    "title": "Major General"
+  },
+  {
+    "level": 18,
+    "title": "Lieutenant General"
+  },
+  {
+    "level": 22,
+    "title": "General"
+  },
+  {
+    "level": 26,
+    "title": "Field Marshal"
+  }
+]

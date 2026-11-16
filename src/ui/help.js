@@ -27,6 +27,9 @@ export function showHelp() {
         <li><strong>Keep units supplied and rested.</strong> Each base holds its own stock of
             supplies, used up as units go out and topped up by convoy from your Headquarters.
             Units gain experience, and sometimes come back needing repair before they can go again.</li>
+        <li><strong>Orders are optional.</strong> The Orders view in the Missions tab offers three
+            daily orders, campaigns and achievements. Ignoring them costs nothing; completing them
+            pays extra funds, supplies and XP.</li>
         <li><strong>Join an alliance.</strong> Any nation can join any alliance. Share large
             missions, chat, and fund alliance buildings that help every member.</li>
       </ol>

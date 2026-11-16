@@ -47,6 +47,8 @@ function applySnapshot(snapshot) {
 /** Turn server events into pop-up messages. */
 function announce(events) {
   const done = events.filter((e) => e.type === 'mission_completed');
+  // Finished missions move daily orders and campaigns along: refresh them.
+  if (done.length > 0) refreshObjectivesSoon();
 
   if (done.length > 3) {
     // Came back after a while: one summary instead of a wall of pop-ups.
@@ -157,6 +159,9 @@ export async function loadGame() {
   if (error) throw error;
   setState({ bases: data });
   await Promise.all([sync(), loadAlliance()]);
+  // Not needed to start playing, so these load in the background.
+  loadObjectives().catch(() => {});
+  loadTaskForces().catch(() => {});
 }
 
 /** Build a base. Throws an Error with a readable message if the server says no. */
@@ -454,3 +459,48 @@ export async function adminResolveReport(reportId) {
 }
 
 export const adminDisbandAlliance = (allianceId) => call('admin_disband_alliance', { p_alliance_id: allianceId });
+
+// ------------------------------------------------------------ phase 10
+
+export async function loadObjectives() {
+  setState({ objectives: await call('get_objectives') });
+}
+const refreshObjectivesSoon = debounce(() => loadObjectives().catch(() => {}), 1500);
+
+/** Collect a finished daily order. Returns true if the all-three bonus was paid too. */
+export async function claimDailyOrder(orderId) {
+  const result = await call('claim_daily_order', { p_order_id: orderId });
+  setState({ objectives: result });
+  await sync(); // show the new funds, supplies and XP
+  return result.all_done_bonus;
+}
+
+export async function claimObjective(objectiveId) {
+  setState({ objectives: await call('claim_objective', { p_objective_id: objectiveId }) });
+  await sync();
+}
+
+export async function loadTaskForces() {
+  // Row-level security limits this to our own task forces.
+  const { data, error } = await supabase.from('task_forces').select('*').order('created_at');
+  if (error) throw error;
+  setState({ taskForces: data });
+}
+
+export async function saveTaskForce(name, unitIds) {
+  await call('save_task_force', { p_name: name, p_unit_ids: unitIds });
+  await loadTaskForces();
+}
+
+export async function deleteTaskForce(id) {
+  await call('delete_task_force', { p_id: id });
+  await loadTaskForces();
+}
+
+export async function renameBase(baseId, name) {
+  applySnapshot(await call('rename_base', { p_base_id: baseId, p_name: name }));
+}
+
+export async function renameUnit(unitId, name) {
+  applySnapshot(await call('rename_unit', { p_unit_id: unitId, p_name: name }));
+}

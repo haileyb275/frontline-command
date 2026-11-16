@@ -24,5 +24,10 @@
   "resupply_threshold": 0.25,
   "convoy_threat_chance": 0.35,
   "convoy_loss": 0.3,
-  "convoy_escort_bonus": 0.1
+  "convoy_escort_bonus": 0.1,
+  "daily_bonus_money": 3000,
+  "daily_bonus_supplies": 150,
+  "daily_bonus_xp": 60,
+  "daily_level_scale": 0.2,
+  "max_task_forces": 10
 }

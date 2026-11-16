@@ -16,8 +16,12 @@ import {
   specialtyName,
   unitFitsSlot,
   supplyUse,
+  unitTitle,
 } from '../game/content.js';
-import { dispatchUnits, recallUnits, shareMission } from '../game/actions.js';
+import {
+  dispatchUnits, recallUnits, shareMission, claimDailyOrder, claimObjective, loadObjectives, saveTaskForce,
+} from '../game/actions.js';
+import { renderOrders, tickOrders, claimableCount } from './ordersView.js';
 import { msUntil, formatDuration, liveUnitStatus } from '../game/clock.js';
 import { friendlyError } from '../supabase.js';
 import { esc, fmt } from './dom.js';
@@ -87,7 +91,17 @@ export function render(state, ui) {
     const mission = missions.find((m) => m.id === ui.missionId);
     if (mission) return renderMission(state, ui, mission);
   }
-  return renderList(state);
+
+  // The switch between the mission list and the Orders view.
+  const waiting = claimableCount(state);
+  const nav = `
+    <div class="seg seg--tabs">
+      <button class="seg-btn ${ui.missionsView !== 'orders' ? 'is-active' : ''}" data-action="missions-view" data-view="list">
+        Missions</button>
+      <button class="seg-btn ${ui.missionsView === 'orders' ? 'is-active' : ''}" data-action="missions-view" data-view="orders">
+        Orders${waiting > 0 ? ` <span class="dot" title="${waiting} reward${waiting === 1 ? '' : 's'} to collect"></span>` : ''}</button>
+    </div>`;
+  return nav + (ui.missionsView === 'orders' ? renderOrders(state, ui) : renderList(state));
 }
 
 function renderList({ missions, dispatches, profile }) {
@@ -282,7 +296,7 @@ function renderPicker(state, ui, mission, type, counts) {
                       data-unit="${esc(unit.id)}" aria-pressed="${on}" ${dry ? 'disabled title="Its base is out of supplies"' : ''}>
                 <span class="check">${on ? '✓' : ''}</span>
                 <span class="row-main">
-                  <span class="row-title">${esc(getUnitType(unit.unit_type).name)}</span>
+                  <span class="row-title">${esc(unitTitle(unit))}</span>
                   <span class="row-sub">${esc(baseById.get(unit.base_id)?.name ?? '')}
                     ${spec ? `<span class="tag tag--spec">${esc(specialtyName(spec, profile.nation_id))}</span>` : ''}</span>
                 </span>
@@ -301,7 +315,15 @@ function renderPicker(state, ui, mission, type, counts) {
 
   if (!sections) return ''; // everything already committed
 
+  // Saved task forces: one click ticks every member that is free and fits.
+  const forces = state.taskForces.length
+    ? `<h3>Task forces</h3>
+       <div class="chips chips--buttons">${state.taskForces.map((f) =>
+         `<button class="btn btn--small" data-action="pick-force" data-force="${esc(f.id)}">${esc(f.name)}</button>`).join('')}</div>`
+    : '';
+
   return `
+    ${forces}
     ${sections}
     <div class="btn-row btn--spaced">
       <button class="btn" data-action="auto-pick" ${anyChoice ? '' : 'disabled'}>Select fastest</button>
@@ -309,13 +331,16 @@ function renderPicker(state, ui, mission, type, counts) {
               ${picked.size === 0 || ui.busy ? 'disabled' : ''}>
         ${ui.busy ? 'Sending…' : `Dispatch ${picked.size || ''}`}
       </button>
-    </div>`;
+    </div>
+    ${picked.size > 0
+      ? '<button class="link-btn" data-action="save-force">Save this selection as a task force</button>' : ''}`;
 }
 
 // ---------------------------------------------------------------- ticking
 
 /** Called once a second by panel.js: refresh countdowns without re-drawing. */
 export function tick(root, state) {
+  tickOrders(root);
   for (const el of root.querySelectorAll('.js-mission-status')) {
     const mission = state.missions.find((m) => m.id === el.dataset.mission);
     if (mission) el.textContent = statusText(mission, state.dispatches);
@@ -340,6 +365,58 @@ export async function handleAction(action, data, ctx) {
     case 'focus-mission':
       if (mission) missionLayer.focus(mission);
       return;
+
+    case 'missions-view':
+      if (data.view === 'orders') loadObjectives().catch(() => {}); // fresh figures each time it is opened
+      return update({ missionsView: data.view });
+
+    case 'claim-daily':
+      update({ busy: true });
+      try {
+        const bonus = await claimDailyOrder(data.order);
+        toast(bonus ? 'Order complete. All three done today: bonus paid.' : 'Order complete: reward collected.', 'ok');
+      } catch (error) {
+        toast(friendlyError(error), 'error');
+      }
+      return update({ busy: false });
+
+    case 'claim-objective':
+      update({ busy: true });
+      try {
+        await claimObjective(data.objective);
+        toast('Reward collected.', 'ok');
+      } catch (error) {
+        toast(friendlyError(error), 'error');
+      }
+      return update({ busy: false });
+
+    case 'pick-force': {
+      // Add each member in turn if it is idle, supplied, and the mission has a place for it.
+      const force = state.taskForces.find((f) => f.id === data.force);
+      if (!force) return;
+      const baseById = new Map(state.bases.map((b) => [b.id, b]));
+      const picked = [...ui.picked];
+      for (const id of force.unit_ids) {
+        const unit = state.units.find((u) => u.id === id);
+        if (!unit || picked.includes(id) || liveUnitStatus(unit, state.dispatches) !== 'idle') continue;
+        if ((baseById.get(unit.base_id)?.stock ?? Infinity) < supplyUse(unit)) continue;
+        if (unitsFit([...picked, id], mission, state)) picked.push(id);
+      }
+      if (picked.length === ui.picked.length) toast('No free member of that task force fits this mission.', 'info');
+      return update({ picked });
+    }
+
+    case 'save-force': {
+      const name = window.prompt('Name for this task force:', '');
+      if (!name) return;
+      try {
+        await saveTaskForce(name, ui.picked);
+        toast('Task force saved. Manage it in the Units tab.', 'ok');
+      } catch (error) {
+        toast(friendlyError(error), 'error');
+      }
+      return update({});
+    }
 
     case 'toggle-unit': {
       const picked = ui.picked.filter((id) => id !== data.unit);

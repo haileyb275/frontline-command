@@ -1,0 +1,351 @@
+[
+  {
+    "id": "c_first_steps",
+    "kind": "campaign",
+    "name": "Operation First Steps",
+    "description": "Stand up a command and prove it in the field.",
+    "steps": [
+      {
+        "text": "Build your Headquarters",
+        "counter": "bases",
+        "target": 1
+      },
+      {
+        "text": "Have 4 units under command",
+        "counter": "units",
+        "target": 4
+      },
+      {
+        "text": "Complete 5 missions",
+        "counter": "missions",
+        "target": 5
+      }
+    ],
+    "reward_money": 3000,
+    "reward_supplies": 150,
+    "reward_xp": 50,
+    "sort": 0
+  },
+  {
+    "id": "c_building_the_line",
+    "kind": "campaign",
+    "name": "Building the Line",
+    "description": "Grow from an outpost into a proper garrison.",
+    "steps": [
+      {
+        "text": "Operate 4 bases",
+        "counter": "bases",
+        "target": 4
+      },
+      {
+        "text": "Have 15 units under command",
+        "counter": "units",
+        "target": 15
+      },
+      {
+        "text": "Reach level 3",
+        "counter": "level",
+        "target": 3
+      }
+    ],
+    "reward_money": 10000,
+    "reward_supplies": 400,
+    "reward_xp": 150,
+    "sort": 1
+  },
+  {
+    "id": "c_rear_services",
+    "kind": "campaign",
+    "name": "Rear Services",
+    "description": "An army runs on order, safety and supply.",
+    "steps": [
+      {
+        "text": "Answer 10 fire calls",
+        "counter": "missions_cat_fire",
+        "target": 10
+      },
+      {
+        "text": "Complete 10 military police tasks",
+        "counter": "missions_cat_military_police",
+        "target": 10
+      },
+      {
+        "text": "Complete 10 missions needing logistics",
+        "counter": "missions_cat_logistics",
+        "target": 10
+      }
+    ],
+    "reward_money": 15000,
+    "reward_supplies": 600,
+    "reward_xp": 250,
+    "sort": 2
+  },
+  {
+    "id": "c_home_front",
+    "kind": "campaign",
+    "name": "The Home Front",
+    "description": "Put industry and training behind the fighting line.",
+    "steps": [
+      {
+        "text": "Run a factory",
+        "counter": "factories",
+        "target": 1
+      },
+      {
+        "text": "Build a Training Center",
+        "counter": "training_centers",
+        "target": 1
+      },
+      {
+        "text": "Have 3 units with a specialty",
+        "counter": "specialists",
+        "target": 3
+      }
+    ],
+    "reward_money": 18000,
+    "reward_supplies": 700,
+    "reward_xp": 300,
+    "sort": 3
+  },
+  {
+    "id": "c_combined_arms",
+    "kind": "campaign",
+    "name": "Combined Arms",
+    "description": "Make tanks, guns and aircraft work together.",
+    "steps": [
+      {
+        "text": "Complete 10 missions needing armor",
+        "counter": "missions_cat_armor",
+        "target": 10
+      },
+      {
+        "text": "Complete 10 missions needing artillery",
+        "counter": "missions_cat_artillery",
+        "target": 10
+      },
+      {
+        "text": "Complete 5 missions needing aircraft",
+        "counter": "missions_cat_air",
+        "target": 5
+      }
+    ],
+    "reward_money": 30000,
+    "reward_supplies": 900,
+    "reward_xp": 450,
+    "sort": 4
+  },
+  {
+    "id": "c_command_of_the_sea",
+    "kind": "campaign",
+    "name": "Command of the Sea",
+    "description": "Keep the sea lanes open.",
+    "steps": [
+      {
+        "text": "Complete 15 missions at sea",
+        "counter": "missions_water",
+        "target": 15
+      },
+      {
+        "text": "Have 4 naval units",
+        "counter": "naval_units",
+        "target": 4
+      }
+    ],
+    "reward_money": 25000,
+    "reward_supplies": 800,
+    "reward_xp": 400,
+    "sort": 5
+  },
+  {
+    "id": "c_brothers_in_arms",
+    "kind": "campaign",
+    "name": "Allied Effort",
+    "description": "No command wins alone.",
+    "steps": [
+      {
+        "text": "Join an alliance",
+        "counter": "in_alliance",
+        "target": 1
+      },
+      {
+        "text": "Complete 5 shared missions",
+        "counter": "missions_shared",
+        "target": 5
+      }
+    ],
+    "reward_money": 20000,
+    "reward_supplies": 600,
+    "reward_xp": 300,
+    "sort": 6
+  },
+  {
+    "id": "a_first_action",
+    "kind": "achievement",
+    "name": "First Action",
+    "description": "Complete your first mission.",
+    "steps": [
+      {
+        "text": "Complete a mission",
+        "counter": "missions",
+        "target": 1
+      }
+    ],
+    "reward_money": 500,
+    "reward_supplies": 20,
+    "reward_xp": 10,
+    "sort": 7
+  },
+  {
+    "id": "a_fifty",
+    "kind": "achievement",
+    "name": "Seasoned Command",
+    "description": "Complete 50 missions.",
+    "steps": [
+      {
+        "text": "Complete 50 missions",
+        "counter": "missions",
+        "target": 50
+      }
+    ],
+    "reward_money": 5000,
+    "reward_supplies": 200,
+    "reward_xp": 100,
+    "sort": 8
+  },
+  {
+    "id": "a_250",
+    "kind": "achievement",
+    "name": "Campaign Veteran",
+    "description": "Complete 250 missions.",
+    "steps": [
+      {
+        "text": "Complete 250 missions",
+        "counter": "missions",
+        "target": 250
+      }
+    ],
+    "reward_money": 20000,
+    "reward_supplies": 600,
+    "reward_xp": 300,
+    "sort": 9
+  },
+  {
+    "id": "a_1000",
+    "kind": "achievement",
+    "name": "Thousand Operations",
+    "description": "Complete 1,000 missions.",
+    "steps": [
+      {
+        "text": "Complete 1,000 missions",
+        "counter": "missions",
+        "target": 1000
+      }
+    ],
+    "reward_money": 75000,
+    "reward_supplies": 2000,
+    "reward_xp": 1000,
+    "sort": 10
+  },
+  {
+    "id": "a_hard_25",
+    "kind": "achievement",
+    "name": "Hard Fighting",
+    "description": "Complete 25 missions of difficulty 3 or higher.",
+    "steps": [
+      {
+        "text": "Complete 25 hard missions",
+        "counter": "missions_hard",
+        "target": 25
+      }
+    ],
+    "reward_money": 12000,
+    "reward_supplies": 400,
+    "reward_xp": 200,
+    "sort": 11
+  },
+  {
+    "id": "a_fire_25",
+    "kind": "achievement",
+    "name": "Fire Marshal",
+    "description": "Answer 25 fire calls.",
+    "steps": [
+      {
+        "text": "Answer 25 fire calls",
+        "counter": "missions_cat_fire",
+        "target": 25
+      }
+    ],
+    "reward_money": 8000,
+    "reward_supplies": 300,
+    "reward_xp": 150,
+    "sort": 12
+  },
+  {
+    "id": "a_mp_25",
+    "kind": "achievement",
+    "name": "Provost Marshal",
+    "description": "Complete 25 military police tasks.",
+    "steps": [
+      {
+        "text": "Complete 25 military police tasks",
+        "counter": "missions_cat_military_police",
+        "target": 25
+      }
+    ],
+    "reward_money": 8000,
+    "reward_supplies": 300,
+    "reward_xp": 150,
+    "sort": 13
+  },
+  {
+    "id": "a_elite",
+    "kind": "achievement",
+    "name": "Old Guard",
+    "description": "Have a unit reach Elite experience.",
+    "steps": [
+      {
+        "text": "Have an Elite unit",
+        "counter": "elite_units",
+        "target": 1
+      }
+    ],
+    "reward_money": 6000,
+    "reward_supplies": 250,
+    "reward_xp": 120,
+    "sort": 14
+  },
+  {
+    "id": "a_garrison",
+    "kind": "achievement",
+    "name": "Garrison Commander",
+    "description": "Operate 10 bases.",
+    "steps": [
+      {
+        "text": "Operate 10 bases",
+        "counter": "bases",
+        "target": 10
+      }
+    ],
+    "reward_money": 15000,
+    "reward_supplies": 500,
+    "reward_xp": 250,
+    "sort": 15
+  },
+  {
+    "id": "a_level_10",
+    "kind": "achievement",
+    "name": "Senior Officer",
+    "description": "Reach level 10.",
+    "steps": [
+      {
+        "text": "Reach level 10",
+        "counter": "level",
+        "target": 10
+      }
+    ],
+    "reward_money": 25000,
+    "reward_supplies": 800,
+    "reward_xp": 0,
+    "sort": 16
+  }
+]

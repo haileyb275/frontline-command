@@ -2,7 +2,9 @@
 // Opened by clicking a commander's name anywhere (rankings, alliance, chat).
 // It is drawn inside the Ranks tab, and the player's bases appear on the map.
 
-import { categories, getBuilding, getCategory, getNation, getSpecialty, getUnitType, specialtyName, veterancy } from '../game/content.js';
+import {
+  categories, getBuilding, getNation, getSpecialty, getUnitType, specialtyName, veterancy, rankTitle, getObjective,
+} from '../game/content.js';
 import { esc, fmt } from './dom.js';
 
 export function renderProfile(state) {
@@ -41,7 +43,7 @@ export function renderProfile(state) {
         <div class="row row--static">
           <span class="row-icon row-icon--unit">${esc(cat.icon)}</span>
           <span class="row-main">
-            <span class="row-title">${esc(ut?.name ?? u.unit_type)}</span>
+            <span class="row-title">${esc(u.name || ut?.name || u.unit_type)}</span>
             <span class="row-sub">${esc(baseName.get(u.base_id) ?? '')}
               ${vet.tier > 0 ? `<span class="vet">${'★'.repeat(vet.tier)} ${vet.name}</span>` : ''}
               ${spec ? `<span class="tag tag--spec">${esc(specialtyName(spec, p.nation_id))}</span>` : ''}</span>
@@ -60,7 +62,8 @@ export function renderProfile(state) {
       ${p.alliance ? ` · <span class="tag">${esc(p.alliance.tag)}</span> ${esc(p.alliance.name)} (${esc(p.alliance.role)})` : ' · no alliance'}</p>
 
     <div class="facts">
-      <div><span>Rank</span>#${p.rank}</div>
+      <div><span>Rank</span>${esc(rankTitle(p.level))}</div>
+      <div><span>Standing</span>#${p.rank}</div>
       <div><span>Level</span>${p.level} · ${fmt(p.xp)} XP</div>
       <div><span>Missions completed</span>${fmt(p.missions_completed)}</div>
       <div><span>Bases / units</span>${p.bases.length} / ${p.units.length}</div>
@@ -72,6 +75,12 @@ export function renderProfile(state) {
       ${isMe ? '' : '<button class="btn" data-action="profile-report">Report</button>'}
     </div>
     ${state.profile?.is_admin ? `<button class="btn btn--block btn--spaced" data-action="admin-open" data-player="${esc(p.id)}">Manage in admin panel</button>` : ''}
+
+    <h3>Honours <span class="count">${(p.honours ?? []).length}</span></h3>
+    ${(p.honours ?? []).length
+      ? `<div class="chips">${p.honours.map((id) => getObjective(id)).filter(Boolean).map((o) =>
+          `<span class="chip chip--honour" title="${esc(o.description)}">${o.kind === 'campaign' ? '★' : '●'} ${esc(o.name)}</span>`).join('')}</div>`
+      : '<p class="muted">None yet.</p>'}
 
     <h3>Bases <span class="count">${p.bases.length}</span></h3>
     <div class="rows">${baseRows}</div>

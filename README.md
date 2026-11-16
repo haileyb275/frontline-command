@@ -84,6 +84,9 @@ All content is data in `src/data/`. No game logic needs to change.
 | an alliance building | `alliance_buildings.json` | bonus types: `member_cap`, `reward_money`, `reward_xp`, `speed` |
 | a specialty | `specialties.json` | `category_ids` lists who can train in it; `names` gives per-nation names; use its id as a mission requirement |
 | a factory product | `products.json` | `building_type` is the factory that makes it |
+| a daily order | `daily_orders.json` | `counter` is the running total it watches (e.g. `missions`, `missions_cat_fire`) |
+| a campaign or achievement | `objectives.json` | each step is a `counter` and a `target` |
+| a rank title | `ranks.json` | the level at which the title is reached |
 | a tuning number | `settings.json` | spawn interval, travel speed-up, caps, costs |
 
 Then:
@@ -111,3 +114,4 @@ npm run balance
 - [x] Phase 7 — Specialists, military police, fire service, factories, home front, convoys
 - [x] Phase 8 — Unit experience and repairs, base supply stocks, convoy escorts, 42 more units
 - [x] Phase 9 — Admin panel, moderation (reports, mutes, suspensions), public player profiles
+- [x] Phase 10 — Optional daily orders, campaigns, achievements, rank titles, task forces, renaming

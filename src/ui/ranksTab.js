@@ -1,6 +1,6 @@
 // The "Ranks" tab: global leaderboards for players and alliances.
 
-import { getNation } from '../game/content.js';
+import { getNation, rankTitle } from '../game/content.js';
 import { loadLeaderboard, openProfile, closeProfile, reportPlayer } from '../game/actions.js';
 import { renderProfile } from './profileView.js';
 import { friendlyError } from '../supabase.js';
@@ -44,7 +44,7 @@ function renderPlayers(state, board) {
         ${nationChip(p.nation_id)}
         <span class="row-main">
           <span class="row-title">${p.alliance_tag ? `<span class="tag">${esc(p.alliance_tag)}</span> ` : ''}${esc(p.username)}</span>
-          <span class="row-sub">Level ${p.level} · ${fmt(p.missions_completed)} missions</span>
+          <span class="row-sub">${esc(rankTitle(p.level))} · level ${p.level} · ${fmt(p.missions_completed)} missions</span>
         </span>
         <span class="row-side">${fmt(p.xp)} XP</span>
       </button>`)

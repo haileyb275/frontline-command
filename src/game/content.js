@@ -14,8 +14,11 @@ import settings from '../data/settings.json';
 import allianceBuildings from '../data/alliance_buildings.json';
 import specialties from '../data/specialties.json';
 import products from '../data/products.json';
+import dailyOrders from '../data/daily_orders.json';
+import objectives from '../data/objectives.json';
+import ranks from '../data/ranks.json';
 
-export { nations, categories, buildings, units, missions, settings, allianceBuildings, specialties, products };
+export { nations, categories, buildings, units, missions, settings, allianceBuildings, specialties, products, dailyOrders, objectives, ranks };
 
 const index = (list) => new Map(list.map((item) => [item.id, item]));
 const nationById = index(nations);
@@ -188,3 +191,17 @@ export const stockCapacity = (base) => (getBuilding(base.building_type)?.stock_c
 
 /** What sending this unit out costs its base in stock. */
 export const supplyUse = (unit) => getCategory(getUnitType(unit.unit_type)?.category_id)?.supply_use ?? 0;
+
+// ------------------------------------------------------------ phase 10
+
+/** The rank title for a level: the highest entry in ranks.json not above it. */
+export function rankTitle(level = 1) {
+  return [...ranks].reverse().find((r) => level >= r.level)?.title ?? ranks[0].title;
+}
+
+/** What to call a unit: its call sign if the player gave it one, else its type. */
+export function unitTitle(unit) {
+  return unit?.name || getUnitType(unit?.unit_type)?.name || 'Unit';
+}
+
+export const getObjective = (id) => objectives.find((o) => o.id === id) ?? null;

@@ -23,7 +23,7 @@ import {
 } from '../game/content.js';
 import {
   placeBase, buyUnit, upgradeBase, dismissUnit, trainUnit, startProduction, transferUnit, setBaseZone,
-  resupplyBase, setAutoResupply,
+  resupplyBase, setAutoResupply, renameBase, renameUnit,
 } from '../game/actions.js';
 import { renderBase, renderUnit } from './baseViews.js';
 import { msUntil, formatDuration } from '../game/clock.js';
@@ -206,6 +206,20 @@ export async function handleAction(action, data, ctx) {
     case 'set-zone':
       return run(ctx, () => setBaseZone(ui.baseId, data.zone),
         data.zone === 'home' ? 'Base moved to the home front.' : 'Base moved to the front line.');
+
+    case 'rename-base': {
+      const base = state.bases.find((b) => b.id === ui.baseId);
+      const name = window.prompt('New name for this base (up to 40 characters):', base?.name ?? '');
+      if (!name) return;
+      return run(ctx, () => renameBase(ui.baseId, name), 'Base renamed.');
+    }
+
+    case 'rename-unit': {
+      const unit = state.units.find((u) => u.id === ui.unitId);
+      const name = window.prompt('Call sign for this unit (leave empty to remove it):', unit?.name ?? '');
+      if (name === null) return; // cancelled
+      return run(ctx, () => renameUnit(ui.unitId, name));
+    }
 
     case 'resupply':
       return run(ctx, () => resupplyBase(ui.baseId), 'Resupply convoy dispatched.');

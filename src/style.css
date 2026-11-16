@@ -1646,3 +1646,42 @@ button.player-name:hover {
     font-size: 11px;
   }
 }
+
+/* ==========================================================================
+   Phase 10: orders, campaigns, task forces
+   ========================================================================== */
+
+.progress {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0;
+}
+
+.step {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 3px 0;
+  font-size: 13px;
+}
+
+.step.is-done > span:first-child {
+  color: #a9cf7c;
+}
+
+.card.is-claimed {
+  opacity: 0.6;
+}
+
+.chips--buttons {
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.chip--honour {
+  border-color: var(--khaki-300);
+  color: var(--khaki-300);
+  font-family: var(--font);
+}

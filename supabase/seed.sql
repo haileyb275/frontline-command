@@ -263,6 +263,44 @@ insert into public.products (id, name, building_type, duration_seconds, cost_mon
   ('tank_overhaul', 'Tank Overhaul Programme', 'vehicle_works', 28800, 0, 1200, 40000, 0, 4, 5)
 on conflict (id) do update set name = excluded.name, building_type = excluded.building_type, duration_seconds = excluded.duration_seconds, cost_money = excluded.cost_money, cost_supplies = excluded.cost_supplies, output_money = excluded.output_money, output_supplies = excluded.output_supplies, min_level = excluded.min_level, sort = excluded.sort;
 
+insert into public.daily_order_types (id, text, counter, target, reward_money, reward_supplies, reward_xp, min_level, requires_category) values
+  ('d_missions_5', 'Complete 5 missions', 'missions', 5, 2500, 100, 60, 1, null),
+  ('d_missions_10', 'Complete 10 missions', 'missions', 10, 5000, 200, 120, 2, null),
+  ('d_units_15', 'Send 15 units into action', 'units_sent', 15, 2000, 120, 50, 1, null),
+  ('d_hard_2', 'Complete 2 missions of difficulty 3 or higher', 'missions_hard', 2, 3500, 150, 90, 2, null),
+  ('d_fire_3', 'Answer 3 fire calls', 'missions_cat_fire', 3, 2500, 120, 60, 2, 'fire'),
+  ('d_mp_3', 'Complete 3 military police tasks', 'missions_cat_military_police', 3, 2500, 120, 60, 2, 'military_police'),
+  ('d_medical_2', 'Complete 2 missions that need medical units', 'missions_cat_medical', 2, 2500, 120, 60, 2, 'medical'),
+  ('d_engineers_3', 'Complete 3 missions that need engineers', 'missions_cat_engineers', 3, 2500, 120, 60, 1, 'engineers'),
+  ('d_armor_2', 'Complete 2 missions that need armor', 'missions_cat_armor', 2, 4000, 150, 100, 3, 'armor'),
+  ('d_naval_2', 'Complete 2 missions at sea', 'missions_water', 2, 4000, 150, 100, 3, 'naval'),
+  ('d_air_2', 'Complete 2 missions that need aircraft', 'missions_cat_air', 2, 5000, 200, 120, 5, 'air'),
+  ('d_shared_1', 'Complete a mission shared with your alliance', 'missions_shared', 1, 4000, 200, 100, 3, null),
+  ('d_missions_3', 'Complete 3 missions', 'missions', 3, 1500, 60, 35, 1, null),
+  ('d_infantry_3', 'Complete 3 missions that need infantry', 'missions_cat_infantry', 3, 1800, 80, 45, 1, 'infantry'),
+  ('d_recon_2', 'Complete 2 missions that need recon units', 'missions_cat_recon', 2, 1800, 80, 45, 1, 'recon')
+on conflict (id) do update set text = excluded.text, counter = excluded.counter, target = excluded.target, reward_money = excluded.reward_money, reward_supplies = excluded.reward_supplies, reward_xp = excluded.reward_xp, min_level = excluded.min_level, requires_category = excluded.requires_category;
+
+insert into public.objectives (id, kind, name, description, steps, reward_money, reward_supplies, reward_xp, sort) values
+  ('c_first_steps', 'campaign', 'Operation First Steps', 'Stand up a command and prove it in the field.', '[{"text":"Build your Headquarters","counter":"bases","target":1},{"text":"Have 4 units under command","counter":"units","target":4},{"text":"Complete 5 missions","counter":"missions","target":5}]'::jsonb, 3000, 150, 50, 0),
+  ('c_building_the_line', 'campaign', 'Building the Line', 'Grow from an outpost into a proper garrison.', '[{"text":"Operate 4 bases","counter":"bases","target":4},{"text":"Have 15 units under command","counter":"units","target":15},{"text":"Reach level 3","counter":"level","target":3}]'::jsonb, 10000, 400, 150, 1),
+  ('c_rear_services', 'campaign', 'Rear Services', 'An army runs on order, safety and supply.', '[{"text":"Answer 10 fire calls","counter":"missions_cat_fire","target":10},{"text":"Complete 10 military police tasks","counter":"missions_cat_military_police","target":10},{"text":"Complete 10 missions needing logistics","counter":"missions_cat_logistics","target":10}]'::jsonb, 15000, 600, 250, 2),
+  ('c_home_front', 'campaign', 'The Home Front', 'Put industry and training behind the fighting line.', '[{"text":"Run a factory","counter":"factories","target":1},{"text":"Build a Training Center","counter":"training_centers","target":1},{"text":"Have 3 units with a specialty","counter":"specialists","target":3}]'::jsonb, 18000, 700, 300, 3),
+  ('c_combined_arms', 'campaign', 'Combined Arms', 'Make tanks, guns and aircraft work together.', '[{"text":"Complete 10 missions needing armor","counter":"missions_cat_armor","target":10},{"text":"Complete 10 missions needing artillery","counter":"missions_cat_artillery","target":10},{"text":"Complete 5 missions needing aircraft","counter":"missions_cat_air","target":5}]'::jsonb, 30000, 900, 450, 4),
+  ('c_command_of_the_sea', 'campaign', 'Command of the Sea', 'Keep the sea lanes open.', '[{"text":"Complete 15 missions at sea","counter":"missions_water","target":15},{"text":"Have 4 naval units","counter":"naval_units","target":4}]'::jsonb, 25000, 800, 400, 5),
+  ('c_brothers_in_arms', 'campaign', 'Allied Effort', 'No command wins alone.', '[{"text":"Join an alliance","counter":"in_alliance","target":1},{"text":"Complete 5 shared missions","counter":"missions_shared","target":5}]'::jsonb, 20000, 600, 300, 6),
+  ('a_first_action', 'achievement', 'First Action', 'Complete your first mission.', '[{"text":"Complete a mission","counter":"missions","target":1}]'::jsonb, 500, 20, 10, 7),
+  ('a_fifty', 'achievement', 'Seasoned Command', 'Complete 50 missions.', '[{"text":"Complete 50 missions","counter":"missions","target":50}]'::jsonb, 5000, 200, 100, 8),
+  ('a_250', 'achievement', 'Campaign Veteran', 'Complete 250 missions.', '[{"text":"Complete 250 missions","counter":"missions","target":250}]'::jsonb, 20000, 600, 300, 9),
+  ('a_1000', 'achievement', 'Thousand Operations', 'Complete 1,000 missions.', '[{"text":"Complete 1,000 missions","counter":"missions","target":1000}]'::jsonb, 75000, 2000, 1000, 10),
+  ('a_hard_25', 'achievement', 'Hard Fighting', 'Complete 25 missions of difficulty 3 or higher.', '[{"text":"Complete 25 hard missions","counter":"missions_hard","target":25}]'::jsonb, 12000, 400, 200, 11),
+  ('a_fire_25', 'achievement', 'Fire Marshal', 'Answer 25 fire calls.', '[{"text":"Answer 25 fire calls","counter":"missions_cat_fire","target":25}]'::jsonb, 8000, 300, 150, 12),
+  ('a_mp_25', 'achievement', 'Provost Marshal', 'Complete 25 military police tasks.', '[{"text":"Complete 25 military police tasks","counter":"missions_cat_military_police","target":25}]'::jsonb, 8000, 300, 150, 13),
+  ('a_elite', 'achievement', 'Old Guard', 'Have a unit reach Elite experience.', '[{"text":"Have an Elite unit","counter":"elite_units","target":1}]'::jsonb, 6000, 250, 120, 14),
+  ('a_garrison', 'achievement', 'Garrison Commander', 'Operate 10 bases.', '[{"text":"Operate 10 bases","counter":"bases","target":10}]'::jsonb, 15000, 500, 250, 15),
+  ('a_level_10', 'achievement', 'Senior Officer', 'Reach level 10.', '[{"text":"Reach level 10","counter":"level","target":10}]'::jsonb, 25000, 800, 0, 16)
+on conflict (id) do update set kind = excluded.kind, name = excluded.name, description = excluded.description, steps = excluded.steps, reward_money = excluded.reward_money, reward_supplies = excluded.reward_supplies, reward_xp = excluded.reward_xp, sort = excluded.sort;
+
 insert into public.game_config (key, value) values
   ('travel_time_scale', 20),
   ('min_travel_seconds', 10),
@@ -289,7 +327,12 @@ insert into public.game_config (key, value) values
   ('resupply_threshold', 0.25),
   ('convoy_threat_chance', 0.35),
   ('convoy_loss', 0.3),
-  ('convoy_escort_bonus', 0.1)
+  ('convoy_escort_bonus', 0.1),
+  ('daily_bonus_money', 3000),
+  ('daily_bonus_supplies', 150),
+  ('daily_bonus_xp', 60),
+  ('daily_level_scale', 0.2),
+  ('max_task_forces', 10)
 on conflict (key) do update set value = excluded.value;
 
 insert into public.alliance_building_types (id, name, description, cost, max_level, bonus, sort) values
