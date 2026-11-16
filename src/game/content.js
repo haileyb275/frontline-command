@@ -11,8 +11,9 @@ import buildings from '../data/buildings.json';
 import units from '../data/units.json';
 import missions from '../data/missions.json';
 import settings from '../data/settings.json';
+import allianceBuildings from '../data/alliance_buildings.json';
 
-export { nations, categories, buildings, units, missions, settings };
+export { nations, categories, buildings, units, missions, settings, allianceBuildings };
 
 const index = (list) => new Map(list.map((item) => [item.id, item]));
 const nationById = index(nations);
@@ -84,8 +85,11 @@ export function distanceKm(a, b) {
  * This is only an ESTIMATE for the unit picker — the server works out the
  * real figure itself when you dispatch (see dispatch_units in the SQL).
  */
-export function travelSeconds(unitType, base, mission, nationId) {
-  const speed = unitType.speed_kmh * nationBonus(nationId, 'speed_mult', unitType.category_id);
+export function travelSeconds(unitType, base, mission, nationId, alliance = null) {
+  const speed =
+    unitType.speed_kmh *
+    nationBonus(nationId, 'speed_mult', unitType.category_id) *
+    (1 + allianceBonus(alliance, 'speed'));
   const seconds = (distanceKm(base, mission) / speed) * 3600 / settings.travel_time_scale;
   return Math.max(settings.min_travel_seconds, Math.round(seconds));
 }
@@ -101,3 +105,14 @@ export function missionReward(missionType, nationId) {
 
 /** XP needed to reach a level. Mirrors fc_level_for_xp(). */
 export const xpForLevel = (level) => 100 * (level - 1) ** 2;
+
+/**
+ * Total bonus of one type from an alliance's buildings (0 = none).
+ * `alliance` is state.alliance; mirrors the SQL function fc_alliance_bonus().
+ */
+export function allianceBonus(alliance, type) {
+  if (!alliance) return 0;
+  return allianceBuildings
+    .filter((b) => b.bonus.type === type)
+    .reduce((total, b) => total + (alliance.buildings[b.id] ?? 0) * b.bonus.value, 0);
+}

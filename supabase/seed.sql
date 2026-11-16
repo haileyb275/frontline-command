@@ -133,5 +133,16 @@ insert into public.game_config (key, value) values
   ('base_open_missions', 2),
   ('max_open_missions', 12),
   ('spawn_radius_min_km', 3),
-  ('spawn_radius_max_km', 20)
+  ('spawn_radius_max_km', 20),
+  ('alliance_create_cost', 5000),
+  ('alliance_base_members', 20),
+  ('alliance_treasury_cut', 0.05),
+  ('alliance_owner_bonus', 0.1)
 on conflict (key) do update set value = excluded.value;
+
+insert into public.alliance_building_types (id, name, description, cost, max_level, bonus, sort) values
+  ('command_center', 'Alliance Command Center', 'More staff officers mean room for more members.', 20000, 5, '{"type":"member_cap","value":5}'::jsonb, 0),
+  ('supply_exchange', 'Supply Exchange', 'Pooled purchasing stretches every member''s budget.', 25000, 5, '{"type":"reward_money","value":0.02}'::jsonb, 1),
+  ('training_ground', 'Training Ground', 'Joint exercises let members learn from each other.', 25000, 5, '{"type":"reward_xp","value":0.02}'::jsonb, 2),
+  ('motor_pool', 'Motor Pool', 'Shared workshops keep every member''s vehicles running well.', 30000, 5, '{"type":"speed","value":0.02}'::jsonb, 3)
+on conflict (id) do update set name = excluded.name, description = excluded.description, cost = excluded.cost, max_level = excluded.max_level, bonus = excluded.bonus, sort = excluded.sort;

@@ -7,28 +7,13 @@ import { getBuilding } from '../game/content.js';
 import * as basesTab from './basesTab.js';
 import * as unitsTab from './unitsTab.js';
 import * as missionsTab from './missionsTab.js';
-
-function placeholder(heading, text, badge) {
-  return `
-    <div class="card card--empty">
-      <h2>${heading}</h2>
-      <p>${text}</p>
-      <span class="badge">${badge}</span>
-    </div>`;
-}
+import * as allianceTab from './allianceTab.js';
 
 const TABS = {
   missions: missionsTab,
   units: unitsTab,
   bases: basesTab,
-  alliance: {
-    render: () =>
-      placeholder(
-        'Not in an alliance',
-        'Team up with players of any nation: shared missions, alliance chat and a common treasury.',
-        'Arrives in Phase 5'
-      ),
-  },
+  alliance: allianceTab,
 };
 
 /**
@@ -51,6 +36,7 @@ export function initPanel({ baseLayer, missionLayer, mapElement }) {
     baseId: null, // base being viewed
     missionId: null, // mission being viewed
     picked: [], // unit ids ticked in the mission's unit picker
+    allianceView: 'overview', // which part of the Alliance tab is showing
     busy: false, // true while waiting for the server
   };
 
@@ -73,14 +59,28 @@ export function initPanel({ baseLayer, missionLayer, mapElement }) {
       btn.setAttribute('aria-selected', String(active));
     }
 
-    // Re-drawing replaces the HTML, which would wipe a half-typed base name.
-    // Remember it and put it back.
-    const typed = body.querySelector('input[name="name"]')?.value;
+    // Re-drawing replaces the HTML, which would wipe anything half-typed
+    // (a base name, a chat message) and drop the cursor. Remember every
+    // input's text, and which one had focus, then put them back.
+    const typed = new Map(
+      [...body.querySelectorAll('input[name]')].map((input) => [input.name, input.value])
+    );
+    const focused = body.contains(document.activeElement) ? document.activeElement.name : null;
 
     body.innerHTML = TABS[ui.tab].render(state, ui);
 
-    const nameInput = body.querySelector('input[name="name"]');
-    if (nameInput && typed) nameInput.value = typed;
+    for (const input of body.querySelectorAll('input[name]')) {
+      if (typed.get(input.name)) input.value = typed.get(input.name);
+      if (focused && input.name === focused) {
+        input.focus();
+        // Text boxes: put the cursor back at the end. (Number inputs don't allow this.)
+        if (input.type === 'text') input.setSelectionRange(input.value.length, input.value.length);
+      }
+    }
+
+    // A dot on the Alliance tab when chat messages are waiting.
+    tabButtons.find((b) => b.dataset.tab === 'alliance')
+      ?.classList.toggle('has-unread', state.unread > 0);
 
     // Keep the map in step with the panel.
     const placing = ui.tab === 'bases' && (ui.view === 'placing' || ui.view === 'confirm');
@@ -98,6 +98,7 @@ export function initPanel({ baseLayer, missionLayer, mapElement }) {
       body.innerHTML = TABS[ui.tab].render(state, ui);
     }
     TABS[ui.tab].tick?.(body, state);
+    TABS[ui.tab].afterRender?.(body, state, ui);
   }
 
   function showTab(name) {
@@ -132,7 +133,7 @@ export function initPanel({ baseLayer, missionLayer, mapElement }) {
     const form = event.target.closest('[data-form]');
     if (!form) return;
     event.preventDefault();
-    TABS[ui.tab].handleSubmit?.(form.dataset.form, Object.fromEntries(new FormData(form)), ctx);
+    TABS[ui.tab].handleSubmit?.(form.dataset.form, Object.fromEntries(new FormData(form)), ctx, form);
   });
 
   // Once a second, let the current tab refresh its countdowns. This only

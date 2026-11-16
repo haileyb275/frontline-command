@@ -75,7 +75,11 @@ const parts = [
     ['key', 'value'],
     Object.entries(readJson('settings.json')).map(([key, value]) => ({ key, value }))
   ),
-  // Later phases add: alliance_building_types…
+  upsert(
+    'alliance_building_types',
+    ['id', 'name', 'description', 'cost', 'max_level', 'bonus', 'sort'],
+    readJson('alliance_buildings.json')
+  ),
 ];
 
 const outFile = join(root, 'supabase/seed.sql');

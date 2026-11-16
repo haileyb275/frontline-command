@@ -1,0 +1,54 @@
+[
+  {
+    "id": "command_center",
+    "name": "Alliance Command Center",
+    "description": "More staff officers mean room for more members.",
+    "cost": 20000,
+    "max_level": 5,
+    "bonus": {
+      "type": "member_cap",
+      "value": 5
+    },
+    "bonus_text": "+5 member places per level",
+    "sort": 0
+  },
+  {
+    "id": "supply_exchange",
+    "name": "Supply Exchange",
+    "description": "Pooled purchasing stretches every member's budget.",
+    "cost": 25000,
+    "max_level": 5,
+    "bonus": {
+      "type": "reward_money",
+      "value": 0.02
+    },
+    "bonus_text": "+2% funds from missions per level",
+    "sort": 1
+  },
+  {
+    "id": "training_ground",
+    "name": "Training Ground",
+    "description": "Joint exercises let members learn from each other.",
+    "cost": 25000,
+    "max_level": 5,
+    "bonus": {
+      "type": "reward_xp",
+      "value": 0.02
+    },
+    "bonus_text": "+2% XP from missions per level",
+    "sort": 2
+  },
+  {
+    "id": "motor_pool",
+    "name": "Motor Pool",
+    "description": "Shared workshops keep every member's vehicles running well.",
+    "cost": 30000,
+    "max_level": 5,
+    "bonus": {
+      "type": "speed",
+      "value": 0.02
+    },
+    "bonus_text": "+2% travel speed per level",
+    "sort": 3
+  }
+]

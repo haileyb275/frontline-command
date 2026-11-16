@@ -5,7 +5,7 @@ import './style.css';
 import { createMap, createBaseLayer, createMissionLayer, createTravelLayer, formatLatLng } from './map.js';
 import { supabase, friendlyError } from './supabase.js';
 import { state, setState, subscribe, loadProfile } from './state.js';
-import { loadGame, startSyncLoop, stopSyncLoop } from './game/actions.js';
+import { loadGame, startSyncLoop, stopSyncLoop, stopRealtime } from './game/actions.js';
 import { getBuilding, getCategory, getMissionType } from './game/content.js';
 import { dispatchPosition } from './game/clock.js';
 import { missionMarkerLabel } from './ui/missionsTab.js';
@@ -53,6 +53,8 @@ createTravelLayer(map, {
   getDispatches: () => state.dispatches,
   getTarget: (d) => state.missions.find((m) => m.id === d.mission_id) ?? missionTargets.get(d.mission_id) ?? null,
   getLabel: (d) => getCategory(d.category_id)?.icon ?? '',
+  // Allied units on shared missions are drawn in a different colour.
+  getKind: (d) => (d.player_id === state.profile?.id ? 'unit' : 'unit ally'),
   getPosition: dispatchPosition,
 });
 
@@ -68,7 +70,8 @@ initTopbar();
 async function route() {
   if (!state.session) {
     stopSyncLoop();
-    setState({ profile: null, bases: [], units: [], missions: [], dispatches: [] });
+    stopRealtime();
+    setState({ profile: null, bases: [], units: [], missions: [], dispatches: [], alliance: null, alliances: [], unread: 0 });
     panel.reset();
     showAuthScreen();
     return;

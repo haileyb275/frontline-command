@@ -196,7 +196,7 @@ export function createMissionLayer(map, { getLabel, getTitle, onSelect }) {
  * @param {{ getDispatches: () => object[], getTarget: (dispatch) => {lat,lng}|null,
  *           getLabel: (dispatch) => string, getPosition: (dispatch) => {phase, progress} }} options
  */
-export function createTravelLayer(map, { getDispatches, getTarget, getLabel, getPosition }) {
+export function createTravelLayer(map, { getDispatches, getTarget, getLabel, getKind, getPosition }) {
   const group = L.layerGroup().addTo(map);
   const items = new Map(); // dispatch id → { marker, line }
 
@@ -225,7 +225,7 @@ export function createTravelLayer(map, { getDispatches, getTarget, getLabel, get
             interactive: false,
           }).addTo(group),
           marker: L.marker([d.from_lat, d.from_lng], {
-            icon: makeIcon(getLabel(d), 'unit'),
+            icon: makeIcon(getLabel(d), getKind?.(d) ?? 'unit'),
             interactive: false,
             zIndexOffset: 1000,
           }).addTo(group),

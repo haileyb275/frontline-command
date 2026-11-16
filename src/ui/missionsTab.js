@@ -11,7 +11,7 @@ import {
   missionReward,
   travelSeconds,
 } from '../game/content.js';
-import { dispatchUnits, recallUnits } from '../game/actions.js';
+import { dispatchUnits, recallUnits, shareMission } from '../game/actions.js';
 import { msUntil, formatDuration, liveUnitStatus } from '../game/clock.js';
 import { friendlyError } from '../supabase.js';
 import { esc, fmt } from './dom.js';
@@ -79,7 +79,7 @@ export function render(state, ui) {
   return renderList(state);
 }
 
-function renderList({ missions, dispatches }) {
+function renderList({ missions, dispatches, profile }) {
   if (missions.length === 0) {
     return `
       <div class="card card--empty">
@@ -102,7 +102,9 @@ function renderList({ missions, dispatches }) {
         <button class="row row--mission ${mission.status === 'in_progress' ? 'is-active' : ''}"
                 data-action="open-mission" data-mission="${esc(mission.id)}">
           <span class="row-main">
-            <span class="row-title">${esc(type.name)}</span>
+            <span class="row-title">${esc(type.name)}
+              ${mission.alliance_id ? '<span class="tag tag--shared">Alliance</span>' : ''}</span>
+            ${mission.owner_id !== profile.id ? `<span class="row-sub">shared by ${esc(mission.owner_name)}</span>` : ''}
             <span class="row-sub js-mission-status" data-mission="${esc(mission.id)}">
               ${esc(statusText(mission, dispatches))}</span>
             <span class="chips">${requirementChips(type, committedCounts(mission, dispatches))}</span>
@@ -124,7 +126,9 @@ function renderMission(state, ui, mission) {
   const type = getMissionType(mission.mission_type);
   const counts = committedCounts(mission, dispatches);
   const reward = missionReward(type, profile.nation_id);
-  const mine = dispatches.filter((d) => d.mission_id === mission.id && !d.returns_at);
+  // Every unit committed to this mission — ours and, on shared missions, our allies'.
+  const committed = dispatches.filter((d) => d.mission_id === mission.id && !d.returns_at);
+  const iHaveUnitsHere = committed.some((d) => d.player_id === profile.id);
 
   let body = '';
 
@@ -132,21 +136,23 @@ function renderMission(state, ui, mission) {
     body += renderPicker(state, ui, mission, type, counts);
   }
 
-  if (mine.length > 0) {
-    const rows = mine
+  if (committed.length > 0) {
+    const rows = committed
       .map((d) => {
-        const unit = units.find((u) => u.id === d.unit_id);
-        const name = unit ? getUnitType(unit.unit_type).name : 'Unit';
+        const ally = d.player_id !== profile.id;
         return `
           <div class="row row--static">
-            <span class="row-icon row-icon--unit">${esc(getCategory(d.category_id).icon)}</span>
-            <span class="row-main"><span class="row-title">${esc(name)}</span></span>
+            <span class="row-icon row-icon--unit ${ally ? 'row-icon--ally' : ''}">${esc(getCategory(d.category_id).icon)}</span>
+            <span class="row-main">
+              <span class="row-title">${esc(d.unit_name)}</span>
+              ${mission.alliance_id ? `<span class="row-sub">${ally ? esc(d.player_name) : 'You'}</span>` : ''}
+            </span>
             <span class="status js-arrival" data-arrives="${esc(d.arrives_at)}"></span>
           </div>`;
       })
       .join('');
-    body += `<h3>Committed <span class="count">${mine.length}</span></h3><div class="rows">${rows}</div>`;
-    if (mission.status === 'open') {
+    body += `<h3>Committed <span class="count">${committed.length}</span></h3><div class="rows">${rows}</div>`;
+    if (mission.status === 'open' && iHaveUnitsHere) {
       body += `<button class="btn btn--block btn--spaced" data-action="recall" ${ui.busy ? 'disabled' : ''}>
                  Recall units</button>`;
     }
@@ -169,9 +175,26 @@ function renderMission(state, ui, mission) {
       <div><span>Reward</span>${fmt(reward.money)} funds · ${fmt(reward.supplies)} supplies · ${reward.xp} XP</div>
     </div>
 
+    ${renderSharing(state, ui, mission, type)}
+
     <h3>Required</h3>
     <div class="chips">${requirementChips(type, counts)}</div>
     ${body}`;
+}
+
+/** The "share with alliance" button, or a note about how sharing works. */
+function renderSharing(state, ui, mission, type) {
+  if (mission.alliance_id) {
+    const by = mission.owner_id === state.profile.id ? 'you' : esc(mission.owner_name);
+    return `<p class="note">Shared with the alliance by ${by}. Any member can send units;
+              the reward is split by what each member contributes.</p>`;
+  }
+  if (!type.shareable || mission.status !== 'open') return '';
+  if (!state.alliance) {
+    return `<p class="note">This is a large operation. Join an alliance to share it with other players.</p>`;
+  }
+  return `<button class="btn btn--block btn--spaced" data-action="share" ${ui.busy ? 'disabled' : ''}>
+            Share with ${esc(state.alliance.info.name)}</button>`;
 }
 
 /** The list of idle units you can tick and send. */
@@ -192,7 +215,7 @@ function renderPicker(state, ui, mission, type, counts) {
     const candidates = idleUnitsOf(cat.id, units, dispatches)
       .map((unit) => ({
         unit,
-        eta: travelSeconds(getUnitType(unit.unit_type), baseById.get(unit.base_id), mission, profile.nation_id),
+        eta: travelSeconds(getUnitType(unit.unit_type), baseById.get(unit.base_id), mission, profile.nation_id, state.alliance),
       }))
       .sort((a, b) => a.eta - b.eta); // fastest first
 
@@ -302,7 +325,7 @@ export async function handleAction(action, data, ctx) {
         idleUnitsOf(categoryId, state.units, state.dispatches)
           .map((unit) => ({
             id: unit.id,
-            eta: travelSeconds(getUnitType(unit.unit_type), baseById.get(unit.base_id), mission, state.profile.nation_id),
+            eta: travelSeconds(getUnitType(unit.unit_type), baseById.get(unit.base_id), mission, state.profile.nation_id, state.alliance),
           }))
           .sort((a, b) => a.eta - b.eta)
           .slice(0, Math.max(0, remaining))
@@ -324,6 +347,17 @@ export async function handleAction(action, data, ctx) {
         update({ busy: false });
       }
       return;
+    }
+
+    case 'share': {
+      update({ busy: true });
+      try {
+        await shareMission(ui.missionId);
+        toast('Mission shared with your alliance.', 'ok');
+      } catch (error) {
+        toast(friendlyError(error), 'error');
+      }
+      return update({ busy: false });
     }
 
     case 'recall': {
