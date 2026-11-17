@@ -1,7 +1,7 @@
 // The "Units" tab: every unit you own, grouped by category.
 
 import { categories, getUnitType, unitTitle, divisionTier, divisionSlots, settings } from '../game/content.js';
-import { deleteTaskForce, createDivision, renameDivision, disbandDivision } from '../game/actions.js';
+import { deleteTaskForce, createDivision, renameDivision, disbandDivision, endLoan, loadLoans } from '../game/actions.js';
 import { friendlyError } from '../supabase.js';
 import { toast } from './toast.js';
 import { unitIcon } from './icons.js';
@@ -20,7 +20,8 @@ export function render(state) {
       <div class="card card--empty">
         <h2>No units yet</h2>
         <p>Open one of your bases in the <strong>Bases</strong> tab to recruit units.</p>
-      </div>`;
+      </div>
+      ${renderLoans(state)}`;
   }
 
   const baseName = new Map(bases.map((b) => [b.id, b.name]));
@@ -61,6 +62,7 @@ export function render(state) {
     </div>
     ${sections}
     ${renderDivisions(state)}
+    ${renderLoans(state)}
     ${renderTaskForces(state)}`;
 }
 
@@ -100,6 +102,27 @@ function renderDivisions({ divisions, units, profile }) {
     ${cards || '<p class="muted">A division is a named group of up to ' + settings.division_max_units + ' units that gains experience by fighting together.</p>'}`;
 }
 
+/** Units of ours that an ally is using for now. */
+function renderLoans({ loans }) {
+  if (!loans.length) return '';
+  const rows = loans.map((l) => `
+    <div class="row row--static">
+      <span class="row-icon row-icon--unit">${unitIcon(l.unit_type)}</span>
+      <span class="row-main">
+        <span class="row-title">${esc(l.name || getUnitType(l.unit_type)?.name || l.unit_type)}</span>
+        <span class="row-sub">with ${esc(l.borrower)} until ${new Date(l.lent_until).toLocaleString([], { weekday: 'short', hour: '2-digit', minute: '2-digit' })}
+          ${l.status === 'idle' ? '' : '· out on a mission'}</span>
+      </span>
+      <button class="btn btn--small" data-action="recall-loan" data-unit="${esc(l.id)}">Recall</button>
+    </div>`).join('');
+  return `<h3>Out on loan <span class="count">${loans.length}</span></h3><div class="rows">${rows}</div>`;
+}
+
+/** Called by panel.js each time this tab is opened. */
+export function onShow() {
+  loadLoans().catch(() => {});
+}
+
 function renderTaskForces({ taskForces, units }) {
   if (taskForces.length === 0) {
     return `<h3>Task forces</h3>
@@ -125,7 +148,10 @@ function renderTaskForces({ taskForces, units }) {
 
 export async function handleAction(action, data, ctx) {
   try {
-    if (action === 'delete-force') {
+    if (action === 'recall-loan') {
+      const home = await endLoan(data.unit);
+      toast(home ? 'The unit is back with you.' : 'It will come home as soon as it is back at base.', 'ok');
+    } else if (action === 'delete-force') {
       await deleteTaskForce(data.force);
       toast('Task force deleted.', 'info');
     } else if (action === 'create-division') {

@@ -138,3 +138,4 @@ npm run balance
 - [x] Phase 16 — Fuel, parts and medical stores, Refinery, Rail Yard, Port, supply lines, market, movable bases
 - [x] Phase 17 — Alliance territory on the map, weekly alliance rivalry, aid convoys between allies, worldwide events
 - [x] Phase 18 — Mission filters, standing orders (auto-dispatch), historical operations, statistics, translations (German begun)
+- [x] Phase 19 — Lending units to allies; coastline fix across the date line; 17 historical operations; wider German; balance pass

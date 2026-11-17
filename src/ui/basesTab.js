@@ -25,7 +25,7 @@ import {
 import {
   placeBase, buyUnit, upgradeBase, dismissUnit, trainUnit, startProduction, transferUnit, setBaseZone,
   resupplyBase, setAutoResupply, renameBase, renameUnit, startResearch, refitUnit, assignDivision,
-  loadMarket, tradeMarket, moveBase,
+  loadMarket, tradeMarket, moveBase, lendUnit, endLoan,
 } from '../game/actions.js';
 import { renderBase, renderUnit } from './baseViews.js';
 import { msUntil, formatDuration } from '../game/clock.js';
@@ -367,6 +367,16 @@ export async function handleAction(action, data, ctx) {
       return update({ busy: false });
     }
 
+    case 'end-loan':
+      try {
+        const home = await endLoan(data.unit);
+        toast(home ? 'The unit has gone home.' : 'It will go home as soon as it is back at base.', 'ok');
+        if (home && ui.view === 'unit') update({ view: 'list', unitId: null, baseId: null });
+      } catch (error) {
+        toast(friendlyError(error), 'error');
+      }
+      return;
+
     case 'dismiss': {
       try {
         const result = await dismissUnit(data.unit);
@@ -428,6 +438,19 @@ export function tick(root) {
 export async function handleSubmit(formName, values, ctx, form) {
   const { ui, update } = ctx;
   if (formName === 'trade') return handleTrade(values, ctx, form);
+  if (formName === 'lend-unit') {
+    if (!window.confirm(`Lend this unit to ${values.lend_to} for ${values.lend_hours} hours?`)) return;
+    update({ busy: true });
+    try {
+      await lendUnit(ui.unitId, values.lend_to, +values.lend_hours);
+      toast(`Unit lent to ${values.lend_to}.`, 'ok');
+      update({ busy: false, view: 'base', unitId: null });
+    } catch (error) {
+      toast(friendlyError(error), 'error');
+      update({ busy: false });
+    }
+    return;
+  }
   if (formName !== 'confirm-base' || !ui.latlng) return;
 
   update({ busy: true });

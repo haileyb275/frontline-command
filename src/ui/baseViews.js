@@ -365,6 +365,33 @@ function renderRefit(state, ui, unit, ut, idle) {
 
 // ------------------------------------------------------------------ unit
 
+/** A unit we have borrowed: who from, until when, and a way to send it back. */
+function renderBorrowed(state, unit) {
+  const lender = state.alliance?.members.find((m) => m.player_id === unit.lent_by)?.username ?? 'an ally';
+  return `
+    <div class="card card--notice">
+      <h2>On loan from ${esc(lender)}</h2>
+      <p>It is yours to send out until it goes home in <strong class="js-countdown" data-until="${esc(unit.lent_until)}"></strong>,
+         and it keeps the experience it gains. A unit on loan cannot be trained, refitted, transferred or dismissed.</p>
+      <button class="btn btn--block" data-action="end-loan" data-unit="${esc(unit.id)}">Send it back now</button>
+    </div>`;
+}
+
+/** Lend this unit to an alliance mate. */
+function renderLend(state, ui, idle) {
+  const others = (state.alliance?.members ?? []).filter((m) => m.player_id !== state.profile.id);
+  if (others.length === 0) return '';
+  return `
+    <h3>Lend to an ally</h3>
+    <form class="inline-form" data-form="lend-unit">
+      <select name="lend_to">${others.map((m) => `<option>${esc(m.username)}</option>`).join('')}</select>
+      <select name="lend_hours">${[6, 12, 24, 48, 72].map((h) => `<option value="${h}" ${h === 24 ? 'selected' : ''}>${h} hours</option>`).join('')}</select>
+      <button class="btn btn--small" type="submit" ${idle && !ui.busy ? '' : 'disabled'}>Lend</button>
+    </form>
+    <p class="muted">The unit moves to their nearest suitable base and is theirs to command. It comes home by itself
+       when the time is up, with any experience it gained. Either of you can end the loan early.</p>`;
+}
+
 export function renderUnit(state, ui) {
   const { profile, bases, units, dispatches } = state;
   const unit = units.find((u) => u.id === ui.unitId);
@@ -468,6 +495,8 @@ export function renderUnit(state, ui) {
       <div><span>Specialty</span>${spec ? esc(specialtyName(spec, profile.nation_id)) : 'None'}</div>
     </div>
 
+    ${unit.lent_by ? renderBorrowed(state, unit) : ''}
+    ${unit.lent_by ? '' : `<div>
     <h3>Specialty training <span class="count">${places.used} / ${places.total} places</span></h3>
     ${training}
 
@@ -483,5 +512,6 @@ export function renderUnit(state, ui) {
     <button class="btn btn--block btn--spaced" data-action="dismiss" data-unit="${esc(unit.id)}"
             ${idle ? '' : 'disabled'}
             data-confirm="Dismiss this ${esc(ut.name)}? You get ${refund}% of its cost back.">
-      Dismiss unit (${refund}% refund)</button>`;
+      Dismiss unit (${refund}% refund)</button>
+    ${renderLend(state, ui, idle)}</div>`}`;
 }

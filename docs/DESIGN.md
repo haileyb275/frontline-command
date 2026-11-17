@@ -358,3 +358,19 @@ Russia). `scripts/build-land.mjs` now unwraps such rings, closes the Antarctic r
 pole, and stores a second copy shifted 360° so both sides of the line are covered. A database
 test checks twelve known points. If you rebuild a database, run `npm run land` and apply the
 files again.
+
+## Phase 19 as built: lending units
+
+`supabase/migrations/019_loans.sql`. A lent unit really changes owner for the length of the
+loan (`units.lent_by`, `lent_until`, `home_base_id`), so every existing function treats it as
+the borrower's own: it is dispatched, supplied and gains experience like any other.
+
+- `lend_unit(unit, username, hours)`: idle unit, same alliance, 1 to 72 hours, at most five out
+  at once; it moves to the borrower's nearest base that stations its kind and has a free place.
+- `fc_return_loans` runs at each check-in of either player (the current `sync_player` is now in
+  `019`) and sends home any expired loan that is idle. `end_loan` lets either side end it early.
+- `fc_guard_loan`, a trigger under all the older functions, stops a unit on loan being
+  dismissed (which pays a refund), trained, refitted, transferred or lent on. If the borrower's
+  base or account is deleted, the unit is copied back to the lender instead of being lost.
+- Screens: "Lend to an ally" on a unit's page, a card on a borrowed unit, and "Out on loan"
+  with a Recall button in the Units tab.

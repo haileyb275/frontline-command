@@ -196,6 +196,7 @@ export async function loadGame() {
   loadDivisions().catch(() => {});
   loadGlobalEvent().catch(() => {});
   loadHistory().catch(() => {});
+  loadLoans().catch(() => {});
 }
 
 /** Build a base. Throws an Error with a readable message if the server says no. */
@@ -679,4 +680,24 @@ const refreshHistorySoon = debounce(() => loadHistory().catch(() => {}), 1500);
 export async function startHistoryOp(opId) {
   await call('start_history_op', { p_op: opId });
   await Promise.all([loadHistory(), sync()]); // the first step is on the map now
+}
+
+// ------------------------------------------------------------ phase 19
+
+/** Units of ours that are out on loan (they are not in state.units while away). */
+export async function loadLoans() {
+  setState({ loans: await call('get_my_loans') });
+}
+
+/** Lend one of our idle units to an alliance mate for some hours. */
+export async function lendUnit(unitId, username, hours) {
+  await call('lend_unit', { p_unit_id: unitId, p_username: username, p_hours: hours });
+  await Promise.all([sync(), loadLoans()]);
+}
+
+/** End a loan early, from either side. Returns false if the unit is still out on a mission. */
+export async function endLoan(unitId) {
+  const home = await call('end_loan', { p_unit_id: unitId });
+  await Promise.all([sync(), loadLoans()]);
+  return home;
 }

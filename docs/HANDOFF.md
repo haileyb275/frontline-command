@@ -67,7 +67,8 @@ Where the current version of the main functions lives:
 | `fc_spawn_due_missions` (choice, front band, unconfirmed, offensives) | `014` |
 | `fc_on_mission_complete` (experience, damage, counters, front) | `014` |
 | `fc_bump` (counters, alliance operations, weekly rivalry, worldwide events) | `017` |
-| `sync_player` (throttle), `fc_rate_limit`, `fc_maintenance` | `013` |
+| `sync_player` (throttle, returns loans) | `019` |
+| `fc_rate_limit`, `fc_maintenance` | `013` |
 | `get_player_profile` | `011` |
 | `fc_convoy_seconds`, market, `move_base`, goods triggers | `016` |
 
@@ -141,7 +142,9 @@ at the next check-in, for every player.
 Left over from it: lending units to an ally, which is harder because a lent
 unit must come back, with its repairs and experience.
 
-**Phase 18 is done** (`018_history_stats.sql`; see "Phase 18 as built" in DESIGN.md).
+**Phases 18 and 19 are done** (19 is unit lending, `019_loans.sql`; the current `sync_player` lives there).
+
+**Phase 18** (`018_history_stats.sql`; see "Phase 18 as built" in DESIGN.md).
 
 Open ends, in rough order of value:
 
@@ -150,5 +153,4 @@ Open ends, in rough order of value:
   a `t()` function with placeholders and per-language content files.
 - Standing orders run only in an open browser. A server-side version would belong in
   `fc_sync_extras`, with rules stored per player.
-- Lending units to an ally (left over from Phase 17).
 - Statistics count from Phase 18 onward; earlier payouts were not recorded.
