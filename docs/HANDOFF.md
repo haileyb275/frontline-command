@@ -66,7 +66,8 @@ Where the current version of the main functions lives:
 | `fc_spawn_mission` (terrain, real places, home-front rule) | `012` |
 | `fc_spawn_due_missions` (choice, front band, unconfirmed, offensives) | `014` |
 | `fc_on_mission_complete` (experience, damage, counters, front) | `014` |
-| `fc_bump` (counters, alliance operations, weekly rivalry, worldwide events) | `017` |
+| `fc_bump` (counters, alliance operations, weekly rivalry, worldwide and alliance events) | `020` |
+| `claim_event_reward`, `get_global_event`, `admin_start_event` | `020` |
 | `sync_player` (throttle, returns loans) | `019` |
 | `fc_rate_limit`, `fc_maintenance` | `013` |
 | `get_player_profile` | `011` |

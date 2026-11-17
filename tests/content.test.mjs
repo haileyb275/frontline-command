@@ -170,3 +170,13 @@ test('every translation is a non-empty string that differs in shape only', async
     }
   }
 });
+
+test('a sponsored alliance event pays the sponsor back more than it cost', async () => {
+  const { allianceEvents } = await import('../src/game/content.js');
+  assert.ok(allianceEvents.length > 0);
+  for (const e of allianceEvents) {
+    assert.ok(e.sponsor_return > e.cost, `${e.id}: sponsor_return must be above cost`);
+    assert.ok(['alliance', 'world'].includes(e.scope), `${e.id}: scope`);
+    assert.ok(e.target > 0 && e.hours > 0 && e.hours <= 336, `${e.id}: target and hours`);
+  }
+});

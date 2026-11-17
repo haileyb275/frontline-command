@@ -4,7 +4,7 @@
 // In an alliance      → four sub-views chosen by `ui.allianceView`:
 //                       'overview' | 'chat' | 'members' | 'buildings'
 
-import { allianceBuildings, getNation, getMissionType, getOperationType, operations, settings } from '../game/content.js';
+import { allianceBuildings, getNation, getMissionType, getOperationType, operations, settings, allianceEvents } from '../game/content.js';
 import { msUntil, formatDuration } from '../game/clock.js';
 import * as actions from '../game/actions.js';
 import { friendlyError } from '../supabase.js';
@@ -312,6 +312,91 @@ function renderBuildings(state, ui) {
             Buildings give their bonus to every member.</p>${cards}`;
 }
 
+const rewardLine = (e) =>
+  [e.reward_money && `${fmt(e.reward_money)} funds`, e.reward_supplies && `${fmt(e.reward_supplies)} supplies`,
+   e.reward_xp && `${fmt(e.reward_xp)} XP`].filter(Boolean).join(' · ');
+
+/** Can this player collect anything from this event right now? */
+export function eventClaimable(e, me) {
+  if (e.status !== 'succeeded') return false;
+  const asContributor = e.mine && e.mine.amount > 0 && !e.mine.claimed;
+  const asSponsor = e.sponsor_id === me && e.sponsor_return > 0 && !e.sponsor_claimed;
+  return Boolean(asContributor || asSponsor);
+}
+
+/** Alliance events: start one (free once a day for officers, or sponsored), follow it, collect. */
+function renderAllianceEvents(state, ui) {
+  const data = state.allianceEvents;
+  if (!data) return '<p class="muted">Loading alliance events…</p>';
+  const me = state.profile.id;
+
+  const cards = data.events.map((e) => {
+    const status = { active: `ends in <span class="js-countdown" data-until="${esc(e.ends_at)}"></span>`,
+                     succeeded: 'target reached', failed: 'ran out of time' }[e.status];
+    const sponsor = e.sponsor_name
+      ? `Sponsored by ${esc(e.sponsor_name)} for ${fmt(e.sponsor_cost)} funds; returns ${fmt(e.sponsor_return)} if it succeeds.`
+      : 'Today\'s free event.';
+    const top = e.top.map((c, i) => `
+      <div class="log-line"><span>${i + 1}. ${nationChip(c.nation_id)} ${esc(c.username)}</span><span>${fmt(c.amount)}</span></div>`).join('');
+    const sponsorWaiting = e.sponsor_id === me && e.sponsor_return > 0 && !e.sponsor_claimed && e.status === 'succeeded';
+    return `
+      <div class="card ${e.status === 'active' ? 'card--event' : ''}">
+        <h2>${esc(e.name)} <span class="count">${e.alliance_id ? 'alliance' : 'worldwide'}</span></h2>
+        <p class="muted">${status} · ${sponsor}</p>
+        <div class="progress"><span class="meter"><span style="width: ${Math.round((e.progress / e.target) * 100)}%"></span></span>
+          <span class="muted">${fmt(e.progress)} / ${fmt(e.target)}</span></div>
+        <p class="price">Each participant: ${rewardLine(e)}</p>
+        <p class="muted">Your part: ${fmt(e.mine?.amount ?? 0)}${e.mine?.claimed ? ' · reward collected' : ''}</p>
+        ${eventClaimable(e, me) ? `<button class="btn btn--primary btn--block" data-action="claim-alliance-event" data-event="${esc(e.id)}"
+              ${ui.busy ? 'disabled' : ''}>Collect${sponsorWaiting ? ` (includes your ${fmt(e.sponsor_return)} sponsor return)` : ''}</button>` : ''}
+        ${top}
+      </div>`;
+  }).join('');
+
+  const freeLeft = data.can_start_free && !data.free_used;
+  const starts = allianceEvents.map((t) => {
+    let freeLabel = 'Start free';
+    let freeBlocked = ui.busy || data.running;
+    if (!data.can_start_free) { freeLabel = 'Free: officers only'; freeBlocked = true; }
+    else if (data.free_used) { freeLabel = 'Free one used today'; freeBlocked = true; }
+    let paidLabel = `Sponsor · ${fmt(t.cost)}`;
+    let paidBlocked = ui.busy || data.running;
+    if (data.sponsored_today) { paidLabel = 'Sponsored today'; paidBlocked = true; }
+    else if (state.profile.money < t.cost) { paidLabel = `Needs ${fmt(t.cost)}`; paidBlocked = true; }
+    if (t.scope === 'world' && data.world_running) {
+      freeLabel = paidLabel = 'World event running'; freeBlocked = paidBlocked = true;
+    }
+    return `
+      <div class="card option">
+        <div class="option-head"><h2>${esc(t.name)}</h2><span class="count">${t.scope === 'world' ? 'worldwide' : 'alliance'}</span></div>
+        <p>${esc(t.description)}</p>
+        <p class="muted">${esc(t.goal_text)} within ${t.hours} hours.</p>
+        <p class="price">Each participant: ${rewardLine(t)}</p>
+        <p class="muted">Sponsored: costs you ${fmt(t.cost)} funds, pays you ${fmt(t.sponsor_return)} if it succeeds.</p>
+        <div class="option-foot">
+          <button class="btn btn--small ${freeBlocked ? '' : 'btn--primary'}" data-action="start-alliance-event" data-type="${esc(t.id)}"
+                  data-sponsored="false" ${freeBlocked ? 'disabled' : ''}
+                  data-confirm="Start ${esc(t.name)} for your alliance? This uses today's free event.">${freeLabel}</button>
+          <button class="btn btn--small" data-action="start-alliance-event" data-type="${esc(t.id)}" data-sponsored="true"
+                  ${paidBlocked ? 'disabled' : ''}
+                  data-confirm="Sponsor ${esc(t.name)} for ${fmt(t.cost)} of your own funds? You get ${fmt(t.sponsor_return)} back if it succeeds, nothing if it fails.">${paidLabel}</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  return `
+    <h3>Alliance events</h3>
+    ${cards || '<p class="muted">No events in the last three days.</p>'}
+    <h3>Start an event</h3>
+    <p class="muted">${freeLeft ? '<strong>Your alliance\'s free event for today is available.</strong> ' : ''}
+       Leaders and officers can start one event free each day. Any member can sponsor one a day from their own
+       funds: if it succeeds the sponsor gets back more than they paid, if it fails the money is lost.
+       One event runs at a time. New day in <span class="js-countdown" data-until="${esc(data.resets_at)}"></span>.</p>
+    ${data.running ? '<p class="note">An event is running. The next can start when it ends.</p>' : ''}
+    ${starts}
+    <h3>Joint operations</h3>`;
+}
+
 /** Joint operations: a shared target, a time limit, and a reward for all who take part. */
 function renderOps(state, ui) {
   const { alliance, operation: op, profile } = state;
@@ -366,6 +451,7 @@ function renderOps(state, ui) {
   }).join('');
 
   return `
+    ${renderAllianceEvents(state, ui)}
     ${current || '<p class="muted">No operation has been launched yet.</p>'}
     <h3>Launch an operation</h3>
     <p class="muted">Treasury: <strong>${fmt(alliance.info.treasury)} funds</strong>. Missions every member completes
@@ -375,6 +461,7 @@ function renderOps(state, ui) {
 
 /** Called by panel.js each time this tab is opened. */
 export function onShow() {
+  actions.loadAllianceEvents().catch(() => {});
   actions.loadAllianceWeek().catch(() => {});
   actions.loadAllianceMap().catch(() => {});
 }
@@ -423,9 +510,13 @@ export async function handleAction(action, data, ctx) {
       return;
     }
     case 'alliance-view':
-      if (data.view === 'ops') actions.loadOperation().catch(() => {}); // fresh figures each time
+      if (data.view === 'ops') { actions.loadOperation().catch(() => {}); actions.loadAllianceEvents().catch(() => {}); } // fresh figures each time
       if (data.view === 'overview') actions.loadAllianceWeek().catch(() => {});
       return ctx.update({ allianceView: data.view });
+    case 'start-alliance-event':
+      return run(ctx, () => actions.startAllianceEvent(data.type, data.sponsored === 'true'), 'Event started. Every mission now counts toward it.');
+    case 'claim-alliance-event':
+      return run(ctx, () => actions.claimEventReward(data.event), 'Reward collected.');
     case 'start-op':
       return run(ctx, () => actions.startOperation(data.op), 'Operation launched.');
     case 'claim-op':

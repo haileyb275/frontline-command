@@ -23,9 +23,10 @@ import ranks from '../data/ranks.json' with { type: 'json' };
 import research from '../data/research.json' with { type: 'json' };
 import operations from '../data/operations.json' with { type: 'json' };
 import history from '../data/history.json' with { type: 'json' };
+import allianceEvents from '../data/alliance_events.json' with { type: 'json' };
 import market from '../data/market.json' with { type: 'json' };
 
-export { nations, categories, buildings, units, missions, settings, allianceBuildings, specialties, products, dailyOrders, objectives, ranks, research, operations, market, history };
+export { nations, categories, buildings, units, missions, settings, allianceBuildings, specialties, products, dailyOrders, objectives, ranks, research, operations, market, history, allianceEvents };
 
 const index = (list) => new Map(list.map((item) => [item.id, item]));
 const nationById = index(nations);

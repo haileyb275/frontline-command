@@ -350,6 +350,12 @@ insert into public.history_ops (id, name, place, lat, lng, range_km, min_level, 
   ('h_rhine', 'Rhine Crossing 1945', 'Germany', 51.66, 6.45, 400, 6, 'A set-piece crossing of a wide river, prepared for weeks and carried out in a night and a day.', '[{"mission":"recon_sweep","name":"West bank","lat":51.62,"lng":6.25},{"mission":"river_crossing","name":"The Rhine at Wesel","lat":51.66,"lng":6.58},{"mission":"bridge_repair","name":"Pontoon bridges","lat":51.63,"lng":6.62},{"mission":"armored_counterattack","name":"Woods east of the river","lat":51.72,"lng":6.85}]'::jsonb, 56000, 2800, 2240, 'Rhine Crossing 1945', 17)
 on conflict (id) do update set name = excluded.name, place = excluded.place, lat = excluded.lat, lng = excluded.lng, range_km = excluded.range_km, min_level = excluded.min_level, description = excluded.description, steps = excluded.steps, reward_money = excluded.reward_money, reward_supplies = excluded.reward_supplies, reward_xp = excluded.reward_xp, honour = excluded.honour, sort = excluded.sort;
 
+insert into public.alliance_event_types (id, name, scope, description, goal_text, counter, target, hours, cost, sponsor_return, reward_money, reward_supplies, reward_xp, sort) values
+  ('ae_local_push', 'Local Push', 'alliance', 'A short, sharp effort by your own alliance.', 'Complete 15 missions together', 'missions', 15, 6, 20000, 30000, 4000, 150, 120, 1),
+  ('ae_theatre_offensive', 'Theatre Offensive', 'alliance', 'A full day''s offensive by every member of your alliance.', 'Complete 50 missions together', 'missions', 50, 24, 50000, 75000, 10000, 350, 300, 2),
+  ('ae_call_to_arms', 'Call to Arms', 'world', 'Your alliance calls on every commander in the game. All players'' missions count, and everyone who takes part is rewarded.', '200 missions by all players', 'missions', 200, 48, 120000, 180000, 15000, 500, 400, 3)
+on conflict (id) do update set name = excluded.name, scope = excluded.scope, description = excluded.description, goal_text = excluded.goal_text, counter = excluded.counter, target = excluded.target, hours = excluded.hours, cost = excluded.cost, sponsor_return = excluded.sponsor_return, reward_money = excluded.reward_money, reward_supplies = excluded.reward_supplies, reward_xp = excluded.reward_xp, sort = excluded.sort;
+
 insert into public.market (item, name, base_price) values
   ('supplies', 'Supplies', 6),
   ('fuel', 'Fuel', 5),

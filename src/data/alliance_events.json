@@ -1,0 +1,50 @@
+[
+  {
+    "id": "ae_local_push",
+    "name": "Local Push",
+    "scope": "alliance",
+    "description": "A short, sharp effort by your own alliance.",
+    "goal_text": "Complete 15 missions together",
+    "counter": "missions",
+    "target": 15,
+    "hours": 6,
+    "cost": 20000,
+    "sponsor_return": 30000,
+    "reward_money": 4000,
+    "reward_supplies": 150,
+    "reward_xp": 120,
+    "sort": 1
+  },
+  {
+    "id": "ae_theatre_offensive",
+    "name": "Theatre Offensive",
+    "scope": "alliance",
+    "description": "A full day's offensive by every member of your alliance.",
+    "goal_text": "Complete 50 missions together",
+    "counter": "missions",
+    "target": 50,
+    "hours": 24,
+    "cost": 50000,
+    "sponsor_return": 75000,
+    "reward_money": 10000,
+    "reward_supplies": 350,
+    "reward_xp": 300,
+    "sort": 2
+  },
+  {
+    "id": "ae_call_to_arms",
+    "name": "Call to Arms",
+    "scope": "world",
+    "description": "Your alliance calls on every commander in the game. All players' missions count, and everyone who takes part is rewarded.",
+    "goal_text": "200 missions by all players",
+    "counter": "missions",
+    "target": 200,
+    "hours": 48,
+    "cost": 120000,
+    "sponsor_return": 180000,
+    "reward_money": 15000,
+    "reward_supplies": 500,
+    "reward_xp": 400,
+    "sort": 3
+  }
+]

@@ -26,6 +26,7 @@ export const state = {
   allies: [], // alliance mates' bases, for the map
   allianceWeek: null, // this week's alliance-versus-alliance board
   globalEvent: null, // the worldwide event, if one is running or just ended
+  allianceEvents: null, // our alliance's events and what we may start today
   loans: [], // units of ours that are out on loan to allies
   history: [], // our progress in the named historical operations
   market: null, // current market prices

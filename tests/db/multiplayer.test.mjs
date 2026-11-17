@@ -197,3 +197,66 @@ test('a unit can be lent to an ally, used, protected, and comes home', { skip },
   const home = (await a.sync()).units;
   assert.deepEqual([home.length, home[0].unit_type, home[0].missions_done, home[0].lent_by], [1, 'usa_infantry', 7, null]);
 });
+
+test('alliance events: one free a day for officers, sponsored ones pay back more, one at a time', { skip }, async () => {
+  const leader = await createPlayer({ nation: 'usa' });
+  const member = await createPlayer({ nation: 'uk' });
+  const outsider = await createPlayer({ nation: 'japan' });
+  const tag = leader.username.slice(2, 7).toUpperCase();
+  const alliance = await leader.must('create_alliance', { p_name: `Test ${tag}`, p_tag: tag });
+  await member.must('join_alliance', { p_alliance_id: alliance });
+  const bump = (p, n) => sql(`select public.fc_bump('${p.id}', 'missions', ${n})`);
+  const mine = async (p) => (await p.must('get_alliance_events')).events[0];
+  await sql(`update public.global_events set status = 'failed' where status = 'active' and alliance_id is null`);
+
+  try {
+    // Ordinary members cannot use the free start; outsiders cannot start at all.
+    assert.match((await member.rpc('start_alliance_event', { p_type: 'ae_local_push', p_sponsored: false })).error, /leader and officers/);
+    assert.match((await outsider.rpc('start_alliance_event', { p_type: 'ae_local_push', p_sponsored: false })).error, /need to be in an alliance/);
+
+    // The leader's free event: only members' missions count toward it.
+    await leader.must('start_alliance_event', { p_type: 'ae_local_push', p_sponsored: false });
+    assert.match((await member.rpc('start_alliance_event', { p_type: 'ae_local_push', p_sponsored: true })).error, /already has an event running/);
+    await bump(outsider, 5);
+    assert.equal((await mine(leader)).progress, 0);
+    await bump(member, 10);
+    await bump(leader, 5);
+    let ev = await mine(leader);
+    assert.deepEqual([ev.status, ev.progress, ev.sponsor_cost], ['succeeded', 15, 0]);
+
+    const before = (await member.sync()).profile.money;
+    await member.must('claim_event_reward', { p_event: ev.id });
+    assert.equal((await member.sync()).profile.money, before + 4000);
+    assert.match((await member.rpc('claim_event_reward', { p_event: ev.id })).error, /no reward waiting/);
+
+    // Today's free start is used up, for every officer.
+    const status = await leader.must('get_alliance_events');
+    assert.deepEqual([status.free_used, status.running], [true, false]);
+    assert.match((await leader.rpc('start_alliance_event', { p_type: 'ae_local_push', p_sponsored: false })).error, /used today's free event/);
+
+    // A member sponsors one with their own funds; if it succeeds they get more back than they paid.
+    await sql(`update public.profiles set money = 100000 where id = '${member.id}'`);
+    await member.must('start_alliance_event', { p_type: 'ae_local_push', p_sponsored: true });
+    assert.equal((await member.sync()).profile.money, 80000);
+    await bump(leader, 15);                       // the sponsor does not have to fight in it themselves
+    ev = await mine(member);
+    assert.equal(ev.status, 'succeeded');
+    await member.must('claim_event_reward', { p_event: ev.id });
+    assert.equal((await member.sync()).profile.money, 80000 + 30000);
+    assert.match((await member.rpc('claim_event_reward', { p_event: ev.id })).error, /no reward waiting/);
+
+    // Sponsoring is once a day per player; the leader can still sponsor.
+    assert.match((await member.rpc('start_alliance_event', { p_type: 'ae_local_push', p_sponsored: true })).error, /already sponsored an event today/);
+    assert.match((await leader.rpc('start_alliance_event', { p_type: 'ae_call_to_arms', p_sponsored: true })).error, /costs 120000 funds/);
+
+    // A worldwide event called by the alliance: everyone's missions count.
+    await sql(`update public.profiles set money = 200000 where id = '${leader.id}'`);
+    await leader.must('start_alliance_event', { p_type: 'ae_call_to_arms', p_sponsored: true });
+    await bump(outsider, 3);
+    const world = await outsider.must('get_global_event');
+    assert.deepEqual([world.name, world.progress, world.sponsor_tag, world.mine.amount], ['Call to Arms', 3, tag, 3]);
+    assert.match((await outsider.rpc('admin_start_event', { p_name: 'x', p_counter: 'missions', p_target: 1, p_hours: 1 })).error, /Administrators only/);
+  } finally {
+    await sql(`delete from public.global_events where sponsor_alliance_id = '${alliance}'`);
+  }
+});

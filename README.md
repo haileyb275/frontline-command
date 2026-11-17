@@ -102,6 +102,7 @@ All content is data in `src/data/`. No game logic needs to change.
 | an alliance operation | `operations.json` | a shared `counter` target, time limit, cost and per-member reward |
 | a historical operation | `history.json` | each step is a mission type at a real `lat`/`lng`; sea missions must sit on water. `min_level` must cover every step's mission |
 | a translation | `lang/de.json` (copy it for a new language and list it in `src/i18n.js`) | English label → translation; anything not listed stays in English |
+| an alliance event size | `alliance_events.json` | `scope` is `alliance` (members only) or `world` (everyone counts); `sponsor_return` must be more than `cost` |
 | a tuning number | `settings.json` | spawn interval, travel speed-up, caps, costs |
 
 Then:
@@ -139,3 +140,4 @@ npm run balance
 - [x] Phase 17 — Alliance territory on the map, weekly alliance rivalry, aid convoys between allies, worldwide events
 - [x] Phase 18 — Mission filters, standing orders (auto-dispatch), historical operations, statistics, translations (German begun)
 - [x] Phase 19 — Lending units to allies; coastline fix across the date line; 17 historical operations; wider German; balance pass
+- [x] Phase 20 — Alliance events: one free a day for officers, sponsored events that repay their sponsor, worldwide calls to arms

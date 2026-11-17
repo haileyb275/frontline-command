@@ -68,6 +68,7 @@ function announce(events) {
     refreshObjectivesSoon();
     if (state.alliance) refreshOperationSoon();
     if (state.globalEvent?.status === 'active') refreshEventSoon();
+    if (state.allianceEvents?.running) refreshAllianceEventsSoon();
     if (state.history.some((h) => h.status === 'active')) refreshHistorySoon();
   }
 
@@ -665,7 +666,7 @@ const refreshEventSoon = debounce(() => loadGlobalEvent().catch(() => {}), 1500)
 
 export async function claimEventReward(eventId) {
   await call('claim_event_reward', { p_event: eventId });
-  await Promise.all([loadGlobalEvent(), sync()]);
+  await Promise.all([loadGlobalEvent(), sync(), state.alliance ? loadAllianceEvents() : null]);
 }
 
 export async function adminStartEvent(v) {
@@ -709,4 +710,18 @@ export async function endLoan(unitId) {
   const home = await call('end_loan', { p_unit_id: unitId });
   await Promise.all([sync(), loadLoans()]);
   return home;
+}
+
+// ------------------------------------------------------------ phase 20
+
+/** Our alliance's recent events, and whether a free or sponsored start is still available today. */
+export async function loadAllianceEvents() {
+  setState({ allianceEvents: state.alliance ? await call('get_alliance_events') : null });
+}
+const refreshAllianceEventsSoon = debounce(() => loadAllianceEvents().catch(() => {}), 1500);
+
+/** Start an alliance event: free (leaders and officers, once a day) or sponsored from our own funds. */
+export async function startAllianceEvent(typeId, sponsored) {
+  await call('start_alliance_event', { p_type: typeId, p_sponsored: sponsored });
+  await Promise.all([loadAllianceEvents(), loadGlobalEvent(), sponsored ? sync() : null]);
 }

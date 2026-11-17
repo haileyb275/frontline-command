@@ -30,7 +30,8 @@ export function claimableCount(state) {
     return type && !d.claimed && (o.today[type.counter] ?? 0) >= type.target;
   }).length;
   const e = state.globalEvent;
-  const event = e?.status === 'succeeded' && e.mine?.amount > 0 && !e.mine.claimed ? 1 : 0;
+  const event = e?.status === 'succeeded' && ((e.mine?.amount > 0 && !e.mine.claimed)
+    || (e.sponsor_id === state.profile?.id && e.sponsor_return > 0 && !e.sponsor_claimed)) ? 1 : 0;
   const others = objectives.filter((obj) =>
     !o.claimed.includes(obj.id) && obj.steps.every((s) => (o.counters[s.counter] ?? 0) >= s.target)).length;
   return daily + others + event;
@@ -44,12 +45,14 @@ export function renderEvent(state, ui) {
                    succeeded: 'target reached', failed: 'ran out of time' }[e.status];
   const top = e.top.map((c, i) => `
     <div class="log-line"><span>${i + 1}. ${esc(c.username)}</span><span>${fmt(c.amount)}</span></div>`).join('');
-  const canClaim = e.status === 'succeeded' && e.mine && e.mine.amount > 0 && !e.mine.claimed;
+  const canClaim = e.status === 'succeeded' && ((e.mine && e.mine.amount > 0 && !e.mine.claimed)
+    || (e.sponsor_id === state.profile.id && e.sponsor_return > 0 && !e.sponsor_claimed));
   return `
     <h3>Worldwide event <span class="count">${fmt(e.players)} taking part</span></h3>
     <div class="card card--event">
       <h2>${esc(e.name)}</h2>
       ${e.description ? `<p>${esc(e.description)}</p>` : ''}
+      ${e.sponsor_tag ? `<p class="muted">Called by the alliance <span class="tag">${esc(e.sponsor_tag)}</span>${e.sponsor_name ? `, sponsored by ${esc(e.sponsor_name)}` : ''}.</p>` : ''}
       <p class="muted">Every commander in the game counts toward one target · ${status}</p>
       <div class="progress">${progressBar(e.progress, e.target)}</div>
       <p class="price">Reward for everyone who takes part: ${rewardText(e.reward_money, e.reward_supplies, e.reward_xp) || 'honour'}</p>

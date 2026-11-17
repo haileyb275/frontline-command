@@ -168,6 +168,7 @@ test('divisions fight harder together, and a refit keeps a unit\'s experience', 
     update public.units set status = 'idle', missions_done = 12 where id = '${a}';`);
   assert.match((await p.rpc('refit_unit', { p_unit_id: a, p_unit_type: 'usa_infantry' })).error, /own nation/);
   assert.match((await p.rpc('refit_unit', { p_unit_id: a, p_unit_type: 'germany_recon' })).error, /same branch/);
+  await sql(`update public.profiles set research_year = 1942 where id = '${p.id}'`); // the MG 42 entered service in 1942
   const refitted = (await p.must('refit_unit', { p_unit_id: a, p_unit_type: 'germany_infantry_2' })).units.find((u) => u.id === a);
   assert.deepEqual([refitted.unit_type, refitted.missions_done, refitted.status, refitted.division_id],
     ['germany_infantry_2', 12, 'repairing', division]);

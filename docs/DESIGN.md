@@ -374,3 +374,21 @@ the borrower's own: it is dispatched, supplied and gains experience like any oth
   base or account is deleted, the unit is copied back to the lender instead of being lost.
 - Screens: "Lend to an ally" on a unit's page, a card on a borrowed unit, and "Out on loan"
   with a Recall button in the Units tab.
+
+## Phase 20 as built: events started by alliances
+
+`supabase/migrations/020_alliance_events.sql`, sizes in `src/data/alliance_events.json`.
+
+- Three sizes: Local Push (15 missions, 6 h) and Theatre Offensive (50 missions, 24 h) count only
+  the alliance's own members; Call to Arms (200 missions, 48 h) is a worldwide event that every
+  player feeds, shown in Missions → Orders as "called by" the alliance.
+- **Free:** a leader or officer may start one per alliance per UTC day.
+- **Sponsored:** any member pays the size's `cost` from their own funds, once per player per day.
+  If the event succeeds the sponsor collects `sponsor_return` (1.5 × cost) on top of the normal
+  participant reward, even if they took no part themselves; if it fails the money is gone.
+- One event per alliance at a time, and one worldwide event at a time (administrators' included).
+- Events are rows in `global_events`: `alliance_id` set means members only; `sponsor_alliance_id`,
+  `sponsor_id`, `sponsor_cost`, `sponsor_return`, `sponsor_claimed` record who called and paid.
+  `fc_bump` (current version now in `020`) feeds every matching event; `claim_event_reward`
+  (also `020`) pays the contributor's reward and the sponsor's return.
+- Screen: Alliance → Ops, above the joint operations.
