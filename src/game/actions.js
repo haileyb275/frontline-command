@@ -68,6 +68,7 @@ function announce(events) {
     refreshObjectivesSoon();
     if (state.alliance) refreshOperationSoon();
     if (state.globalEvent?.status === 'active') refreshEventSoon();
+    if (state.history.some((h) => h.status === 'active')) refreshHistorySoon();
   }
 
   if (done.length > 3) {
@@ -194,6 +195,7 @@ export async function loadGame() {
   loadTaskForces().catch(() => {});
   loadDivisions().catch(() => {});
   loadGlobalEvent().catch(() => {});
+  loadHistory().catch(() => {});
 }
 
 /** Build a base. Throws an Error with a readable message if the server says no. */
@@ -424,8 +426,14 @@ export async function setAutoResupply(baseId, on) {
 /** Open another player's public page (and show their bases on the map). */
 export async function openProfile(username) {
   setState({ viewedProfile: null });
-  const profile = await call('get_player_profile', { p_username: username });
+  const [profile, battleHonours] = await Promise.all([
+    call('get_player_profile', { p_username: username }),
+    call('get_player_honours', { p_username: username }).catch(() => []),
+  ]);
   if (!profile) throw new Error('That commander could not be found.');
+  profile.battle_honours = battleHonours ?? [];
+  // Our own page also carries our private record.
+  if (profile.id === state.profile?.id) profile.stats = await call('get_my_stats').catch(() => null);
   setState({ viewedProfile: profile, overlayBases: profile.id === state.profile?.id ? [] : profile.bases });
   return profile;
 }
@@ -656,4 +664,19 @@ export async function adminStartEvent(v) {
     p_reward_money: v.money, p_reward_supplies: v.supplies, p_reward_xp: v.xp, p_description: v.description,
   });
   await loadGlobalEvent();
+}
+
+// ------------------------------------------------------------ phase 18
+
+/** How far we have got in each named historical operation. */
+export async function loadHistory() {
+  const { data, error } = await supabase.from('player_history').select('*');
+  if (error) throw error;
+  setState({ history: data });
+}
+const refreshHistorySoon = debounce(() => loadHistory().catch(() => {}), 1500);
+
+export async function startHistoryOp(opId) {
+  await call('start_history_op', { p_op: opId });
+  await Promise.all([loadHistory(), sync()]); // the first step is on the map now
 }

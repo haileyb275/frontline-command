@@ -21,7 +21,7 @@ import {
   settings,
 } from '../game/content.js';
 import {
-  dispatchUnits, recallUnits, shareMission, scoutMission, claimDailyOrder, claimObjective, loadObjectives, claimEventReward, loadGlobalEvent, saveTaskForce,
+  dispatchUnits, recallUnits, shareMission, scoutMission, claimDailyOrder, claimObjective, loadObjectives, claimEventReward, loadGlobalEvent, loadHistory, startHistoryOp, saveTaskForce,
 } from '../game/actions.js';
 import { renderOrders, tickOrders, claimableCount } from './ordersView.js';
 import { msUntil, formatDuration, liveUnitStatus, now } from '../game/clock.js';
@@ -158,7 +158,8 @@ function renderList(state, ui) {
           <span class="row-main">
             <span class="row-title">${esc(type.name)}${mission.site_name ? ` <span class="site">${esc(mission.site_name)}</span>` : ''}
               ${mission.alliance_id ? '<span class="tag tag--shared">Alliance</span>' : ''}
-              ${mission.target_base_id ? '<span class="tag tag--bad">Offensive</span>' : ''}</span>
+              ${mission.target_base_id ? '<span class="tag tag--bad">Offensive</span>' : ''}
+              ${mission.history_op ? '<span class="tag tag--spec">Operation</span>' : ''}</span>
             ${mission.owner_id !== profile.id ? `<span class="row-sub">shared by ${esc(mission.owner_name)}</span>` : ''}
             <span class="row-sub js-mission-status" data-mission="${esc(mission.id)}">
               ${esc(statusText(mission, dispatches))}</span>
@@ -563,8 +564,23 @@ export async function handleAction(action, data, ctx) {
       return;
 
     case 'missions-view':
-      if (data.view === 'orders') { loadObjectives().catch(() => {}); loadGlobalEvent().catch(() => {}); } // fresh figures each time it is opened
+      if (data.view === 'orders') { loadObjectives().catch(() => {}); loadGlobalEvent().catch(() => {}); loadHistory().catch(() => {}); } // fresh figures each time it is opened
       return update({ missionsView: data.view });
+
+    case 'history-show':
+      return ctx.flyTo({ lat: +data.lat, lng: +data.lng });
+
+    case 'history-start':
+      update({ busy: true });
+      try {
+        await startHistoryOp(data.op);
+        toast('Operation begun. The first objective is on your map.', 'ok');
+        update({ busy: false, missionsView: 'list' });
+      } catch (error) {
+        toast(friendlyError(error), 'error');
+        update({ busy: false });
+      }
+      return;
 
     case 'claim-event':
       update({ busy: true });

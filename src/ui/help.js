@@ -1,6 +1,7 @@
 // The "How to play" screen. Shown automatically the first time, and from the
 // "?" button in the top bar afterwards.
 
+import { LANGUAGES, getLanguage, setLanguage } from '../i18n.js';
 import { showOverlay, hideOverlay } from './dom.js';
 import { getAlertPrefs, setAlertPref, requestNotifyPermission, playSound } from './alerts.js';
 
@@ -61,6 +62,11 @@ export function showHelp() {
       <label class="check-line"><input type="checkbox" id="pref-notify" ${getAlertPrefs().notify ? 'checked' : ''} />
         Show a notification when the game is in a background tab</label>
 
+      <label class="check-line">Language
+        <select id="pref-language">${Object.entries(LANGUAGES).map(([code, l]) =>
+          `<option value="${code}" ${getLanguage() === code ? 'selected' : ''}>${l.name}</option>`).join('')}</select></label>
+      <p class="muted">Translations cover the main labels and buttons so far; longer texts remain in English.</p>
+
       <p class="muted">Everything keeps running while you are away: missions finish and units
          return on time, and you collect the results when you next log in.</p>
       <button class="btn btn--primary" id="help-close">Understood</button>
@@ -76,6 +82,8 @@ export function showHelp() {
     setAlertPref('notify', allowed);
     event.target.checked = allowed;
   });
+
+  overlay.querySelector('#pref-language').addEventListener('change', (event) => setLanguage(event.target.value));
 
   overlay.querySelector('#help-close').addEventListener('click', () => {
     try { localStorage.setItem(SEEN_KEY, '1'); } catch { /* private mode: fine */ }

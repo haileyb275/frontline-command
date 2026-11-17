@@ -1,6 +1,7 @@
 // Entry point: the first JavaScript that runs. Its only job is to start the
 // other modules and connect them to each other.
 
+import { initLanguage } from './i18n.js';
 import './style.css';
 import {
   createMap, createBaseLayer, createFrontLayer, createAllyLayer, createSupplyLayer, createMissionLayer, createTravelLayer, formatLatLng,
@@ -309,3 +310,6 @@ supabase.auth.onAuthStateChange((event, session) => {
 if (import.meta.env.DEV) {
   window.fc = { map, state, supabase };
 }
+
+// Swap labels into the player's language (English needs nothing).
+initLanguage();

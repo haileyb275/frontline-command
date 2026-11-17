@@ -7,7 +7,7 @@
 // The browser only DISPLAYS progress. When a reward is claimed the server
 // re-checks its own counts before paying (see 010_orders.sql).
 
-import { dailyOrders, objectives, settings } from '../game/content.js';
+import { dailyOrders, objectives, settings, history, getMissionType, distanceKm } from '../game/content.js';
 import { msUntil, formatDuration } from '../game/clock.js';
 import { esc, fmt } from './dom.js';
 
@@ -58,6 +58,54 @@ export function renderEvent(state, ui) {
                             ${ui.busy ? 'disabled' : ''}>Collect your reward</button>` : ''}
       ${top}
     </div>`;
+}
+
+/** Named historical operations: a chain of missions on the real ground, for a battle honour. */
+export function renderHistory(state, ui) {
+  const mine = new Map(state.history.map((h) => [h.op_id, h]));
+  const busy = state.history.some((h) => h.status === 'active');
+  const cards = [...history].sort((a, b) => a.sort - b.sort).map((op) => {
+    const h = mine.get(op.id);
+    const done = h?.status === 'done';
+    const active = h?.status === 'active';
+    const near = state.bases.some((b) => distanceKm(b, op) <= op.range_km);
+    const steps = op.steps.map((s, i) => {
+      const won = done || (active && i < h.step);
+      const now = active && i === h.step;
+      return `<div class="step ${won ? 'is-done' : ''}">
+                <span>${won ? '✓' : now ? '▶' : '○'} ${esc(s.name)}</span>
+                <span class="muted">${esc(getMissionType(s.mission)?.name ?? '')}</span>
+              </div>`;
+    }).join('');
+    let label = 'Begin';
+    let blocked = ui.busy;
+    if (done) { label = 'Completed'; blocked = true; }
+    else if (active) { label = 'Under way'; blocked = true; }
+    else if (state.profile.level < op.min_level) { label = `Level ${op.min_level}`; blocked = true; }
+    else if (!near) { label = 'No base in reach'; blocked = true; }
+    else if (busy) { label = 'One at a time'; blocked = true; }
+    else if (h?.status === 'failed') label = 'Try again';
+    return `
+      <div class="card option ${done ? 'is-claimed' : ''} ${active ? 'card--notice' : ''}">
+        <div class="option-head"><h2>${esc(op.name)}</h2><span class="count">${esc(op.place)}</span></div>
+        <p>${esc(op.description)}</p>
+        ${steps}
+        <p class="muted">Needs level ${op.min_level} and a base of yours within ${fmt(op.range_km)} km. Each step must be
+           started within 12 hours and pays half as much again as usual.</p>
+        <div class="option-foot">
+          <span class="price">${rewardText(op.reward_money, op.reward_supplies, op.reward_xp)} · honour</span>
+          <span class="btn-row">
+            <button class="btn btn--small" data-action="history-show" data-lat="${op.lat}" data-lng="${op.lng}">Map</button>
+            <button class="btn btn--small ${!blocked ? 'btn--primary' : ''}" data-action="history-start" data-op="${esc(op.id)}"
+                    ${blocked ? 'disabled' : ''}>${label}</button>
+          </span>
+        </div>
+      </div>`;
+  }).join('');
+  const count = state.history.filter((h) => h.status === 'done').length;
+  return `<h3>Historical operations <span class="count">${count} / ${history.length}</span></h3>
+          <p class="muted">Fight a named battle where it happened: a chain of missions on the real ground, one after
+             another. Finish the chain for a reward and a battle honour on your profile.</p>${cards}`;
 }
 
 export function renderOrders(state, ui) {
@@ -128,6 +176,8 @@ export function renderOrders(state, ui) {
 
     <h3>Campaigns <span class="count">${count(campaigns)}</span></h3>
     ${campaigns.map(card).join('')}
+
+    ${renderHistory(state, ui)}
 
     <h3>Achievements <span class="count">${count(achievements)}</span></h3>
     ${achievements.map(card).join('')}`;

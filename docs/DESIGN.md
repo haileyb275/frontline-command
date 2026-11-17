@@ -326,3 +326,24 @@ All in `supabase/migrations/017_rivalry.sql`.
   Missions → Orders.
 
 Not built: lending units to an ally (ownership, repairs and veterancy make it a larger job).
+
+## Phase 18 as built: filters, standing orders, historical operations, statistics, translations
+
+- **Mission filters** (browser only): All, Can staff now, Under way, Land, Sea, Urgent.
+- **Standing orders** (browser only, `runAutoDispatch` in `missionsTab.js`): while the game is
+  open, a new report at or under a chosen difficulty that the player's idle units can fully
+  staff is dispatched with the same call a click makes, so the server checks it identically.
+  Nothing happens while the game is closed; this keeps the "nothing runs in the background" rule.
+- **Historical operations** (`018_history_stats.sql`, content in `src/data/history.json`): eight
+  named battles, each a chain of 3 or 4 missions at real coordinates. `start_history_op` needs
+  the level, a base within `range_km` of the place, and no other operation under way. A trigger
+  on `missions` puts the next step on the map when one is won, fails the operation if a step
+  expires (it can be restarted), and on the last step pays the reward and records a battle
+  honour, shown on the public profile via `get_player_honours`. Steps pay 1.5 times as much.
+- **Statistics**: `get_my_stats()` returns lifetime counters, the last seven days, and totals
+  per mission type. Payout rows are deleted as they are paid, so a before-delete trigger keeps
+  the running totals in `mission_stats`. Shown only on your own profile ("Your record").
+- **Translations** (`src/i18n.js`, `src/data/lang/de.json`): a word list maps English labels to
+  another language and a MutationObserver swaps recognised labels as they appear. Player-typed
+  text is never touched. Coverage is the fixed labels and buttons (about 170); sentences with
+  numbers in them, help text, content names and server error messages are still English.

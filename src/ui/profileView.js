@@ -8,6 +8,45 @@ import {
 import { esc, fmt } from './dom.js';
 import { unitIcon, buildingIcon } from './icons.js';
 
+/** Our own record: only shown on our own page. */
+function renderStats(p) {
+  const s = p.stats;
+  if (!s) return '';
+  const life = s.life ?? {};
+  const week = [];
+  for (let i = 6; i >= 0; i--) {
+    const day = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+    week.push({ day, missions: s.days.find((d) => d.day === day)?.missions ?? 0 });
+  }
+  const peak = Math.max(1, ...week.map((d) => d.missions));
+  const bars = week.map((d) => `
+    <span class="bar" title="${d.day}: ${d.missions}">
+      <span class="bar-fill" style="height: ${Math.round((d.missions / peak) * 100)}%"></span>
+      <span class="bar-label">${new Date(d.day + 'T12:00:00Z').toLocaleDateString([], { weekday: 'narrow' })}</span>
+    </span>`).join('');
+  const byCat = categories
+    .map((c) => [c.name, life[`missions_cat_${c.id}`] ?? 0]).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]);
+  const vets = p.units.filter((u) => veterancy(u.missions_done).tier > 0).length;
+  return `
+    <h3>Your record <span class="count">private</span></h3>
+    <div class="facts">
+      <div><span>Missions</span>${fmt(life.missions ?? 0)}</div>
+      <div><span>Hard missions</span>${fmt(life.missions_hard ?? 0)}</div>
+      <div><span>At sea</span>${fmt(life.missions_water ?? 0)}</div>
+      <div><span>With the alliance</span>${fmt(life.missions_shared ?? 0)}</div>
+      <div><span>Units sent out</span>${fmt(life.units_sent ?? 0)}</div>
+      <div><span>Veteran units</span>${vets} of ${p.units.length}</div>
+      <div><span>Battle honours</span>${s.honours}</div>
+      <div><span>Earned from missions</span>${fmt(s.earned.money)} funds</div>
+    </div>
+    <h3>Missions, last 7 days</h3>
+    <div class="bars">${bars}</div>
+    ${s.top_missions.length ? `<h3>Most often fought</h3>${s.top_missions.map((m) => `
+      <div class="log-line"><span>${esc(m.name)}</span><span>${fmt(m.times)} × · ${fmt(m.money)} funds</span></div>`).join('')}` : ''}
+    ${byCat.length ? `<h3>Missions by arm</h3>${byCat.map(([name, n]) => `
+      <div class="log-line"><span>${esc(name)}</span><span>${fmt(n)}</span></div>`).join('')}` : ''}`;
+}
+
 export function renderProfile(state) {
   const p = state.viewedProfile;
   if (!p) return '<p class="muted">Loading profile…</p>';
@@ -86,6 +125,11 @@ export function renderProfile(state) {
     ${(p.season_awards ?? []).length
       ? `<div class="chips">${p.season_awards.map((a) =>
           `<span class="chip chip--honour">🏅 ${esc(a.season)}: #${a.position}</span>`).join('')}</div>` : ''}
+
+    ${(p.battle_honours ?? []).length
+      ? `<div class="chips">${p.battle_honours.map((b) =>
+          `<span class="chip chip--honour" title="${esc(b.place)}">⚔ ${esc(b.honour)}</span>`).join('')}</div>` : ''}
+    ${isMe ? renderStats(p) : ''}
 
     <h3>Bases <span class="count">${p.bases.length}</span></h3>
     <div class="rows">${baseRows}</div>

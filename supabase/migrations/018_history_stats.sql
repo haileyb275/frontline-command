@@ -154,7 +154,42 @@ $$;
 
 -- ---------------------------------------------------------------------
 -- 5. Statistics: the caller's own record
+--    Payouts are deleted as they are paid (see fc_sync in 004), so a
+--    trigger keeps a small running total per player and mission as they go.
 -- ---------------------------------------------------------------------
+create table if not exists public.mission_stats (
+  player_id    uuid not null references public.profiles (id) on delete cascade,
+  mission_name text not null,
+  times        int not null default 0,
+  money        bigint not null default 0,
+  supplies     bigint not null default 0,
+  xp           bigint not null default 0,
+  primary key (player_id, mission_name)
+);
+alter table public.mission_stats enable row level security;   -- functions only
+
+create or replace function public.fc_record_payout()
+returns trigger
+language plpgsql security definer set search_path = public
+as $$
+begin
+  -- Paid payouts only: one the housekeeping throws away unpaid does not count,
+  -- and nor does one that goes because its player's account was deleted.
+  if old.created_at > now() - interval '60 days'
+     and exists (select 1 from public.profiles where id = old.player_id) then
+    insert into public.mission_stats (player_id, mission_name, times, money, supplies, xp)
+    values (old.player_id, old.mission_name, case when old.kind = 'reward' then 1 else 0 end, old.money, old.supplies, old.xp)
+    on conflict (player_id, mission_name) do update
+      set times = mission_stats.times + excluded.times, money = mission_stats.money + excluded.money,
+          supplies = mission_stats.supplies + excluded.supplies, xp = mission_stats.xp + excluded.xp;
+  end if;
+  return old;
+end;
+$$;
+drop trigger if exists mission_payouts_record on public.mission_payouts;
+create trigger mission_payouts_record before delete on public.mission_payouts
+  for each row execute function public.fc_record_payout();
+
 create or replace function public.get_my_stats()
 returns jsonb
 language sql stable security definer set search_path = public
@@ -168,15 +203,14 @@ as $$
                         from public.player_counters
                        where player_id = auth.uid() and scope <> 'life'
                          and scope >= to_char((now() at time zone 'UTC')::date - 6, 'YYYY-MM-DD')), '[]'),
-    -- payouts are kept for 60 days
     'earned', (select jsonb_build_object('money', coalesce(sum(money), 0), 'supplies', coalesce(sum(supplies), 0),
-                                         'xp', coalesce(sum(xp), 0), 'payouts', count(*))
-                 from public.mission_payouts where player_id = auth.uid()),
+                                         'xp', coalesce(sum(xp), 0))
+                 from public.mission_stats where player_id = auth.uid()),
     'top_missions', coalesce((select jsonb_agg(to_jsonb(t) order by t.times desc)
-                                from (select mission_name as name, count(*) as times, sum(money) as money
-                                        from public.mission_payouts
-                                       where player_id = auth.uid() and kind = 'reward'
-                                       group by mission_name order by count(*) desc limit 5) t), '[]'),
+                                from (select mission_name as name, times, money
+                                        from public.mission_stats
+                                       where player_id = auth.uid() and times > 0
+                                       order by times desc limit 5) t), '[]'),
     'honours', (select count(*) from public.player_history where player_id = auth.uid() and status = 'done'))
    where auth.uid() is not null;
 $$;
@@ -186,6 +220,7 @@ $$;
 -- ---------------------------------------------------------------------
 revoke all on function public.fc_history_spawn(uuid, public.history_ops, int) from public, anon, authenticated;
 revoke all on function public.fc_history_step() from public, anon, authenticated;
+revoke all on function public.fc_record_payout() from public, anon, authenticated;
 do $$
 declare fn text;
 begin

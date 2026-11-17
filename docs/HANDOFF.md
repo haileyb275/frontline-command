@@ -141,10 +141,16 @@ at the next check-in, for every player.
 Left over from it: lending units to an ally, which is harder because a lent
 unit must come back, with its repairs and experience.
 
-**Phase 18:** named historical operations (scripted mission chains in a real
-theatre with a unique honour); mission filters and auto-dispatch rules
-("always send the nearest fire unit to vehicle fires"); a statistics page;
-moving interface text into files so it can be translated.
+**Phase 18 is done** (`018_history_stats.sql`; see "Phase 18 as built" in DESIGN.md).
 
-**Further ideas the owner liked:** equipment upgrades beyond refits, a phone
-app shell, a second routing server once player numbers grow (see OPERATIONS).
+Open ends, in rough order of value:
+
+- Translations are partial: only fixed labels are covered. Content names (units, missions),
+  help text, sentences with numbers and server error messages are English. A full job means
+  a `t()` function with placeholders and per-language content files.
+- Standing orders run only in an open browser. A server-side version would belong in
+  `fc_sync_extras`, with rules stored per player.
+- Lending units to an ally (left over from Phase 17).
+- The coastline table has a hole around Narvik (68.4 N, 17.4 E): `fc_is_land` says water for
+  land there, so bases cannot be placed. Re-running `npm run land` did not get looked at.
+- Statistics count from Phase 18 onward; earlier payouts were not recorded.

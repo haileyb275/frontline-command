@@ -158,3 +158,13 @@ test('historical operations use real missions the player is senior enough for', 
   }
   assert.deepEqual(problems, []);
 });
+
+test('every translation is a non-empty string that differs in shape only', async () => {
+  const { LANGUAGES } = await import('../src/i18n.js');
+  for (const [code, lang] of Object.entries(LANGUAGES)) {
+    for (const [english, translated] of Object.entries(lang.words ?? {})) {
+      assert.ok(typeof translated === 'string' && translated.trim(), `${code}: "${english}" has no translation`);
+      assert.ok(!/[<>]/.test(translated), `${code}: "${english}" must be plain text`);
+    }
+  }
+});

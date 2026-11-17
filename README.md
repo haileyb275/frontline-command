@@ -100,6 +100,8 @@ All content is data in `src/data/`. No game logic needs to change.
 | a rank title | `ranks.json` | the level at which the title is reached |
 | a research step | `research.json` | cost and time to open each year; a unit's `year` is in `units.json` |
 | an alliance operation | `operations.json` | a shared `counter` target, time limit, cost and per-member reward |
+| a historical operation | `history.json` | each step is a mission type at a real `lat`/`lng`; sea missions must sit on water. `min_level` must cover every step's mission |
+| a translation | `lang/de.json` (copy it for a new language and list it in `src/i18n.js`) | English label → translation; anything not listed stays in English |
 | a tuning number | `settings.json` | spawn interval, travel speed-up, caps, costs |
 
 Then:
@@ -135,3 +137,4 @@ npm run balance
 - [x] Phase 15 — Divisions, refits, captured equipment, historical notes for every unit
 - [x] Phase 16 — Fuel, parts and medical stores, Refinery, Rail Yard, Port, supply lines, market, movable bases
 - [x] Phase 17 — Alliance territory on the map, weekly alliance rivalry, aid convoys between allies, worldwide events
+- [x] Phase 18 — Mission filters, standing orders (auto-dispatch), historical operations, statistics, translations (German begun)
