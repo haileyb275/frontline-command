@@ -1973,3 +1973,40 @@ button.player-name:hover {
   font-size: 10px;
   color: var(--muted);
 }
+
+/* Narrow phones: the name, Admin, Help and Log out links get a row of their
+   own under the resources, instead of being squeezed off the edge. */
+@media (max-width: 520px) {
+  .topbar {
+    flex: 0 0 auto;
+    flex-wrap: wrap;
+    row-gap: 2px;
+    padding-top: 6px;
+    padding-bottom: 4px;
+  }
+
+  .resources {
+    flex: 1;
+    justify-content: flex-end;
+  }
+
+  .player {
+    order: 9;
+    flex: 1 0 100%;
+    justify-content: flex-end;
+    gap: 14px;
+    min-height: 26px;
+  }
+
+  .player-name,
+  button.player-name {
+    display: inline-block;
+    max-width: 150px;
+    margin-right: auto; /* name on the left, links on the right */
+  }
+
+  .player .link-btn {
+    font-size: 12px;
+    padding: 4px 0;
+  }
+}

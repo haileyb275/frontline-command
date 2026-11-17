@@ -347,3 +347,13 @@ Not built: lending units to an ally (ownership, repairs and veterancy make it a 
   another language and a MutationObserver swaps recognised labels as they appear. Player-typed
   text is never touched. Coverage is the fixed labels and buttons (about 170); sentences with
   numbers in them, help text, content names and server error messages are still English.
+
+### Coastline data and the date line (fixed after Phase 18)
+
+`world-atlas` stores a shape that crosses 180° as one ring whose longitude jumps from +180 to
+-180. Read as a flat shape that jump is a line across the whole map, which turned the band
+between about 65° and 71° N inside out (land read as sea across northern Scandinavia and
+Russia). `scripts/build-land.mjs` now unwraps such rings, closes the Antarctic ring at the
+pole, and stores a second copy shifted 360° so both sides of the line are covered. A database
+test checks twelve known points. If you rebuild a database, run `npm run land` and apply the
+files again.

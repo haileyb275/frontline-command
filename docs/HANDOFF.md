@@ -151,6 +151,4 @@ Open ends, in rough order of value:
 - Standing orders run only in an open browser. A server-side version would belong in
   `fc_sync_extras`, with rules stored per player.
 - Lending units to an ally (left over from Phase 17).
-- The coastline table has a hole around Narvik (68.4 N, 17.4 E): `fc_is_land` says water for
-  land there, so bases cannot be placed. Re-running `npm run land` did not get looked at.
 - Statistics count from Phase 18 onward; earlier payouts were not recorded.

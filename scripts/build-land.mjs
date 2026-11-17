@@ -33,7 +33,54 @@ for (const f of land.features ?? [land]) {
 // 4 decimal places of a degree is about 11 metres — plenty, and it keeps the files small.
 const round = (n) => Math.round(n * 1e4) / 1e4;
 
-const statements = polygons.map((rings) => {
+// --- The 180° date line -------------------------------------------------
+// In this source a shape that crosses the date line (north-east Siberia,
+// Antarctica, Fiji…) is one ring whose longitude jumps from +180 to -180.
+// Read as a flat shape, that jump is a line drawn right across the world,
+// which turns whole bands of latitude inside out. So:
+//   1. "unwrap" each ring so its longitudes run on continuously past 180;
+//   2. a ring that goes all the way round the pole (Antarctica) is closed
+//      by running it down to the pole and back;
+//   3. a shape that now sticks out past ±180 is also stored a second time,
+//      moved 360° the other way, so both sides of the line are covered.
+function unwrap(ring) {
+  const out = [ring[0]];
+  let shift = 0;
+  for (let i = 1; i < ring.length; i++) {
+    const step = ring[i][0] - ring[i - 1][0];
+    if (step > 180) shift -= 360;
+    if (step < -180) shift += 360;
+    out.push([ring[i][0] + shift, ring[i][1]]);
+  }
+  const first = out[0];
+  const last = out[out.length - 1];
+  if (Math.abs(last[0] - first[0]) > 180) {
+    const pole = first[1] < 0 ? -90 : 90;
+    out.push([last[0], pole], [first[0], pole], first);
+  }
+  return out;
+}
+
+const shifted = (rings, by) => rings.map((ring) => ring.map(([lng, lat]) => [lng + by, lat]));
+
+const flat = [];
+for (const rings of polygons) {
+  const outer = unwrap(rings[0]);
+  const lngs = outer.map((pt) => pt[0]);
+  const [min, max] = [Math.min(...lngs), Math.max(...lngs)];
+  // Holes (lakes are not in this data, but be safe) follow their outer ring.
+  const holes = rings.slice(1).map((hole) => {
+    const h = unwrap(hole);
+    const by = Math.round((outer[0][0] - h[0][0]) / 360) * 360;
+    return h.map(([lng, lat]) => [lng + by, lat]);
+  });
+  const shape = [outer, ...holes];
+  flat.push(shape);
+  if (max > 180) flat.push(shifted(shape, -360));
+  if (min < -180) flat.push(shifted(shape, 360));
+}
+
+const statements = flat.map((rings) => {
   const geojson = JSON.stringify({
     type: 'Polygon',
     coordinates: rings.map((ring) => ring.map(([lng, lat]) => [round(lng), round(lat)])),

@@ -253,3 +253,14 @@ test('a historical operation runs step by step and pays its honour once', { skip
   assert.equal((await p.rest('PATCH', `player_history?player_id=eq.${p.id}`, { status: 'done' })).data?.length ?? 0, 0);
   void hq;
 });
+
+test('the coastline data knows land from sea, including across the date line', { skip }, async () => {
+  const wrong = await sql(`select name from (values
+    ('east of Narvik', true, 68.43, 17.95), ('northern Sweden', true, 67.5, 20.0), ('Norwegian Sea', false, 67.0, 5.0),
+    ('Chukotka, west of the line', true, 66.5, 175.0), ('Chukotka, east of the line', true, 66.5, -175.0),
+    ('Bering Sea', false, 60.0, 179.9), ('Arctic Ocean', false, 71.0, 0.0), ('Antarctica', true, -85.0, 0.0),
+    ('Caen', true, 49.18, -0.37), ('English Channel', false, 50.0, -1.0), ('mid Pacific', false, 0.0, -150.0),
+    ('Siberia', true, 66.0, 100.0)) v(name, want, lat, lng)
+    where want <> public.fc_is_land(lat, lng)`);
+  assert.deepEqual(wrong, []);
+});
