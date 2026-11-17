@@ -25,6 +25,14 @@ for (const unit of units) (byCategory[unit.category_id] ??= []).push(unit);
 const speed = Object.fromEntries(Object.entries(byCategory).map(([c, list]) => [c, average(list, 'speed_kmh')]));
 const cost = Object.fromEntries(Object.entries(byCategory).map(([c, list]) => [c, average(list, 'cost_money')]));
 
+// A specialist (paratrooper, commando…) is a unit of one of the specialty's
+// categories plus the price of the course, and moves like that unit.
+for (const spec of read('specialties.json')) {
+  const base = spec.category_ids[0];
+  speed[spec.id] = speed[base];
+  cost[spec.id] = cost[base] + spec.cost_money;
+}
+
 const rows = missions
   .filter((m) => m.spawn_weight > 0) // skip ones only the game itself creates (escorts, offensives…)
   .map((m) => {
