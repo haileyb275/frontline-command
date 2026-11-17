@@ -143,3 +143,18 @@ test('supabase/seed.sql matches the JSON files', () => {
   assert.equal(before, after,
     'seed.sql was out of date. It has just been regenerated: commit it, and run it in the Supabase SQL Editor.');
 });
+
+test('historical operations use real missions the player is senior enough for', async () => {
+  const { history } = await import('../src/game/content.js');
+  const problems = [];
+  for (const op of history) {
+    if (op.steps.length < 2) problems.push(`${op.id}: needs at least two steps`);
+    for (const step of op.steps) {
+      const type = missions.find((m) => m.id === step.mission);
+      if (!type) problems.push(`${op.id}: unknown mission ${step.mission}`);
+      else if (type.min_level > op.min_level) problems.push(`${op.id}: ${step.mission} needs level ${type.min_level}`);
+      else if (Object.keys(type.requirements).some((k) => !categories.find((c) => c.id === k))) problems.push(`${op.id}: ${step.mission} needs a specialty`);
+    }
+  }
+  assert.deepEqual(problems, []);
+});

@@ -16,7 +16,7 @@ import { getRoute, pointAlong } from './game/routes.js';
 import { conditionsText } from './game/weather.js';
 import { now } from './game/clock.js';
 import { initTutorial } from './ui/tutorial.js';
-import { missionMarkerLabel } from './ui/missionsTab.js';
+import { missionMarkerLabel, runAutoDispatch } from './ui/missionsTab.js';
 import { unitIcon, categoryIcon, buildingIcon } from './ui/icons.js';
 import { initPanel } from './ui/panel.js';
 import { initTopbar } from './ui/topbar.js';
@@ -206,6 +206,7 @@ initTutorial();
 // Top bar: our own name opens our profile; "Admin" opens the admin panel.
 document.getElementById('player-name').addEventListener('click', () => state.profile && panel.openProfile(state.profile.username));
 document.getElementById('admin-link').addEventListener('click', () => panel.showTab('admin'));
+subscribe((s) => { runAutoDispatch(s); });
 subscribe((s) => { document.getElementById('admin-link').hidden = !s.profile?.is_admin; });
 
 // A suspended account is told why and can do nothing but log out.

@@ -1,0 +1,294 @@
+[
+  {
+    "id": "h_dunkirk",
+    "name": "Dunkirk 1940",
+    "place": "Northern France",
+    "lat": 51.03,
+    "lng": 2.38,
+    "range_km": 400,
+    "min_level": 3,
+    "description": "A shrinking perimeter around a Channel port, and a fleet of ships large and small working off its beaches.",
+    "steps": [
+      {
+        "mission": "coastal_patrol",
+        "name": "The Channel off the beaches",
+        "lat": 51.15,
+        "lng": 2.2
+      },
+      {
+        "mission": "roadblock_clearance",
+        "name": "Canal line at Bergues",
+        "lat": 50.96,
+        "lng": 2.44
+      },
+      {
+        "mission": "casualty_evacuation",
+        "name": "The dunes east of the port",
+        "lat": 51.06,
+        "lng": 2.47
+      }
+    ],
+    "reward_money": 20000,
+    "reward_supplies": 1000,
+    "reward_xp": 800,
+    "honour": "Dunkirk 1940",
+    "sort": 1
+  },
+  {
+    "id": "h_tobruk",
+    "name": "Tobruk 1941",
+    "place": "Libya",
+    "lat": 32.08,
+    "lng": 23.96,
+    "range_km": 400,
+    "min_level": 3,
+    "description": "A desert harbour held under siege for months, supplied by night along a single road and by sea.",
+    "steps": [
+      {
+        "mission": "forward_supply_run",
+        "name": "Coast road to the perimeter",
+        "lat": 31.98,
+        "lng": 24.15
+      },
+      {
+        "mission": "minefield_clearance",
+        "name": "Southern perimeter minefields",
+        "lat": 31.95,
+        "lng": 23.85
+      },
+      {
+        "mission": "armored_counterattack",
+        "name": "El Adem crossroads",
+        "lat": 31.85,
+        "lng": 23.92
+      }
+    ],
+    "reward_money": 22000,
+    "reward_supplies": 1100,
+    "reward_xp": 880,
+    "honour": "Tobruk 1941",
+    "sort": 2
+  },
+  {
+    "id": "h_alamein",
+    "name": "El Alamein 1942",
+    "place": "Egypt",
+    "lat": 30.83,
+    "lng": 28.95,
+    "range_km": 400,
+    "min_level": 4,
+    "description": "A narrow front between the sea and the Qattara Depression, decided by mines, guns and supply.",
+    "steps": [
+      {
+        "mission": "minefield_clearance",
+        "name": "Minefield corridors",
+        "lat": 30.76,
+        "lng": 28.9
+      },
+      {
+        "mission": "counter_battery",
+        "name": "Miteirya Ridge",
+        "lat": 30.7,
+        "lng": 28.86
+      },
+      {
+        "mission": "defensive_line",
+        "name": "Tel el Aqqaqir",
+        "lat": 30.72,
+        "lng": 28.72
+      }
+    ],
+    "reward_money": 30000,
+    "reward_supplies": 1500,
+    "reward_xp": 1200,
+    "honour": "El Alamein 1942",
+    "sort": 3
+  },
+  {
+    "id": "h_guadalcanal",
+    "name": "Guadalcanal 1942",
+    "place": "Solomon Islands",
+    "lat": -9.43,
+    "lng": 160.05,
+    "range_km": 400,
+    "min_level": 4,
+    "description": "A jungle airfield whose possession depended on who could keep ships running at night.",
+    "steps": [
+      {
+        "mission": "sea_convoy_escort",
+        "name": "The sound north of the island",
+        "lat": -9.2,
+        "lng": 160.0
+      },
+      {
+        "mission": "supply_dump_seizure",
+        "name": "Coastal track east of the airfield",
+        "lat": -9.45,
+        "lng": 160.2
+      },
+      {
+        "mission": "defensive_line",
+        "name": "Ridge south of the airfield",
+        "lat": -9.46,
+        "lng": 160.05
+      }
+    ],
+    "reward_money": 32000,
+    "reward_supplies": 1600,
+    "reward_xp": 1280,
+    "honour": "Guadalcanal 1942",
+    "sort": 4
+  },
+  {
+    "id": "h_sicily",
+    "name": "Sicily 1943",
+    "place": "Italy",
+    "lat": 37.07,
+    "lng": 14.25,
+    "range_km": 400,
+    "min_level": 5,
+    "description": "Landings on the southern shore of the island, then a hard drive across rivers toward the north-east.",
+    "steps": [
+      {
+        "mission": "coastal_patrol",
+        "name": "Gulf of Gela",
+        "lat": 36.85,
+        "lng": 14.15
+      },
+      {
+        "mission": "supply_dump_seizure",
+        "name": "Plain behind Gela",
+        "lat": 37.15,
+        "lng": 14.35
+      },
+      {
+        "mission": "river_crossing",
+        "name": "Simeto river",
+        "lat": 37.4,
+        "lng": 14.9
+      }
+    ],
+    "reward_money": 36000,
+    "reward_supplies": 1800,
+    "reward_xp": 1440,
+    "honour": "Sicily 1943",
+    "sort": 5
+  },
+  {
+    "id": "h_market_garden",
+    "name": "Market Garden 1944",
+    "place": "The Netherlands",
+    "lat": 51.98,
+    "lng": 5.9,
+    "range_km": 400,
+    "min_level": 5,
+    "description": "One road north across a chain of river and canal bridges, with the last bridge the farthest.",
+    "steps": [
+      {
+        "mission": "recon_sweep",
+        "name": "Eindhoven road",
+        "lat": 51.45,
+        "lng": 5.47
+      },
+      {
+        "mission": "bridge_repair",
+        "name": "Canal crossing at Son",
+        "lat": 51.51,
+        "lng": 5.49
+      },
+      {
+        "mission": "river_crossing",
+        "name": "The Waal at Nijmegen",
+        "lat": 51.85,
+        "lng": 5.86
+      },
+      {
+        "mission": "defensive_line",
+        "name": "Arnhem bridge approaches",
+        "lat": 51.98,
+        "lng": 5.91
+      }
+    ],
+    "reward_money": 42000,
+    "reward_supplies": 2100,
+    "reward_xp": 1680,
+    "honour": "Market Garden 1944",
+    "sort": 6
+  },
+  {
+    "id": "h_ardennes",
+    "name": "Ardennes 1944",
+    "place": "Belgium",
+    "lat": 50.0,
+    "lng": 5.72,
+    "range_km": 400,
+    "min_level": 5,
+    "description": "A winter battle for forest crossroads, fought in snow with roads as the only prize that mattered.",
+    "steps": [
+      {
+        "mission": "roadblock_clearance",
+        "name": "Road east of Bastogne",
+        "lat": 50.02,
+        "lng": 5.85
+      },
+      {
+        "mission": "casualty_evacuation",
+        "name": "Bastogne aid stations",
+        "lat": 50.0,
+        "lng": 5.72
+      },
+      {
+        "mission": "armored_counterattack",
+        "name": "Fields west of the town",
+        "lat": 50.03,
+        "lng": 5.6
+      }
+    ],
+    "reward_money": 40000,
+    "reward_supplies": 2000,
+    "reward_xp": 1600,
+    "honour": "Ardennes 1944",
+    "sort": 7
+  },
+  {
+    "id": "h_normandy",
+    "name": "Normandy 1944",
+    "place": "France",
+    "lat": 49.37,
+    "lng": -0.88,
+    "range_km": 400,
+    "min_level": 6,
+    "description": "The largest seaborne landing ever mounted, and the weeks of fighting inland that followed it.",
+    "steps": [
+      {
+        "mission": "minesweeping",
+        "name": "Bay of the Seine",
+        "lat": 49.55,
+        "lng": -0.7
+      },
+      {
+        "mission": "beach_landing",
+        "name": "The landing beaches",
+        "lat": 49.33,
+        "lng": -0.55
+      },
+      {
+        "mission": "bridge_repair",
+        "name": "Orne canal crossing",
+        "lat": 49.24,
+        "lng": -0.27
+      },
+      {
+        "mission": "fortified_strongpoint",
+        "name": "Ridge south of Caen",
+        "lat": 49.1,
+        "lng": -0.33
+      }
+    ],
+    "reward_money": 60000,
+    "reward_supplies": 3000,
+    "reward_xp": 2400,
+    "honour": "Normandy 1944",
+    "sort": 8
+  }
+]

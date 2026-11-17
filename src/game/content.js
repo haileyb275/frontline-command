@@ -22,9 +22,10 @@ import objectives from '../data/objectives.json' with { type: 'json' };
 import ranks from '../data/ranks.json' with { type: 'json' };
 import research from '../data/research.json' with { type: 'json' };
 import operations from '../data/operations.json' with { type: 'json' };
+import history from '../data/history.json' with { type: 'json' };
 import market from '../data/market.json' with { type: 'json' };
 
-export { nations, categories, buildings, units, missions, settings, allianceBuildings, specialties, products, dailyOrders, objectives, ranks, research, operations, market };
+export { nations, categories, buildings, units, missions, settings, allianceBuildings, specialties, products, dailyOrders, objectives, ranks, research, operations, market, history };
 
 const index = (list) => new Map(list.map((item) => [item.id, item]));
 const nationById = index(nations);

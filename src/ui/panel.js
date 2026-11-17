@@ -47,6 +47,7 @@ export function initPanel({ baseLayer, missionLayer, mapElement, flyTo, fitTo })
     picked: [], // unit ids ticked in the mission's unit picker
     allianceView: 'overview', // which part of the Alliance tab is showing
     missionsView: 'list', // 'list' or 'orders' in the Missions tab
+    missionFilter: 'all', // which missions the list shows
     ranksView: 'players', // 'players', 'alliances' or 'profile' in the Ranks tab
     adminView: 'home', // 'home' or 'player' in the admin panel
     adminMoveBase: null, // base the admin is about to re-site with a map click

@@ -210,3 +210,46 @@ test('fuel speeds vehicles, the market cannot be milked, and a base can be moved
   assert.equal(moved.bases[0].lat, LAND.lat - 0.3);
   assert.equal(moved.profile.money, funds - 1250, 'a quarter of the 5,000 a Headquarters costs');
 });
+
+test('a historical operation runs step by step and pays its honour once', { skip }, async () => {
+  const p = await createPlayer({ nation: 'uk' });
+  const hq = (await p.must('place_base', { p_building_type: 'hq', p_lat: LAND.lat, p_lng: LAND.lng })).base;
+
+  // Rank and reach are both checked.
+  assert.match((await p.rpc('start_history_op', { p_op: 'h_normandy' })).error, /needs level/);
+  assert.match((await p.rpc('start_history_op', { p_op: 'h_tobruk' })).error, /needs level/);
+  await sql(`update public.profiles set level = 6, xp = 0 where id = '${p.id}'`);
+  assert.match((await p.rpc('start_history_op', { p_op: 'h_tobruk' })).error, /base within/);
+
+  await p.must('start_history_op', { p_op: 'h_normandy' });
+  assert.match((await p.rpc('start_history_op', { p_op: 'h_ardennes' })).error, /under way/);
+  const step = async () => (await p.sync()).missions.find((m) => m.history_op === 'h_normandy');
+  let m = await step();
+  assert.equal(m.mission_type, 'minesweeping');
+  assert.match(m.site_name, /Normandy 1944/);
+
+  // Winning a step puts the next one on the map (completion is forced here; dispatching is tested elsewhere).
+  const win = async (id) => { await sql(`update public.missions set status = 'completed', completed_at = now() where id = '${id}'`); };
+  await win(m.id);
+  m = await step();
+  assert.equal(m.mission_type, 'beach_landing');
+
+  // Letting a step run out fails the operation; it can be started again from the beginning.
+  await sql(`update public.missions set expires_at = now() - interval '1 second' where id = '${m.id}'`);
+  await p.sync();
+  assert.equal((await p.rest('GET', 'player_history?select=status')).data[0].status, 'failed');
+  await p.must('start_history_op', { p_op: 'h_normandy' });
+
+  const before = (await p.sync()).profile.money;
+  for (let i = 0; i < 4; i++) await win((await step()).id);
+  assert.equal((await p.sync()).profile.money, before + 60000);
+  assert.deepEqual((await p.must('get_player_honours', { p_username: p.username })).map((h) => h.honour), ['Normandy 1944']);
+  assert.match((await p.rpc('start_history_op', { p_op: 'h_normandy' })).error, /already completed/);
+
+  const stats = await p.must('get_my_stats');
+  assert.equal(stats.honours, 1);
+  assert.ok(stats.earned && Array.isArray(stats.days));
+  // Nobody can write their own progress.
+  assert.equal((await p.rest('PATCH', `player_history?player_id=eq.${p.id}`, { status: 'done' })).data?.length ?? 0, 0);
+  void hq;
+});

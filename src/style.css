@@ -1935,3 +1935,10 @@ button.player-name:hover {
 .card--event {
   border-left: 4px solid #c9a227;
 }
+
+/* Phase 18: a filter or level button that is switched on */
+.btn.is-on {
+  background: var(--khaki-300, #c9b98a);
+  color: var(--olive-900);
+  border-color: var(--khaki-300, #c9b98a);
+}

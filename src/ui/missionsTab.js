@@ -116,11 +116,25 @@ export function render(state, ui) {
       <button class="seg-btn ${ui.missionsView === 'orders' ? 'is-active' : ''}" data-action="missions-view" data-view="orders">
         Orders${waiting > 0 ? ` <span class="dot" title="${waiting} reward${waiting === 1 ? '' : 's'} to collect"></span>` : ''}</button>
     </div>`;
-  return nav + (ui.missionsView === 'orders' ? renderOrders(state, ui) : renderList(state));
+  return nav + (ui.missionsView === 'orders' ? renderOrders(state, ui) : renderList(state, ui));
 }
 
-function renderList({ missions, dispatches, profile }) {
-  if (missions.length === 0) {
+const FILTERS = [
+  ['all', 'All', () => true],
+  ['ready', 'Can staff now', (m, state) => m.status === 'open' && !m.hidden && fastestUnits(m, state).complete],
+  ['active', 'Under way', (m) => m.status === 'in_progress'],
+  ['land', 'Land', (m) => !m.hidden && getMissionType(m.mission_type).terrain === 'land'],
+  ['water', 'Sea', (m) => !m.hidden && getMissionType(m.mission_type).terrain === 'water'],
+  ['urgent', 'Urgent', (m) => Boolean(m.target_base_id) || msUntil(m.expires_at) < 30 * 60000],
+];
+
+function renderList(state, ui) {
+  const { dispatches, profile } = state;
+  const all = state.missions;
+  const filter = FILTERS.find((f) => f[0] === ui.missionFilter) ?? FILTERS[0];
+  const missions = all.filter((m) => filter[2](m, state));
+  const auto = getAutoPrefs();
+  if (all.length === 0) {
     return `
       <div class="card card--empty">
         <h2>All quiet</h2>
@@ -157,9 +171,22 @@ function renderList({ missions, dispatches, profile }) {
 
   return `
     <div class="section-head">
-      <h2>Missions <span class="count">${missions.length}</span></h2>
+      <h2>Missions <span class="count">${missions.length}${missions.length !== all.length ? ` of ${all.length}` : ''}</span></h2>
     </div>
-    <div class="rows">${rows}</div>`;
+    <div class="chips chips--buttons">${FILTERS.map(([id, label]) => `
+      <button class="btn btn--small ${filter[0] === id ? 'is-on' : ''}" data-action="mission-filter" data-filter="${id}">${label}</button>`).join('')}
+    </div>
+    <div class="rows">${rows || '<p class="muted">No missions match this filter.</p>'}</div>
+
+    <h3>Standing orders <span class="count">${auto.on ? 'on' : 'off'}</span></h3>
+    <div class="card">
+      <label class="check-line"><input type="checkbox" data-action="auto-toggle" ${auto.on ? 'checked' : ''} />
+        Send the fastest units by themselves to new reports</label>
+      <p class="muted">Up to difficulty:
+        ${[1, 2, 3, 4, 5].map((n) => `<button class="btn btn--small ${auto.max === n ? 'is-on' : ''}" data-action="auto-level" data-level="${n}">${n}</button>`).join(' ')}</p>
+      <p class="muted">Only reports your free units can fully staff are answered, and only while the game is open in
+         this browser. Unconfirmed reports and shared missions are left to you.</p>
+    </div>`;
 }
 
 /** An unconfirmed report: nothing is known until a scout has looked. */
@@ -334,6 +361,77 @@ function unitsFit(unitIds, mission, state) {
     else return false;
   }
   return true;
+}
+
+/**
+ * For each place a mission still needs, the idle units with the shortest
+ * trip. `complete` is true when that fills every place.
+ */
+function fastestUnits(mission, state) {
+  const type = getMissionType(mission.mission_type);
+  const counts = committedCounts(mission, state.dispatches);
+  const baseById = new Map(state.bases.map((b) => [b.id, b]));
+  const ids = [];
+  let complete = true;
+  for (const key of slotKeys(type)) {
+    const remaining = Math.max(0, type.requirements[key] - (counts[key] ?? 0));
+    const chosen = idleUnitsFor(key, state.units, state.dispatches)
+      .filter((unit) => !ids.includes(unit.id))
+      .filter((unit) => (baseById.get(unit.base_id)?.stock ?? Infinity) >= supplyUse(unit))
+      .filter((unit) => !grounded(unit, mission))
+      // For ordinary places, send ordinary units before specialists.
+      .map((unit) => ({ id: unit.id, eta: etaFor(unit, mission, state, baseById), special: unit.specialty ? 1 : 0 }))
+      .sort((a, b) => (getCategory(key) ? a.special - b.special : 0) || a.eta - b.eta)
+      .slice(0, remaining);
+    if (chosen.length < remaining) complete = false;
+    chosen.forEach((x) => ids.push(x.id));
+  }
+  return { ids, complete };
+}
+
+// ------------------------------------------------- standing orders (auto-dispatch)
+//
+// A convenience that lives in this browser only: while the game is open, a
+// new report that the player's idle units can fully staff is answered at
+// once. It presses the same "dispatch" the player would, so the server
+// checks it exactly the same way. Nothing is sent while the game is closed.
+
+const AUTO_KEY = 'fc.standingOrders';
+
+export function getAutoPrefs() {
+  try {
+    return { on: false, max: 2, ...JSON.parse(localStorage.getItem(AUTO_KEY) ?? '{}') };
+  } catch {
+    return { on: false, max: 2 };
+  }
+}
+
+function setAutoPrefs(patch) {
+  try { localStorage.setItem(AUTO_KEY, JSON.stringify({ ...getAutoPrefs(), ...patch })); } catch { /* private mode */ }
+}
+
+let autoBusy = false;
+const autoTried = new Set(); // missions the server refused once: do not keep asking
+
+/** Called whenever the game state changes. Sends at most one force at a time. */
+export async function runAutoDispatch(state) {
+  const prefs = getAutoPrefs();
+  if (!prefs.on || autoBusy || !state.profile) return;
+  const mission = state.missions.find((m) =>
+    m.status === 'open' && !m.hidden && m.owner_id === state.profile.id && !autoTried.has(m.id)
+    && getMissionType(m.mission_type).difficulty <= prefs.max
+    && !state.dispatches.some((d) => d.mission_id === m.id)
+    && fastestUnits(m, state).complete);
+  if (!mission) return;
+  autoBusy = true;
+  try {
+    await dispatchUnits(mission.id, fastestUnits(mission, state).ids);
+    toast(`Standing orders: units sent to ${getMissionType(mission.mission_type).name}.`, 'ok');
+  } catch {
+    autoTried.add(mission.id);
+  }
+  autoBusy = false;
+  runAutoDispatch(state); // the next one, if any
 }
 
 /** The movement domain ('ground', 'air' or 'sea') of a unit. */
@@ -541,26 +639,22 @@ export async function handleAction(action, data, ctx) {
       return update({ picked });
     }
 
-    case 'auto-pick': {
-      // For each place still needed, take the units with the shortest trip.
-      const type = getMissionType(mission.mission_type);
-      const counts = committedCounts(mission, state.dispatches);
-      const baseById = new Map(state.bases.map((b) => [b.id, b]));
-      const picked = [];
-      for (const key of slotKeys(type)) {
-        const remaining = type.requirements[key] - (counts[key] ?? 0);
-        idleUnitsFor(key, state.units, state.dispatches)
-          .filter((unit) => !picked.includes(unit.id))
-          .filter((unit) => (baseById.get(unit.base_id)?.stock ?? Infinity) >= supplyUse(unit))
-          .filter((unit) => !grounded(unit, mission))
-          // For ordinary places, send ordinary units before specialists.
-          .map((unit) => ({ id: unit.id, eta: etaFor(unit, mission, state, baseById), special: unit.specialty ? 1 : 0 }))
-          .sort((a, b) => (getCategory(key) ? a.special - b.special : 0) || a.eta - b.eta)
-          .slice(0, Math.max(0, remaining))
-          .forEach((x) => picked.push(x.id));
-      }
-      return update({ picked });
-    }
+    case 'auto-pick':
+      return update({ picked: fastestUnits(mission, state).ids });
+
+    case 'mission-filter':
+      return update({ missionFilter: data.filter });
+
+    case 'auto-toggle':
+      setAutoPrefs({ on: !getAutoPrefs().on });
+      toast(getAutoPrefs().on ? 'Standing orders on: units go out by themselves while the game is open.' : 'Standing orders off.', 'info');
+      runAutoDispatch(state);
+      return update({});
+
+    case 'auto-level':
+      setAutoPrefs({ max: +data.level });
+      runAutoDispatch(state);
+      return update({});
 
     case 'dispatch': {
       if (ui.picked.length === 0) return;

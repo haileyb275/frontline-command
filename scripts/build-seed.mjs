@@ -104,6 +104,12 @@ const parts = [
      'reward_supplies', 'reward_xp', 'alliance_xp', 'sort'],
     readJson('operations.json')
   ),
+  upsert(
+    'history_ops',
+    ['id', 'name', 'place', 'lat', 'lng', 'range_km', 'min_level', 'description', 'steps', 'reward_money',
+     'reward_supplies', 'reward_xp', 'honour', 'sort'],
+    readJson('history.json')
+  ),
   upsert('market', ['item', 'name', 'base_price'], readJson('market.json')),
   // settings.json is one object; the table wants one row per setting.
   upsert(
