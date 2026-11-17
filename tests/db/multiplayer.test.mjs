@@ -154,3 +154,46 @@ test('weekly rivalry, mutual aid, alliance map and a worldwide event', { skip },
       delete from public.global_events where name = 'Test Event';`);
   }
 });
+
+test('a unit can be lent to an ally, used, protected, and comes home', { skip }, async () => {
+  const a = await createPlayer({ nation: 'usa' });
+  const b = await createPlayer({ nation: 'uk' });
+  const outsider = await createPlayer({ nation: 'japan' });
+  const tag = a.username.slice(2, 7).toUpperCase();
+  const alliance = await a.must('create_alliance', { p_name: `Test ${tag}`, p_tag: tag });
+  await b.must('join_alliance', { p_alliance_id: alliance });
+  const hqA = (await a.must('place_base', { p_building_type: 'hq', p_lat: LAND.lat, p_lng: LAND.lng })).base;
+  const hqB = (await b.must('place_base', { p_building_type: 'hq', p_lat: LAND.lat - 0.2, p_lng: LAND.lng })).base;
+  await outsider.must('place_base', { p_building_type: 'hq', p_lat: LAND.lat - 0.4, p_lng: LAND.lng + 0.3 });
+  await sql(`insert into public.units (owner_id, base_id, unit_type, missions_done) values ('${a.id}', '${hqA.id}', 'usa_infantry', 7)`);
+  const unit = (await a.sync()).units[0];
+
+  assert.match((await a.rpc('lend_unit', { p_unit_id: unit.id, p_username: outsider.username, p_hours: 2 })).error, /own alliance/);
+  assert.match((await a.rpc('lend_unit', { p_unit_id: unit.id, p_username: b.username, p_hours: 500 })).error, /1 to 72/);
+  assert.match((await b.rpc('lend_unit', { p_unit_id: unit.id, p_username: a.username, p_hours: 2 })).error, /not one of your units/);
+  await a.must('lend_unit', { p_unit_id: unit.id, p_username: b.username, p_hours: 2 });
+
+  // It is the borrower's to command now, with its experience, and shows as a loan for the lender.
+  assert.equal((await a.sync()).units.length, 0);
+  const borrowed = (await b.sync()).units[0];
+  assert.deepEqual([borrowed.id, borrowed.base_id, borrowed.lent_by, borrowed.missions_done], [unit.id, hqB.id, a.id, 7]);
+  assert.deepEqual((await a.must('get_my_loans')).map((l) => l.borrower), [b.username]);
+
+  // The borrower cannot cash it in, pass it on or retrain it.
+  assert.match((await b.rpc('dismiss_unit', { p_unit_id: unit.id })).error, /on loan/);
+  assert.match((await b.rpc('lend_unit', { p_unit_id: unit.id, p_username: a.username, p_hours: 2 })).error, /cannot be lent on/);
+  assert.match((await outsider.rpc('end_loan', { p_unit_id: unit.id })).error, /not on loan to or from you/);
+
+  // When the time is up it goes home at the next check-in of either player.
+  await sql(`do $$ begin perform set_config('fc.loan_change', '1', true);
+    update public.units set lent_until = now() - interval '1 second' where id = '${unit.id}'; end $$;`);
+  assert.equal((await b.sync()).units.length, 0);
+  const back = (await a.sync()).units[0];
+  assert.deepEqual([back.id, back.base_id, back.lent_by], [unit.id, hqA.id, null]);
+
+  // Lent again, then the borrower's account goes: the unit is not lost.
+  await a.must('lend_unit', { p_unit_id: unit.id, p_username: b.username, p_hours: 2 });
+  await sql(`delete from auth.users where id = '${b.id}'`);
+  const home = (await a.sync()).units;
+  assert.deepEqual([home.length, home[0].unit_type, home[0].missions_done, home[0].lent_by], [1, 'usa_infantry', 7, null]);
+});
