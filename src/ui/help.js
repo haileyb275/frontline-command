@@ -51,6 +51,16 @@ export function showHelp() {
             command unit attached, its units fight harder together and the division gains its own
             experience. Open a unit to refit it with later equipment while keeping its experience.
             Hard-won contact occasionally yields a captured enemy vehicle.</li>
+        <li><strong>Alliance life.</strong> Allies' bases and the ground they hold show in blue on
+            your map. Every mission scores for your alliance in the weekly rivalry (Ranks → Alliances).
+            Under Alliance → Members you can send supplies, fuel, parts or medical stores to an ally
+            by convoy. Now and then a worldwide event sets one target for every player in the game.</li>
+        <li><strong>Historical operations.</strong> Under Missions → Orders are named battles fought
+            where they happened: a chain of missions, one after another, for a reward and a battle
+            honour on your profile. You need the level and a base within 400 km.</li>
+        <li><strong>Filters, standing orders and your record.</strong> Buttons above the mission list
+            filter it. Standing orders, under the list, send the fastest units to easy reports by
+            themselves while the game is open. Click your name to see your own statistics.</li>
         <li><strong>Weather and night.</strong> Rain and storms slow ground and sea units, storms
             ground aircraft, and scouts and commandos fight harder after dark. Conditions are shown
             on the map and on each mission.</li>

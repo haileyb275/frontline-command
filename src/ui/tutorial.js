@@ -35,14 +35,36 @@ const STEPS = [
   },
 ];
 
-const FINISH = {
-  title: 'You are in command',
-  text: 'That is the whole loop. Next: build a Barracks, look at the optional <strong>Orders</strong> in the Missions tab, and find an alliance.',
-};
+// After the four steps: a short list of things worth trying next. Each line
+// ticks itself off as the player does it; the card stays until it is closed.
+const NEXT = [
+  ['Build a second base, such as a Barracks', (s) => s.bases.length >= 2],
+  ['Complete five missions', (s) => s.profile.missions_completed >= 5],
+  ['Collect a daily order (Missions → Orders)', (s) => Boolean(s.objectives?.daily.some((d) => d.claimed))],
+  ['Join or found an alliance', (s) => Boolean(s.alliance)],
+  ['Form a division (Units tab)', (s) => s.divisions.length > 0],
+  ['Begin a historical operation (Missions → Orders)', (s) => s.history.length > 0],
+];
+
+function nextHtml(s) {
+  const lines = NEXT.map(([text, isDone]) => {
+    const ok = isDone(s);
+    return `<div class="tutorial-line ${ok ? 'is-done' : ''}">${ok ? '✓' : '○'} ${text}</div>`;
+  }).join('');
+  const all = NEXT.every(([, isDone]) => isDone(s));
+  return `
+    <strong class="tutorial-title">${all ? 'All done, Commander' : 'You are in command · what to try next'}</strong>
+    ${lines}
+    <p>Tip: <em>Standing orders</em> under the mission list send units out by themselves while the game is open.
+       Everything else is explained under <strong>Help</strong>.</p>
+    <button class="link-btn" data-tutorial-end>Close</button>`;
+}
 
 export function initTutorial() {
   let done = false;
-  try { done = localStorage.getItem(KEY) === '1'; } catch { /* ignore */ }
+  let stage = null; // '2' = the four steps are finished and the "what next" list is showing
+  try { stage = localStorage.getItem(KEY); } catch { /* ignore */ }
+  done = stage === '1';
   if (done) return;
 
   const card = document.createElement('div');
@@ -69,18 +91,34 @@ export function initTutorial() {
       return;
     }
     // A returning player with an established command doesn't need this.
-    if (shownIndex === -2 && s.profile.missions_completed > 0) return finish();
+    if (shownIndex === -2 && stage !== '2' && s.profile.missions_completed > 0) return finish();
 
-    const index = STEPS.findIndex((step) => step.when(s));
+    const index = stage === '2' ? -1 : STEPS.findIndex((step) => step.when(s));
+    if (index === -1) {
+      // The "what next" list: redraw only when a line changes.
+      if (stage !== '2') {
+        stage = '2';
+        try { localStorage.setItem(KEY, '2'); } catch { /* ignore */ }
+      }
+      const html = nextHtml(s);
+      if (card.dataset.html !== html) {
+        card.dataset.html = html;
+        card.innerHTML = html;
+      }
+      card.hidden = false;
+      shownIndex = -1;
+      document.querySelectorAll('.tab.is-hint').forEach((t) => t.classList.remove('is-hint'));
+      return;
+    }
     if (index === shownIndex) return;
     shownIndex = index;
-    const step = index === -1 ? FINISH : STEPS[index];
+    const step = STEPS[index];
 
     card.hidden = false;
     card.innerHTML = `
       <strong class="tutorial-title">${step.title}</strong>
       <p>${step.text}</p>
-      <button class="link-btn" data-tutorial-end>${index === -1 ? 'Close' : 'Skip the tutorial'}</button>`;
+      <button class="link-btn" data-tutorial-end>Skip the tutorial</button>`;
     for (const tab of document.querySelectorAll('.tab')) {
       tab.classList.toggle('is-hint', Boolean(step.tab) && tab.dataset.tab === step.tab);
     }

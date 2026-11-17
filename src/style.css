@@ -2010,3 +2010,13 @@ button.player-name:hover {
     padding: 4px 0;
   }
 }
+
+.tutorial-line {
+  font-size: 13px;
+  padding: 2px 0;
+}
+
+.tutorial-line.is-done {
+  color: var(--muted);
+  text-decoration: line-through;
+}
