@@ -27,12 +27,13 @@ export function setLanguage(code) {
 }
 
 // Never touch text that players typed.
-const SKIP = '.chat-body, .link-btn--name, input, textarea, .leaflet-tooltip, .row-title';
+const SKIP = '.chat-body, .chat-meta, .link-btn--name, input, textarea, .leaflet-tooltip, .player-name';
 
 function translateNode(node, words) {
   if (node.nodeType === Node.TEXT_NODE) {
     const text = node.nodeValue.trim();
-    if (text && words[text] && !node.parentElement?.closest(SKIP)) {
+    // (the "differs" check matters: writing the same text back would wake the observer for ever)
+    if (text && words[text] && words[text] !== text && !node.parentElement?.closest(SKIP)) {
       node.nodeValue = node.nodeValue.replace(text, words[text]);
     }
     return;
@@ -40,7 +41,7 @@ function translateNode(node, words) {
   if (node.nodeType !== Node.ELEMENT_NODE) return;
   for (const attr of ['placeholder', 'title', 'aria-label']) {
     const value = node.getAttribute(attr);
-    if (value && words[value]) node.setAttribute(attr, words[value]);
+    if (value && words[value] && words[value] !== value) node.setAttribute(attr, words[value]);
   }
   for (const child of node.childNodes) translateNode(child, words);
 }

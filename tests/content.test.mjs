@@ -165,6 +165,8 @@ test('every translation is a non-empty string that differs in shape only', async
     for (const [english, translated] of Object.entries(lang.words ?? {})) {
       assert.ok(typeof translated === 'string' && translated.trim(), `${code}: "${english}" has no translation`);
       assert.ok(!/[<>]/.test(translated), `${code}: "${english}" must be plain text`);
+      // A translation that is itself another English label would be translated twice.
+      assert.ok(translated === english || !(translated in lang.words), `${code}: "${english}" → "${translated}" is also an English label`);
     }
   }
 });

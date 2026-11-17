@@ -345,8 +345,9 @@ Not built: lending units to an ally (ownership, repairs and veterancy make it a 
   the running totals in `mission_stats`. Shown only on your own profile ("Your record").
 - **Translations** (`src/i18n.js`, `src/data/lang/de.json`): a word list maps English labels to
   another language and a MutationObserver swaps recognised labels as they appear. Player-typed
-  text is never touched. Coverage is the fixed labels and buttons (about 170); sentences with
-  numbers in them, help text, content names and server error messages are still English.
+  text is never touched. Coverage is the fixed labels and buttons, the names of missions, buildings, arms, specialties,
+  nations and ranks, and some fixed messages (about 320 entries). Unit names, descriptions, help
+  text, sentences with numbers in them and most server error messages are still English.
 
 ### Coastline data and the date line (fixed after Phase 18)
 

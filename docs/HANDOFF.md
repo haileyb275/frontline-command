@@ -145,8 +145,8 @@ unit must come back, with its repairs and experience.
 
 Open ends, in rough order of value:
 
-- Translations are partial: only fixed labels are covered. Content names (units, missions),
-  help text, sentences with numbers and server error messages are English. A full job means
+- Translations are partial: labels, buttons and most content names are covered. Unit names,
+  descriptions, help text, sentences with numbers and server error messages are English. A full job means
   a `t()` function with placeholders and per-language content files.
 - Standing orders run only in an open browser. A server-side version would belong in
   `fc_sync_extras`, with rules stored per player.

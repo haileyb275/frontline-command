@@ -75,7 +75,7 @@ export function showHelp() {
       <label class="check-line">Language
         <select id="pref-language">${Object.entries(LANGUAGES).map(([code, l]) =>
           `<option value="${code}" ${getLanguage() === code ? 'selected' : ''}>${l.name}</option>`).join('')}</select></label>
-      <p class="muted">Translations cover the main labels and buttons so far; longer texts remain in English.</p>
+      <p class="muted">Translations cover labels, buttons and the names of missions, buildings, arms and ranks so far. Unit names, descriptions and longer texts remain in English.</p>
 
       <p class="muted">Everything keeps running while you are away: missions finish and units
          return on time, and you collect the results when you next log in.</p>
