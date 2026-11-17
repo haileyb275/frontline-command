@@ -334,7 +334,7 @@ Not built: lending units to an ally (ownership, repairs and veterancy make it a 
   open, a new report at or under a chosen difficulty that the player's idle units can fully
   staff is dispatched with the same call a click makes, so the server checks it identically.
   Nothing happens while the game is closed; this keeps the "nothing runs in the background" rule.
-- **Historical operations** (`018_history_stats.sql`, content in `src/data/history.json`): eight
+- **Historical operations** (`018_history_stats.sql`, content in `src/data/history.json`): seventeen
   named battles, each a chain of 3 or 4 missions at real coordinates. `start_history_op` needs
   the level, a base within `range_km` of the place, and no other operation under way. A trigger
   on `missions` puts the next step on the map when one is won, fails the operation if a step

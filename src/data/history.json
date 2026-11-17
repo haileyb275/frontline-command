@@ -70,6 +70,41 @@
     "sort": 2
   },
   {
+    "id": "h_crete",
+    "name": "Crete 1941",
+    "place": "Greece",
+    "lat": 35.34,
+    "lng": 25.13,
+    "range_km": 400,
+    "min_level": 4,
+    "description": "An island defended along its north coast, where three airfields mattered more than any town.",
+    "steps": [
+      {
+        "mission": "coastal_patrol",
+        "name": "Sea north of the island",
+        "lat": 35.75,
+        "lng": 24.6
+      },
+      {
+        "mission": "defensive_line",
+        "name": "Airfield at Maleme",
+        "lat": 35.52,
+        "lng": 23.83
+      },
+      {
+        "mission": "casualty_evacuation",
+        "name": "Mountain road to the south coast",
+        "lat": 35.25,
+        "lng": 24.15
+      }
+    ],
+    "reward_money": 28000,
+    "reward_supplies": 1400,
+    "reward_xp": 1120,
+    "honour": "Crete 1941",
+    "sort": 3
+  },
+  {
     "id": "h_alamein",
     "name": "El Alamein 1942",
     "place": "Egypt",
@@ -102,7 +137,7 @@
     "reward_supplies": 1500,
     "reward_xp": 1200,
     "honour": "El Alamein 1942",
-    "sort": 3
+    "sort": 4
   },
   {
     "id": "h_guadalcanal",
@@ -137,7 +172,153 @@
     "reward_supplies": 1600,
     "reward_xp": 1280,
     "honour": "Guadalcanal 1942",
-    "sort": 4
+    "sort": 5
+  },
+  {
+    "id": "h_atlantic",
+    "name": "Western Approaches 1943",
+    "place": "North Atlantic",
+    "lat": 55.5,
+    "lng": -8.0,
+    "range_km": 400,
+    "min_level": 4,
+    "description": "The last leg of the convoy routes, where escorts, mines and small craft met in bad weather.",
+    "steps": [
+      {
+        "mission": "sea_convoy_escort",
+        "name": "Inbound convoy lane",
+        "lat": 55.9,
+        "lng": -10.5
+      },
+      {
+        "mission": "minesweeping",
+        "name": "North Channel entrance",
+        "lat": 55.6,
+        "lng": -7.6
+      },
+      {
+        "mission": "torpedo_boat_raid",
+        "name": "Night action off the coast",
+        "lat": 56.1,
+        "lng": -9.5
+      }
+    ],
+    "reward_money": 30000,
+    "reward_supplies": 1500,
+    "reward_xp": 1200,
+    "honour": "Western Approaches 1943",
+    "sort": 6
+  },
+  {
+    "id": "h_cassino",
+    "name": "Monte Cassino 1944",
+    "place": "Italy",
+    "lat": 41.49,
+    "lng": 13.81,
+    "range_km": 400,
+    "min_level": 4,
+    "description": "A river line under a mountain, where the road north ran through one narrow valley.",
+    "steps": [
+      {
+        "mission": "river_crossing",
+        "name": "Rapido river",
+        "lat": 41.47,
+        "lng": 13.86
+      },
+      {
+        "mission": "counter_battery",
+        "name": "Guns in the Liri valley",
+        "lat": 41.44,
+        "lng": 13.72
+      },
+      {
+        "mission": "fortified_strongpoint",
+        "name": "Slopes above the town",
+        "lat": 41.5,
+        "lng": 13.8
+      }
+    ],
+    "reward_money": 32000,
+    "reward_supplies": 1600,
+    "reward_xp": 1280,
+    "honour": "Monte Cassino 1944",
+    "sort": 7
+  },
+  {
+    "id": "h_imphal",
+    "name": "Imphal and Kohima 1944",
+    "place": "North-east India",
+    "lat": 24.82,
+    "lng": 93.94,
+    "range_km": 400,
+    "min_level": 4,
+    "description": "Hill stations on a single mountain road, supplied by air and fought over at close range.",
+    "steps": [
+      {
+        "mission": "forward_supply_run",
+        "name": "Imphal plain",
+        "lat": 24.75,
+        "lng": 93.9
+      },
+      {
+        "mission": "casualty_evacuation",
+        "name": "Road to Kohima",
+        "lat": 25.3,
+        "lng": 94.05
+      },
+      {
+        "mission": "fortified_strongpoint",
+        "name": "Kohima ridge",
+        "lat": 25.66,
+        "lng": 94.1
+      }
+    ],
+    "reward_money": 30000,
+    "reward_supplies": 1500,
+    "reward_xp": 1200,
+    "honour": "Imphal and Kohima 1944",
+    "sort": 8
+  },
+  {
+    "id": "h_stalingrad",
+    "name": "Stalingrad 1942",
+    "place": "Southern Russia",
+    "lat": 48.71,
+    "lng": 44.51,
+    "range_km": 400,
+    "min_level": 5,
+    "description": "A city along a great river, fought for street by street while everything depended on the crossings.",
+    "steps": [
+      {
+        "mission": "forward_supply_run",
+        "name": "Steppe road to the city",
+        "lat": 48.65,
+        "lng": 44.25
+      },
+      {
+        "mission": "river_crossing",
+        "name": "Volga ferry crossing",
+        "lat": 48.74,
+        "lng": 44.58
+      },
+      {
+        "mission": "fortified_strongpoint",
+        "name": "Factory district",
+        "lat": 48.8,
+        "lng": 44.6
+      },
+      {
+        "mission": "defensive_line",
+        "name": "Heights above the river",
+        "lat": 48.74,
+        "lng": 44.52
+      }
+    ],
+    "reward_money": 42000,
+    "reward_supplies": 2100,
+    "reward_xp": 1680,
+    "honour": "Stalingrad 1942",
+    "sort": 9
   },
   {
     "id": "h_sicily",
@@ -172,7 +353,42 @@
     "reward_supplies": 1800,
     "reward_xp": 1440,
     "honour": "Sicily 1943",
-    "sort": 5
+    "sort": 10
+  },
+  {
+    "id": "h_kursk",
+    "name": "Kursk 1943",
+    "place": "Central Russia",
+    "lat": 51.73,
+    "lng": 36.19,
+    "range_km": 400,
+    "min_level": 5,
+    "description": "A bulge in the line ringed with deep belts of mines and guns, and the largest tank actions of the war.",
+    "steps": [
+      {
+        "mission": "minefield_clearance",
+        "name": "Southern defensive belts",
+        "lat": 50.9,
+        "lng": 36.3
+      },
+      {
+        "mission": "defensive_line",
+        "name": "Second line near Oboyan",
+        "lat": 51.2,
+        "lng": 36.28
+      },
+      {
+        "mission": "armored_counterattack",
+        "name": "Fields at Prokhorovka",
+        "lat": 51.04,
+        "lng": 36.73
+      }
+    ],
+    "reward_money": 40000,
+    "reward_supplies": 2000,
+    "reward_xp": 1600,
+    "honour": "Kursk 1943",
+    "sort": 11
   },
   {
     "id": "h_market_garden",
@@ -213,7 +429,7 @@
     "reward_supplies": 2100,
     "reward_xp": 1680,
     "honour": "Market Garden 1944",
-    "sort": 6
+    "sort": 12
   },
   {
     "id": "h_ardennes",
@@ -248,7 +464,42 @@
     "reward_supplies": 2000,
     "reward_xp": 1600,
     "honour": "Ardennes 1944",
-    "sort": 7
+    "sort": 13
+  },
+  {
+    "id": "h_anzio",
+    "name": "Anzio 1944",
+    "place": "Italy",
+    "lat": 41.45,
+    "lng": 12.63,
+    "range_km": 400,
+    "min_level": 5,
+    "description": "A beachhead held for months on a flat plain overlooked from the hills.",
+    "steps": [
+      {
+        "mission": "sea_convoy_escort",
+        "name": "Supply run to the beachhead",
+        "lat": 41.3,
+        "lng": 12.45
+      },
+      {
+        "mission": "defensive_line",
+        "name": "Canal line",
+        "lat": 41.52,
+        "lng": 12.72
+      },
+      {
+        "mission": "armored_counterattack",
+        "name": "Road to the Alban hills",
+        "lat": 41.6,
+        "lng": 12.66
+      }
+    ],
+    "reward_money": 38000,
+    "reward_supplies": 1900,
+    "reward_xp": 1520,
+    "honour": "Anzio 1944",
+    "sort": 14
   },
   {
     "id": "h_normandy",
@@ -289,6 +540,88 @@
     "reward_supplies": 3000,
     "reward_xp": 2400,
     "honour": "Normandy 1944",
-    "sort": 8
+    "sort": 15
+  },
+  {
+    "id": "h_leyte",
+    "name": "Leyte 1944",
+    "place": "The Philippines",
+    "lat": 11.17,
+    "lng": 125.0,
+    "range_km": 400,
+    "min_level": 6,
+    "description": "A return by sea to a large island, with the landing only the start of a long fight inland.",
+    "steps": [
+      {
+        "mission": "sea_convoy_escort",
+        "name": "Leyte Gulf",
+        "lat": 10.9,
+        "lng": 125.45
+      },
+      {
+        "mission": "beach_landing",
+        "name": "Beaches south of Tacloban",
+        "lat": 11.15,
+        "lng": 124.98
+      },
+      {
+        "mission": "bridge_repair",
+        "name": "Valley road",
+        "lat": 11.1,
+        "lng": 124.85
+      },
+      {
+        "mission": "fortified_strongpoint",
+        "name": "Hills above Ormoc",
+        "lat": 11.05,
+        "lng": 124.65
+      }
+    ],
+    "reward_money": 58000,
+    "reward_supplies": 2900,
+    "reward_xp": 2320,
+    "honour": "Leyte 1944",
+    "sort": 16
+  },
+  {
+    "id": "h_rhine",
+    "name": "Rhine Crossing 1945",
+    "place": "Germany",
+    "lat": 51.66,
+    "lng": 6.45,
+    "range_km": 400,
+    "min_level": 6,
+    "description": "A set-piece crossing of a wide river, prepared for weeks and carried out in a night and a day.",
+    "steps": [
+      {
+        "mission": "recon_sweep",
+        "name": "West bank",
+        "lat": 51.62,
+        "lng": 6.25
+      },
+      {
+        "mission": "river_crossing",
+        "name": "The Rhine at Wesel",
+        "lat": 51.66,
+        "lng": 6.58
+      },
+      {
+        "mission": "bridge_repair",
+        "name": "Pontoon bridges",
+        "lat": 51.63,
+        "lng": 6.62
+      },
+      {
+        "mission": "armored_counterattack",
+        "name": "Woods east of the river",
+        "lat": 51.72,
+        "lng": 6.85
+      }
+    ],
+    "reward_money": 56000,
+    "reward_supplies": 2800,
+    "reward_xp": 2240,
+    "honour": "Rhine Crossing 1945",
+    "sort": 17
   }
 ]
