@@ -67,6 +67,7 @@ function announce(events) {
     notify('Mission complete', done.length === 1 ? `${done[0].name}: +${fmt(done[0].money)} funds` : `${done.length} missions completed.`);
     refreshObjectivesSoon();
     if (state.alliance) refreshOperationSoon();
+    if (state.globalEvent?.status === 'active') refreshEventSoon();
   }
 
   if (done.length > 3) {
@@ -192,6 +193,7 @@ export async function loadGame() {
   loadObjectives().catch(() => {});
   loadTaskForces().catch(() => {});
   loadDivisions().catch(() => {});
+  loadGlobalEvent().catch(() => {});
 }
 
 /** Build a base. Throws an Error with a readable message if the server says no. */
@@ -256,7 +258,8 @@ async function call(name, args = {}) {
 /** Load our alliance (or the list to browse, if we are not in one). */
 export async function loadAlliance() {
   const alliance = await call('get_my_alliance');
-  setState({ alliance, unread: alliance ? state.unread : 0 });
+  setState({ alliance, unread: alliance ? state.unread : 0, ...(alliance ? {} : { allies: [], allianceWeek: null }) });
+  if (alliance) loadAllianceMap().catch(() => {});
   watchAlliance(alliance?.info.id ?? null);
   if (!alliance) await loadAllianceList();
 }
@@ -619,4 +622,38 @@ export async function tradeMarket(item, quantity, buy) {
 export async function moveBase(baseId, latlng) {
   applySnapshot(await call('move_base', { p_base_id: baseId, p_lat: latlng.lat, p_lng: latlng.lng }));
   surveyBases(); // the new neighbourhood needs surveying
+}
+
+// ------------------------------------------------------------ phase 17
+
+/** Where our alliance mates' bases are, for shading allied ground on the map. */
+export async function loadAllianceMap() {
+  setState({ allies: await call('get_alliance_map') });
+}
+
+export async function loadAllianceWeek() {
+  setState({ allianceWeek: await call('get_alliance_week') });
+}
+
+/** Send supplies or goods to an alliance mate. They travel by convoy. */
+export async function sendAid(username, item, quantity) {
+  setState({ profile: await call('send_aid', { p_username: username, p_item: item, p_quantity: quantity }) });
+}
+
+export async function loadGlobalEvent() {
+  setState({ globalEvent: await call('get_global_event') });
+}
+const refreshEventSoon = debounce(() => loadGlobalEvent().catch(() => {}), 1500);
+
+export async function claimEventReward(eventId) {
+  await call('claim_event_reward', { p_event: eventId });
+  await Promise.all([loadGlobalEvent(), sync()]);
+}
+
+export async function adminStartEvent(v) {
+  await call('admin_start_event', {
+    p_name: v.name, p_counter: v.counter, p_target: v.target, p_hours: v.hours,
+    p_reward_money: v.money, p_reward_supplies: v.supplies, p_reward_xp: v.xp, p_description: v.description,
+  });
+  await loadGlobalEvent();
 }

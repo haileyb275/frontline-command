@@ -134,3 +134,4 @@ npm run balance
 - [x] Phase 14 — A moving front line, enemy offensives, unconfirmed reports and scouting
 - [x] Phase 15 — Divisions, refits, captured equipment, historical notes for every unit
 - [x] Phase 16 — Fuel, parts and medical stores, Refinery, Rail Yard, Port, supply lines, market, movable bases
+- [x] Phase 17 — Alliance territory on the map, weekly alliance rivalry, aid convoys between allies, worldwide events

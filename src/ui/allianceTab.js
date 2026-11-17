@@ -137,6 +137,8 @@ function renderOverview(state, ui) {
       <div><span>Your role</span>${esc(alliance.my_role)}</div>
     </div>
 
+    ${renderWeek(state)}
+
     <h3>Shared missions <span class="count">${shared.length}</span></h3>
     <div class="rows">${sharedRows}</div>
 
@@ -154,6 +156,46 @@ function renderOverview(state, ui) {
 
     <button class="btn btn--block btn--spaced" data-action="leave-alliance" ${ui.busy ? 'disabled' : ''}>
       Leave alliance</button>`;
+}
+
+/** This week's contest between alliances: one point per mission, two for a hard one. */
+function renderWeek(state) {
+  const week = state.allianceWeek;
+  if (!week) return '';
+  const mine = week.this_week.find((a) => a.id === state.alliance.info.id);
+  const won = week.last_week.find((a) => a.id === state.alliance.info.id);
+  return `
+    <h3>This week's rivalry</h3>
+    <div class="card">
+      <p>${mine
+        ? `<strong>#${mine.position}</strong> of ${week.this_week.length} with <strong>${fmt(mine.score)}</strong> points.`
+        : 'No points yet this week. Every mission a member completes scores one; a hard mission scores two.'}
+        Ends in <span class="js-countdown" data-until="${esc(week.ends_at)}"></span>.</p>
+      ${won ? `<p class="note">Last week your alliance finished #${won.position} with ${fmt(won.score)} points.</p>` : ''}
+      <p class="muted">The full board is under Ranks → Alliances.</p>
+    </div>`;
+}
+
+const AID_ITEMS = [['supplies', 'Supplies'], ['fuel', 'Fuel'], ['parts', 'Spare parts'], ['medical', 'Medical stores']];
+
+function renderAid(state, ui) {
+  const { alliance, profile } = state;
+  const others = alliance.members.filter((m) => m.player_id !== profile.id);
+  if (others.length === 0) return '';
+  return `
+    <h3>Send aid</h3>
+    <form class="card" data-form="send-aid">
+      <label class="field"><span>To</span>
+        <select name="aid_to">${others.map((m) => `<option>${esc(m.username)}</option>`).join('')}</select></label>
+      <label class="field"><span>What</span>
+        <select name="aid_item">${AID_ITEMS.map(([id, label]) =>
+          `<option value="${id}">${label} (you have ${fmt(profile[id] ?? 0)})</option>`).join('')}</select></label>
+      <label class="field"><span>How much (up to 2,000)</span>
+        <input name="aid_quantity" type="number" min="1" max="2000" step="1" inputmode="numeric" required /></label>
+      <button class="btn btn--primary btn--block" type="submit" ${ui.busy ? 'disabled' : ''}>Send by convoy</button>
+      <p class="muted">A convoy carries it from your Headquarters to theirs. It appears on their map and
+         unloads when it arrives.</p>
+    </form>`;
 }
 
 function renderChat(state, ui) {
@@ -229,7 +271,8 @@ function renderMembers(state, ui) {
 
   return `
     <h3>Members <span class="count">${alliance.members.length} / ${alliance.member_cap}</span></h3>
-    <div class="rows">${rows}</div>`;
+    <div class="rows">${rows}</div>
+    ${renderAid(state, ui)}`;
 }
 
 function renderBuildings(state, ui) {
@@ -330,6 +373,12 @@ function renderOps(state, ui) {
     ${launch}`;
 }
 
+/** Called by panel.js each time this tab is opened. */
+export function onShow() {
+  actions.loadAllianceWeek().catch(() => {});
+  actions.loadAllianceMap().catch(() => {});
+}
+
 /** Called once a second by panel.js. */
 export function tick(root) {
   for (const el of root.querySelectorAll('.js-countdown')) {
@@ -375,6 +424,7 @@ export async function handleAction(action, data, ctx) {
     }
     case 'alliance-view':
       if (data.view === 'ops') actions.loadOperation().catch(() => {}); // fresh figures each time
+      if (data.view === 'overview') actions.loadAllianceWeek().catch(() => {});
       return ctx.update({ allianceView: data.view });
     case 'start-op':
       return run(ctx, () => actions.startOperation(data.op), 'Operation launched.');
@@ -410,6 +460,13 @@ export async function handleSubmit(formName, values, ctx, form) {
       if (!(amount > 0)) return toast('Enter an amount greater than zero.', 'error');
       form.reset();
       return run(ctx, () => actions.donate(amount), `Donated ${fmt(amount)} funds.`);
+    }
+
+    case 'send-aid': {
+      const quantity = Math.floor(Number(values.aid_quantity));
+      if (!(quantity > 0)) return toast('Enter an amount greater than zero.', 'error');
+      form.reset();
+      return run(ctx, () => actions.sendAid(values.aid_to, values.aid_item, quantity), `Convoy on its way to ${values.aid_to}.`);
     }
 
     case 'chat': {

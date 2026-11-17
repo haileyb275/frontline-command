@@ -29,9 +29,35 @@ export function claimableCount(state) {
     const type = dailyOrders.find((t) => t.id === d.order_id);
     return type && !d.claimed && (o.today[type.counter] ?? 0) >= type.target;
   }).length;
+  const e = state.globalEvent;
+  const event = e?.status === 'succeeded' && e.mine?.amount > 0 && !e.mine.claimed ? 1 : 0;
   const others = objectives.filter((obj) =>
     !o.claimed.includes(obj.id) && obj.steps.every((s) => (o.counters[s.counter] ?? 0) >= s.target)).length;
-  return daily + others;
+  return daily + others + event;
+}
+
+/** The worldwide event: one target every player in the game works toward. */
+export function renderEvent(state, ui) {
+  const e = state.globalEvent;
+  if (!e) return '';
+  const status = { active: `ends in <span class="js-countdown" data-until="${esc(e.ends_at)}"></span>`,
+                   succeeded: 'target reached', failed: 'ran out of time' }[e.status];
+  const top = e.top.map((c, i) => `
+    <div class="log-line"><span>${i + 1}. ${esc(c.username)}</span><span>${fmt(c.amount)}</span></div>`).join('');
+  const canClaim = e.status === 'succeeded' && e.mine && e.mine.amount > 0 && !e.mine.claimed;
+  return `
+    <h3>Worldwide event <span class="count">${fmt(e.players)} taking part</span></h3>
+    <div class="card card--event">
+      <h2>${esc(e.name)}</h2>
+      ${e.description ? `<p>${esc(e.description)}</p>` : ''}
+      <p class="muted">Every commander in the game counts toward one target · ${status}</p>
+      <div class="progress">${progressBar(e.progress, e.target)}</div>
+      <p class="price">Reward for everyone who takes part: ${rewardText(e.reward_money, e.reward_supplies, e.reward_xp) || 'honour'}</p>
+      <p class="muted">Your part so far: ${fmt(e.mine?.amount ?? 0)}${e.mine?.claimed ? ' · reward collected' : ''}</p>
+      ${canClaim ? `<button class="btn btn--primary btn--block" data-action="claim-event" data-event="${esc(e.id)}"
+                            ${ui.busy ? 'disabled' : ''}>Collect your reward</button>` : ''}
+      ${top}
+    </div>`;
 }
 
 export function renderOrders(state, ui) {
@@ -92,6 +118,7 @@ export function renderOrders(state, ui) {
   const count = (list) => `${list.filter((x) => o.claimed.includes(x.id)).length} / ${list.length}`;
 
   return `
+    ${renderEvent(state, ui)}
     <h3>Daily orders <span class="count">optional</span></h3>
     <p class="muted">Three new orders each day. Ignore them freely: there is no penalty.
        Finish one for extra resources, or all three for a further bonus of ${bonus}.

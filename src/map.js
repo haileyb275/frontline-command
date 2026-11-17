@@ -240,6 +240,34 @@ export function createFrontLayer(map) {
 }
 
 /**
+ * Draws alliance mates' bases: a small marker each, and blue shading over the
+ * ground their front-line bases hold, so the alliance's territory shows.
+ * @param {L.Map} map
+ * @param {{ getIcon: (base) => string }} options
+ */
+export function createAllyLayer(map, { getIcon }) {
+  map.createPane('allies').style.zIndex = 340; // under our own front shading
+  const group = L.layerGroup().addTo(map);
+
+  return {
+    sync(bases) {
+      group.clearLayers(); // a short list that changes rarely: simplest to redraw
+      for (const base of bases) {
+        if (base.zone === 'front' && base.front_km > 0) {
+          L.circle([base.lat, base.lng], {
+            pane: 'allies', className: 'ally-area', interactive: false, radius: base.front_km * 1000,
+          }).addTo(group);
+        }
+        // A text node, so player-chosen names are never parsed as HTML.
+        L.marker([base.lat, base.lng], { icon: makeIcon(getIcon(base), 'base allybase'), keyboard: false })
+          .bindTooltip(document.createTextNode(`${base.owner} · ${base.name}`), { direction: 'top', offset: [0, -14] })
+          .addTo(group);
+      }
+    },
+  };
+}
+
+/**
  * Manages the mission markers, the same way createBaseLayer manages bases.
  * @param {L.Map} map
  * @param {{ getLabel: (mission) => string, getTitle: (mission) => string, onSelect: (mission) => void }} options

@@ -1910,3 +1910,28 @@ button.player-name:hover {
   stroke-opacity: 0.95;
   stroke-width: 3;
 }
+
+/* ==========================================================================
+   Phase 17: alliance territory, rivalry, worldwide events
+   ========================================================================== */
+
+.ally-area {
+  fill: #7fa3c7;
+  fill-opacity: 0.12;
+  stroke: #3f6f9f;
+  stroke-opacity: 0.7;
+  stroke-width: 1.5;
+  stroke-dasharray: 4 6;
+}
+
+.marker--allybase {
+  background: #7fa3c7;
+  border-color: var(--olive-900);
+  color: var(--olive-900);
+  transform: scale(0.8);
+  opacity: 0.9;
+}
+
+.card--event {
+  border-left: 4px solid #c9a227;
+}

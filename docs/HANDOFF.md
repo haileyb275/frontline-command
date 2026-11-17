@@ -66,7 +66,7 @@ Where the current version of the main functions lives:
 | `fc_spawn_mission` (terrain, real places, home-front rule) | `012` |
 | `fc_spawn_due_missions` (choice, front band, unconfirmed, offensives) | `014` |
 | `fc_on_mission_complete` (experience, damage, counters, front) | `014` |
-| `fc_bump` (counters, alliance operations) | `011` |
+| `fc_bump` (counters, alliance operations, weekly rivalry, worldwide events) | `017` |
 | `sync_player` (throttle), `fc_rate_limit`, `fc_maintenance` | `013` |
 | `get_player_profile` | `011` |
 | `fc_convoy_seconds`, market, `move_base`, goods triggers | `016` |
@@ -137,16 +137,9 @@ at the next check-in, for every player.
 
 ## What was planned next
 
-**Phase 17 (multiplayer):** alliance territory on the map (members' bases
-shaded as one area); a weekly alliance-versus-alliance score from members'
-completed missions, with a results board; mutual aid (send supplies or goods
-to an alliance mate by convoy; lending units was also wanted but is harder,
-because a lent unit must come back); global events (one worldwide target that
-everyone feeds, started by an administrator).
-
-The natural place for weekly scores and global events is `fc_bump` in `011`:
-it already runs once per counter per player per completed mission and already
-feeds alliance operations. Revise it in a new `017` file.
+**Phase 17 is done** (`017_rivalry.sql`; see "Phase 17 as built" in DESIGN.md).
+Left over from it: lending units to an ally, which is harder because a lent
+unit must come back, with its repairs and experience.
 
 **Phase 18:** named historical operations (scripted mission chains in a real
 theatre with a unique honour); mission filters and auto-dispatch rules

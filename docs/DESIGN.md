@@ -302,3 +302,27 @@ was revised in a later phase, the highest-numbered file holds the current versio
 - **Phase 16** added goods (`profiles.fuel`, `parts`, `medical`, spent by triggers on `dispatches`
   and `units`), infrastructure (`building_types.infra`, used by `fc_convoy_seconds`), resupply
   overhead (`fc_resupply_overhead`), a shared market (`market`, `trade_market`), and `move_base`.
+
+## Phase 17 as built: alliance territory, rivalry, mutual aid, worldwide events
+
+All in `supabase/migrations/017_rivalry.sql`.
+
+- **Alliance territory.** `get_alliance_map()` returns alliance mates' bases (owner, name, kind,
+  place, front distance, nothing else). The map draws them as small blue markers with blue
+  shading over the ground their front-line bases hold (`createAllyLayer` in `src/map.js`).
+- **Weekly rivalry.** `fc_bump` (current version now lives in `017`) adds a point to
+  `alliance_week_scores` for every mission a member completes, and a second for a hard one.
+  Weeks start Monday 00:00 UTC; nothing has to "reset", a new week is simply a new row.
+  `get_alliance_week()` gives this week's top 20 and last week's top 3. Shown in
+  Alliance → Overview and Ranks → Alliances.
+- **Mutual aid.** `send_aid(username, item, quantity)` takes supplies, fuel, parts or medical
+  stores from the sender and creates a convoy owned by the receiver, from HQ to HQ, which their
+  next check-in unloads like any other cargo. Same alliance only, 2,000 per convoy, 10 an hour.
+  The form is under Alliance → Members.
+- **Worldwide events.** An administrator starts one from the Admin panel (`admin_start_event`):
+  a name, what counts (all missions or hard ones), a target for all players together, a length
+  and a reward. `fc_bump` feeds it; when the target is reached everyone who contributed can
+  collect the reward once (`claim_event_reward`). One runs at a time. Shown at the top of
+  Missions → Orders.
+
+Not built: lending units to an ally (ownership, repairs and veterancy make it a larger job).

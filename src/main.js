@@ -3,7 +3,7 @@
 
 import './style.css';
 import {
-  createMap, createBaseLayer, createFrontLayer, createSupplyLayer, createMissionLayer, createTravelLayer, formatLatLng,
+  createMap, createBaseLayer, createFrontLayer, createAllyLayer, createSupplyLayer, createMissionLayer, createTravelLayer, formatLatLng,
 } from './map.js';
 import { supabase, friendlyError } from './supabase.js';
 import { state, setState, subscribe, loadProfile } from './state.js';
@@ -55,6 +55,15 @@ const baseLayer = createBaseLayer(map, {
 // The shaded ground each front-line base holds.
 const frontLayer = createFrontLayer(map);
 subscribe((s) => frontLayer.sync(s.bases));
+
+// Alliance territory: our allies' bases and the ground they hold.
+const allyLayer = createAllyLayer(map, {
+  getIcon: (base) => buildingIcon(getBuilding(base.building_type) ?? base.building_type),
+});
+let drawnAllies = null;
+subscribe((s) => {
+  if (s.allies !== drawnAllies) allyLayer.sync((drawnAllies = s.allies));
+});
 
 // Supply lines from the Headquarters to each base that keeps a stock.
 const supplyLayer = createSupplyLayer(map, {

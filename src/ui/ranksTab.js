@@ -1,7 +1,7 @@
 // The "Ranks" tab: global leaderboards for players and alliances.
 
 import { getNation, rankTitle } from '../game/content.js';
-import { loadLeaderboard, loadSeasonBoard, openProfile, closeProfile, reportPlayer } from '../game/actions.js';
+import { loadLeaderboard, loadSeasonBoard, loadAllianceWeek, openProfile, closeProfile, reportPlayer } from '../game/actions.js';
 import { msUntil, formatDuration } from '../game/clock.js';
 import { renderProfile } from './profileView.js';
 import { friendlyError } from '../supabase.js';
@@ -98,6 +98,20 @@ function renderAlliances(state, board) {
     return '<p class="muted">No alliances yet. Found one in the Alliance tab.</p>';
   }
   const myId = state.alliance?.info.id;
+  const week = state.allianceWeek;
+  const weekRow = (a) => `
+      <div class="row row--static ${a.id === myId ? 'is-me' : ''}">
+        <span class="rank-no">${a.position}</span>
+        <span class="row-main"><span class="row-title"><span class="tag">${esc(a.tag)}</span> ${esc(a.name)}</span></span>
+        <span class="row-side">${fmt(a.score)} pts</span>
+      </div>`;
+  const days = week ? Math.max(0, Math.ceil(msUntil(week.ends_at) / 86400000)) : 0;
+  const rivalry = week ? `
+    <h3>This week's rivalry <span class="count">${days} day${days === 1 ? '' : 's'} left</span></h3>
+    <p class="muted">One point for every mission a member completes, two for a hard one. The board starts again each Monday.</p>
+    <div class="rows">${week.this_week.map(weekRow).join('') || '<p class="muted">No alliance has scored yet this week.</p>'}</div>
+    ${week.last_week.length ? `<h3>Last week's winners</h3><div class="rows">${week.last_week.map(weekRow).join('')}</div>` : ''}
+    <h3>All time</h3>` : '';
   const rows = board.alliances
     .map((a) => `
       <div class="row row--static ${a.id === myId ? 'is-me' : ''}">
@@ -109,13 +123,14 @@ function renderAlliances(state, board) {
         <span class="row-side">${fmt(a.xp)} XP</span>
       </div>`)
     .join('');
-  return `<p class="muted">Alliances earn XP from the shared missions their members complete.</p>
+  return `${rivalry}<p class="muted">Alliances earn XP from the shared missions their members complete.</p>
           <div class="rows">${rows}</div>`;
 }
 
 /** Called by panel.js each time this tab is opened. */
 export function onShow() {
   loadSeasonBoard().catch(() => {});
+  loadAllianceWeek().catch(() => {});
   loadLeaderboard().catch((error) => toast(friendlyError(error), 'error'));
 }
 

@@ -23,6 +23,9 @@ export const state = {
   operation: null, // our alliance's current or latest joint operation
   season: null, // the season leaderboard
   objectives: null, // daily orders, campaign and achievement progress
+  allies: [], // alliance mates' bases, for the map
+  allianceWeek: null, // this week's alliance-versus-alliance board
+  globalEvent: null, // the worldwide event, if one is running or just ended
   market: null, // current market prices
   divisions: [], // our divisions (units carry a division_id)
   taskForces: [], // saved groups of units

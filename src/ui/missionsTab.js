@@ -21,7 +21,7 @@ import {
   settings,
 } from '../game/content.js';
 import {
-  dispatchUnits, recallUnits, shareMission, scoutMission, claimDailyOrder, claimObjective, loadObjectives, saveTaskForce,
+  dispatchUnits, recallUnits, shareMission, scoutMission, claimDailyOrder, claimObjective, loadObjectives, claimEventReward, loadGlobalEvent, saveTaskForce,
 } from '../game/actions.js';
 import { renderOrders, tickOrders, claimableCount } from './ordersView.js';
 import { msUntil, formatDuration, liveUnitStatus, now } from '../game/clock.js';
@@ -465,8 +465,18 @@ export async function handleAction(action, data, ctx) {
       return;
 
     case 'missions-view':
-      if (data.view === 'orders') loadObjectives().catch(() => {}); // fresh figures each time it is opened
+      if (data.view === 'orders') { loadObjectives().catch(() => {}); loadGlobalEvent().catch(() => {}); } // fresh figures each time it is opened
       return update({ missionsView: data.view });
+
+    case 'claim-event':
+      update({ busy: true });
+      try {
+        await claimEventReward(data.event);
+        toast('Event reward collected.', 'ok');
+      } catch (error) {
+        toast(friendlyError(error), 'error');
+      }
+      return update({ busy: false });
 
     case 'claim-daily':
       update({ busy: true });

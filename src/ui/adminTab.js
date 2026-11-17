@@ -86,6 +86,29 @@ function renderHome(state, ui) {
     </form>
     <div class="rows">${playerRows}</div>
 
+    <h3>Worldwide event</h3>
+    ${state.globalEvent?.status === 'active'
+      ? `<p class="note">Running now: <strong>${esc(state.globalEvent.name)}</strong> ·
+           ${fmt(state.globalEvent.progress)} / ${fmt(state.globalEvent.target)}. Only one event runs at a time.</p>`
+      : `<form class="card" data-form="admin-event">
+           <label class="field"><span>Name</span>
+             <input name="ev_name" type="text" maxlength="60" placeholder="e.g. Operation Overlord" required /></label>
+           <label class="field"><span>Description (optional)</span>
+             <input name="ev_description" type="text" maxlength="200" /></label>
+           <label class="field"><span>What counts</span>
+             <select name="ev_counter"><option value="missions">Every completed mission</option>
+               <option value="missions_hard">Hard missions only</option></select></label>
+           <label class="field"><span>Target (all players together)</span>
+             <input name="ev_target" type="number" min="1" value="500" required /></label>
+           <label class="field"><span>Length in hours (1–336)</span>
+             <input name="ev_hours" type="number" min="1" max="336" value="72" required /></label>
+           <label class="field"><span>Reward each: funds / supplies / XP</span>
+             <span class="inline-form"><input name="ev_money" type="number" min="0" value="5000" />
+               <input name="ev_supplies" type="number" min="0" value="500" />
+               <input name="ev_xp" type="number" min="0" value="250" /></span></label>
+           <button class="btn btn--primary btn--block" type="submit" ${ui.busy ? 'disabled' : ''}>Start the event</button>
+         </form>`}
+
     <h3>Open reports <span class="count">${overview?.reports.length ?? 0}</span></h3>
     ${reports}
 
@@ -286,6 +309,15 @@ export function handleChange(name, el, ctx) {
 export async function handleSubmit(formName, values, ctx, form) {
   if (formName === 'admin-search') {
     return run(ctx, () => actions.adminSearch(values.admin_query ?? ''));
+  }
+  if (formName === 'admin-event') {
+    const n = (v) => Math.max(0, Math.trunc(Number(v) || 0));
+    if (!window.confirm(`Start "${values.ev_name}" for every player in the game?`)) return;
+    return run(ctx, () => actions.adminStartEvent({
+      name: values.ev_name, description: values.ev_description ?? '', counter: values.ev_counter,
+      target: n(values.ev_target), hours: n(values.ev_hours),
+      money: n(values.ev_money), supplies: n(values.ev_supplies), xp: n(values.ev_xp),
+    }), 'Event started.');
   }
   if (formName === 'admin-adjust') {
     const n = (v) => Math.trunc(Number(v) || 0);
