@@ -6,7 +6,7 @@ import { supabase } from '../supabase.js';
 import { state, setState } from '../state.js';
 import { setServerTime, msUntil } from './clock.js';
 import { toast } from '../ui/toast.js';
-import { playSound, notify } from '../ui/alerts.js';
+import { playSound, notify, getAlertPrefs } from '../ui/alerts.js';
 import { surveyBases } from './features.js';
 import { fmt } from '../ui/dom.js';
 
@@ -163,8 +163,17 @@ function scheduleNextSync() {
 /** Start checking in regularly (for newly spawned missions). */
 export function startSyncLoop() {
   stopSyncLoop();
+  let hiddenTicks = 0;
   pollTimer = setInterval(() => {
-    if (!document.hidden) sync().catch(() => {}); // don't poll from a background tab
+    // A background tab normally stays quiet. But a player who asked for
+    // notifications wants to hear about new missions exactly then, so it
+    // still checks in, once a minute instead of every 20 seconds.
+    if (!document.hidden) {
+      hiddenTicks = 0;
+      sync().catch(() => {});
+    } else if (getAlertPrefs().notify && ++hiddenTicks % 3 === 0) {
+      sync().catch(() => {});
+    }
   }, 20000);
   document.addEventListener('visibilitychange', onVisible);
 }

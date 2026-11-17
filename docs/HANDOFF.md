@@ -151,6 +151,19 @@ Open ends, in rough order of value:
 - Translations are partial: labels, buttons and most content names are covered. Unit names,
   descriptions, help text, sentences with numbers and server error messages are English. A full job means
   a `t()` function with placeholders and per-language content files.
-- Standing orders run only in an open browser. A server-side version would belong in
-  `fc_sync_extras`, with rules stored per player.
+- Standing orders run only in an open browser. A server-side version was looked at and left:
+  missions are only created at a check-in (capped by `max_open_missions`), so nothing arrives
+  while a player is away for the server to answer. Doing it for real means back-dating both
+  mission arrival and dispatch, which turns the game into an idle game. That is a design
+  decision for the owner, not a missing function.
 - Statistics count from Phase 18 onward; earlier payouts were not recorded.
+
+### Checked after Phase 19
+
+- Sounds and background notifications: verified in a browser with stubbed audio and
+  notification objects. A background tab used to stop checking in altogether, so a
+  notification could never fire; it now checks in once a minute when notifications are on.
+- Unit historical notes: read through all 147; no factual errors found. Note that a starter
+  unit's `year` is 1939 for gameplay even where the real equipment is later (the Cromwell,
+  the P-47); that is deliberate, since every nation needs a full 1939 set.
+- Still unchecked: the password-reset email (needs a real inbox) and the live Overpass server.

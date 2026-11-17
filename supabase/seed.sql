@@ -173,7 +173,7 @@ insert into public.unit_types (id, nation_id, category_id, name, cost_money, cos
   ('ussr_recon_2', 'ussr', 'recon', 'M-72 Motorcycle Scouts', 900, 20, 85, 6, 1, 1941),
   ('germany_armor_3', 'germany', 'armor', 'Panzer II', 2200, 65, 40, 16, 3, 1939),
   ('germany_armor_4', 'germany', 'armor', 'Panther', 6600, 210, 46, 48, 5, 1943),
-  ('germany_infantry_2', 'germany', 'infantry', 'MG 42 Team', 1100, 30, 26, 14, 2, 1939),
+  ('germany_infantry_2', 'germany', 'infantry', 'MG 42 Team', 1100, 30, 26, 14, 2, 1942),
   ('germany_artillery_2', 'germany', 'artillery', 'Nebelwerfer 41 Battery', 3200, 120, 34, 26, 4, 1941),
   ('germany_air_2', 'germany', 'air', 'Ju 88 Flight', 8000, 260, 380, 46, 6, 1939),
   ('germany_recon_2', 'germany', 'recon', 'BMW R75 Motorcycle Scouts', 900, 20, 85, 6, 1, 1941),
