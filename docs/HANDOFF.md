@@ -128,7 +128,6 @@ at the next check-in, for every player.
 
 - The live Overpass map survey was never tested against the real service
   (it was unreachable from the build sandbox); it was tested with a stand-in.
-- Browser notifications and sound output were not verified in a real browser.
 - The password-reset email round trip was not tested end to end.
 - Unit historical notes were written from general knowledge, not checked
   against a reference.
